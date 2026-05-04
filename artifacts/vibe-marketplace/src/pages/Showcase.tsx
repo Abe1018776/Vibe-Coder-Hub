@@ -29,7 +29,7 @@ function ProjectCard({ project, onUpvote }: { project: ShowcaseProject; onUpvote
     <div className="border border-border rounded-md bg-card flex gap-0 overflow-hidden" data-testid={`showcase-card-${project.id}`}>
       {project.screenshotPath && (
         <img
-          src={`/api/storage/objects/${project.screenshotPath.replace(/^\//, "")}`}
+          src={`/api/storage/objects/${project.screenshotPath.replace(/^\/objects\//, "")}`}
           alt={project.name}
           className="w-24 object-cover shrink-0"
         />

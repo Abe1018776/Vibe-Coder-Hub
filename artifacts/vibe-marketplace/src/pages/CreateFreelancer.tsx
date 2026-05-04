@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation, Link } from "wouter";
-import { useCreateFreelancer, useRequestUploadUrl, getListFreelancersQueryKey } from "@workspace/api-client-react";
+import { useCreateFreelancer, useListTags, useRequestUploadUrl, getListFreelancersQueryKey, getListTagsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,6 @@ const schema = z.object({
   name: z.string().min(1, "Name required"),
   bio: z.string().optional(),
   skills: z.string(),
-  tags: z.string(),
   tools: z.string(),
   hourlyRate: z.string().optional(),
   portfolioLinks: z.string(),
@@ -31,15 +30,21 @@ export default function CreateFreelancer() {
   const qc = useQueryClient();
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", bio: "", skills: "", tags: "", tools: "", hourlyRate: "", portfolioLinks: "", contactInfo: "", notes: "" },
+    defaultValues: { name: "", bio: "", skills: "", tools: "", hourlyRate: "", portfolioLinks: "", contactInfo: "", notes: "" },
   });
 
   const createFreelancer = useCreateFreelancer();
   const requestUpload = useRequestUploadUrl();
+  const { data: availableTags } = useListTags({ query: { queryKey: getListTagsQueryKey() } });
+
+  function toggleTag(name: string) {
+    setSelectedTags((prev) => prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]);
+  }
 
   async function handleAvatarUpload(file: File) {
     setUploading(true);
@@ -66,7 +71,7 @@ export default function CreateFreelancer() {
           bio: data.bio || undefined,
           avatarPath: avatarPath || undefined,
           skills: splitCSV(data.skills),
-          tags: splitCSV(data.tags),
+          tags: selectedTags,
           tools: splitCSV(data.tools),
           hourlyRate: data.hourlyRate ? Number(data.hourlyRate) : undefined,
           portfolioLinks: splitCSV(data.portfolioLinks),
@@ -99,7 +104,7 @@ export default function CreateFreelancer() {
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleAvatarUpload(e.target.files[0])} data-testid="input-avatar" />
             {avatarPath ? (
               <div className="flex items-center gap-3">
-                <img src={`/api/storage/objects/${avatarPath.replace(/^\//, "")}`} className="w-12 h-12 rounded-full object-cover" alt="avatar" />
+                <img src={`/api/storage/objects/${avatarPath.replace(/^\/objects\//, "")}`} className="w-12 h-12 rounded-full object-cover" alt="avatar" />
                 <button type="button" onClick={() => setAvatarPath(null)} className="text-xs text-muted-foreground hover:text-destructive"><X size={14} /></button>
               </div>
             ) : (
@@ -142,22 +147,37 @@ export default function CreateFreelancer() {
             )} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField control={form.control} name="tags" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tags <span className="text-muted-foreground font-normal">(CSV)</span></FormLabel>
-                <FormControl><Input {...field} placeholder="debug, ai-apps, backend" data-testid="input-freelancer-tags" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <FormField control={form.control} name="hourlyRate" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Hourly rate ($)</FormLabel>
-                <FormControl><Input {...field} type="number" placeholder="75" data-testid="input-freelancer-rate" /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
+          <div>
+            <div className="text-sm font-medium mb-2">Tags</div>
+            {availableTags && availableTags.length > 0 ? (
+              <div className="flex flex-wrap gap-2" data-testid="tag-selector-freelancer">
+                {availableTags.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => toggleTag(t.name)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      selectedTags.includes(t.name)
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary"
+                    }`}
+                    data-testid={`tag-toggle-${t.name}`}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No tags yet — add some on the Tags page.</p>
+            )}
           </div>
+          <FormField control={form.control} name="hourlyRate" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Hourly rate ($)</FormLabel>
+              <FormControl><Input {...field} type="number" placeholder="75" data-testid="input-freelancer-rate" /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
 
           <FormField control={form.control} name="portfolioLinks" render={({ field }) => (
             <FormItem>

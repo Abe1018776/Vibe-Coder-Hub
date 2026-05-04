@@ -9,6 +9,7 @@ import GigBoard from "@/pages/GigBoard";
 import CreateGig from "@/pages/CreateGig";
 import GigDetail from "@/pages/GigDetail";
 import GigPublic from "@/pages/GigPublic";
+import GigPublicBySlug from "@/pages/GigPublicBySlug";
 import Freelancers from "@/pages/Freelancers";
 import CreateFreelancer from "@/pages/CreateFreelancer";
 import FreelancerProfile from "@/pages/FreelancerProfile";
@@ -28,7 +29,8 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Switch>
-      {/* Public gig reply page — no layout */}
+      {/* Public gig reply pages — no layout, no auth */}
+      <Route path="/gigs/public/:slug" component={GigPublicBySlug} />
       <Route path="/gigs/:id/public" component={GigPublic} />
 
       {/* All other pages use sidebar layout */}

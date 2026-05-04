@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function VoiceNotePlayer({ path }: { path: string }) {
-  const src = `/api/storage/objects/${path.replace(/^\//, "")}`;
+  const src = `/api/storage/objects/${path.replace(/^\/objects\//, "")}`;
   return (
     <audio controls src={src} className="w-full h-8 mt-1" data-testid={`audio-voice-note-${path}`} />
   );
@@ -76,8 +76,8 @@ export default function GigDetail() {
 
   function handleWhatsApp() {
     if (!gig) return;
-    const publicUrl = `${window.location.origin}${window.location.pathname.replace(/\/$/, "")}/public`.replace("/gigs/", "/gigs/");
-    const text = `Hey, check out this gig: ${gig.title}\n${gig.description.slice(0, 120)}...\nApply here: ${window.location.href}/public`;
+    const url = `${window.location.href.split("/gigs/")[0]}/gigs/public/${gig.publicSlug}`;
+    const text = `Hey, check out this gig: ${gig.title}\n${gig.description.slice(0, 120)}...\nApply here: ${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -116,7 +116,7 @@ export default function GigDetail() {
   }
 
   const Icon = TYPE_ICONS[gig.type] ?? Zap;
-  const publicUrl = `${window.location.href.split("/gigs/")[0]}/gigs/${gig.id}/public`;
+  const slugPublicUrl = `${window.location.href.split("/gigs/")[0]}/gigs/public/${gig.publicSlug}`;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -163,7 +163,7 @@ export default function GigDetail() {
           <div className="mt-4">
             <div className="text-xs font-medium text-muted-foreground mb-1">Screen recording</div>
             <video
-              src={`/api/storage/objects/${gig.recordingPath.replace(/^\//, "")}`}
+              src={`/api/storage/objects/${gig.recordingPath.replace(/^\/objects\//, "")}`}
               controls
               className="w-full rounded-md max-h-60"
               data-testid="gig-recording-player"
@@ -176,7 +176,7 @@ export default function GigDetail() {
           <Button size="sm" variant="outline" onClick={handleWhatsApp} data-testid="button-whatsapp-share">
             <Share2 size={13} className="mr-1.5" /> Share on WhatsApp
           </Button>
-          <a href={publicUrl} target="_blank" rel="noreferrer">
+          <a href={slugPublicUrl} target="_blank" rel="noreferrer">
             <Button size="sm" variant="outline" data-testid="button-view-public">
               <ExternalLink size={13} className="mr-1.5" /> Public page
             </Button>

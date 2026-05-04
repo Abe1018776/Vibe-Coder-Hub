@@ -95,6 +95,20 @@ router.post("/gigs", async (req, res) => {
   res.status(201).json(gigToResponse(gig, 0));
 });
 
+// GET /gigs/public/:slug — no auth, returns gig by public slug
+router.get("/gigs/public/:slug", async (req, res) => {
+  const [gig] = await db.select().from(gigsTable).where(eq(gigsTable.publicSlug, req.params.slug));
+  if (!gig) {
+    res.status(404).json({ error: "Gig not found" });
+    return;
+  }
+  const [replyRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(gigRepliesTable)
+    .where(eq(gigRepliesTable.gigId, gig.id));
+  res.json(gigToResponse(gig, replyRow?.count ?? 0));
+});
+
 // GET /gigs/:id
 router.get("/gigs/:id", async (req, res) => {
   const parsed = GetGigParams.safeParse({ id: Number(req.params.id) });

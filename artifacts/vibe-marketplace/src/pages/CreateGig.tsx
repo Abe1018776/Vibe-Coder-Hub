@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
-import { useCreateGig, useRequestUploadUrl, getListGigsQueryKey } from "@workspace/api-client-react";
+import { useCreateGig, useListTags, useRequestUploadUrl, getListGigsQueryKey, getListTagsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ const schema = z.object({
   title: z.string().min(3, "Title required"),
   description: z.string().min(10, "Description required"),
   type: z.enum(["task", "hourly", "build"]),
-  tags: z.string(),
   requirements: z.string().optional(),
   budgetMin: z.string().optional(),
   budgetMax: z.string().optional(),
@@ -39,15 +38,21 @@ export default function CreateGig() {
   const qc = useQueryClient();
   const [recordingPath, setRecordingPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { title: "", description: "", type: "task", tags: "", requirements: "", budgetMin: "", budgetMax: "", hourlyRate: "" },
+    defaultValues: { title: "", description: "", type: "task", requirements: "", budgetMin: "", budgetMax: "", hourlyRate: "" },
   });
 
   const createGig = useCreateGig();
   const requestUpload = useRequestUploadUrl();
+  const { data: availableTags } = useListTags({ query: { queryKey: getListTagsQueryKey() } });
+
+  function toggleTag(name: string) {
+    setSelectedTags((prev) => prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]);
+  }
 
   async function handleFileUpload(file: File) {
     setUploading(true);
@@ -64,14 +69,13 @@ export default function CreateGig() {
   }
 
   async function onSubmit(data: FormData) {
-    const tagsArr = data.tags ? data.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
     try {
       const gig = await createGig.mutateAsync({
         data: {
           title: data.title,
           description: data.description,
           type: data.type,
-          tags: tagsArr,
+          tags: selectedTags,
           requirements: data.requirements || undefined,
           budgetMin: data.budgetMin ? Number(data.budgetMin) : undefined,
           budgetMax: data.budgetMax ? Number(data.budgetMax) : undefined,
@@ -150,15 +154,30 @@ export default function CreateGig() {
             </FormItem>
           )} />
 
-          <FormField control={form.control} name="tags" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tags <span className="text-muted-foreground font-normal">(comma separated)</span></FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Replit, Cursor, Python, Debug" data-testid="input-gig-tags" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
+          <div>
+            <div className="text-sm font-medium mb-2">Tags</div>
+            {availableTags && availableTags.length > 0 ? (
+              <div className="flex flex-wrap gap-2" data-testid="tag-selector-gig">
+                {availableTags.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => toggleTag(t.name)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      selectedTags.includes(t.name)
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary"
+                    }`}
+                    data-testid={`tag-toggle-${t.name}`}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No tags yet — add some on the Tags page.</p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             {watchedType !== "hourly" ? (
