@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Vibe Coder Marketplace"
+version = "1.0.0"
+id = "artifacts/vibe-marketplace"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22512
+
+[services.development]
+run = "pnpm --filter @workspace/vibe-marketplace run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/vibe-marketplace", "run", "build" ]
+publicDir = "artifacts/vibe-marketplace/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22512"
+BASE_PATH = "/"

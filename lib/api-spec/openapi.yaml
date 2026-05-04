@@ -3,13 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Vibe Coder Marketplace API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: gigs
+    description: Gig postings
+  - name: gig-replies
+    description: Replies to gig postings
+  - name: freelancers
+    description: Freelancer CRM
+  - name: availability
+    description: Availability slots
+  - name: showcase
+    description: Vibe Coded product showcase
+  - name: tags
+    description: Tag management
+  - name: stats
+    description: Dashboard statistics
+  - name: storage
+    description: File upload and storage
+
 paths:
   /healthz:
     get:
@@ -24,6 +41,580 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── GIGS ───────────────────────────────────────────────────────────────────
+
+  /gigs:
+    get:
+      operationId: listGigs
+      tags: [gigs]
+      summary: List all gigs
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [task, hourly, build]
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed, in_progress]
+      responses:
+        "200":
+          description: List of gigs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Gig"
+    post:
+      operationId: createGig
+      tags: [gigs]
+      summary: Create a new gig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGigBody"
+      responses:
+        "201":
+          description: Created gig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gig"
+
+  /gigs/{id}:
+    get:
+      operationId: getGig
+      tags: [gigs]
+      summary: Get a single gig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gig details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gig"
+        "404":
+          description: Not found
+    put:
+      operationId: updateGig
+      tags: [gigs]
+      summary: Update a gig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGigBody"
+      responses:
+        "200":
+          description: Updated gig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gig"
+    delete:
+      operationId: deleteGig
+      tags: [gigs]
+      summary: Delete a gig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── GIG REPLIES ─────────────────────────────────────────────────────────────
+
+  /gigs/{id}/replies:
+    get:
+      operationId: listGigReplies
+      tags: [gig-replies]
+      summary: List replies for a gig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of replies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GigReply"
+    post:
+      operationId: createGigReply
+      tags: [gig-replies]
+      summary: Submit a reply to a gig (no auth required)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGigReplyBody"
+      responses:
+        "201":
+          description: Created reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GigReply"
+
+  /gig-replies/{id}:
+    delete:
+      operationId: deleteGigReply
+      tags: [gig-replies]
+      summary: Delete a gig reply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── FREELANCERS ─────────────────────────────────────────────────────────────
+
+  /freelancers:
+    get:
+      operationId: listFreelancers
+      tags: [freelancers]
+      summary: List all freelancers
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of freelancers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Freelancer"
+    post:
+      operationId: createFreelancer
+      tags: [freelancers]
+      summary: Add a freelancer to the CRM
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFreelancerBody"
+      responses:
+        "201":
+          description: Created freelancer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Freelancer"
+
+  /freelancers/{id}:
+    get:
+      operationId: getFreelancer
+      tags: [freelancers]
+      summary: Get a freelancer profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Freelancer profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Freelancer"
+        "404":
+          description: Not found
+    put:
+      operationId: updateFreelancer
+      tags: [freelancers]
+      summary: Update a freelancer profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFreelancerBody"
+      responses:
+        "200":
+          description: Updated freelancer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Freelancer"
+    delete:
+      operationId: deleteFreelancer
+      tags: [freelancers]
+      summary: Remove a freelancer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── AVAILABILITY ─────────────────────────────────────────────────────────────
+
+  /availability:
+    get:
+      operationId: listAvailabilitySlots
+      tags: [availability]
+      summary: List availability slots
+      parameters:
+        - name: freelancerId
+          in: query
+          schema:
+            type: integer
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: booked
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of availability slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvailabilitySlot"
+    post:
+      operationId: createAvailabilitySlot
+      tags: [availability]
+      summary: Post an availability slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAvailabilitySlotBody"
+      responses:
+        "201":
+          description: Created slot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilitySlot"
+
+  /availability/{id}:
+    put:
+      operationId: updateAvailabilitySlot
+      tags: [availability]
+      summary: Update an availability slot (e.g. mark as booked)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAvailabilitySlotBody"
+      responses:
+        "200":
+          description: Updated slot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilitySlot"
+    delete:
+      operationId: deleteAvailabilitySlot
+      tags: [availability]
+      summary: Delete an availability slot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── SHOWCASE ─────────────────────────────────────────────────────────────────
+
+  /showcase:
+    get:
+      operationId: listShowcaseProjects
+      tags: [showcase]
+      summary: List all showcase projects
+      parameters:
+        - name: tag
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of showcase projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShowcaseProject"
+    post:
+      operationId: createShowcaseProject
+      tags: [showcase]
+      summary: Submit a Vibe Coded project to the showcase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateShowcaseProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseProject"
+
+  /showcase/{id}:
+    get:
+      operationId: getShowcaseProject
+      tags: [showcase]
+      summary: Get a showcase project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Showcase project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseProject"
+        "404":
+          description: Not found
+    put:
+      operationId: updateShowcaseProject
+      tags: [showcase]
+      summary: Update a showcase project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateShowcaseProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseProject"
+    delete:
+      operationId: deleteShowcaseProject
+      tags: [showcase]
+      summary: Delete a showcase project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /showcase/{id}/upvote:
+    post:
+      operationId: upvoteShowcaseProject
+      tags: [showcase]
+      summary: Upvote a showcase project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated project with new upvote count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseProject"
+
+  # ─── TAGS ─────────────────────────────────────────────────────────────────────
+
+  /tags:
+    get:
+      operationId: listTags
+      tags: [tags]
+      summary: List all tags
+      responses:
+        "200":
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: createTag
+      tags: [tags]
+      summary: Create a new tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagBody"
+      responses:
+        "201":
+          description: Created tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+
+  /tags/{id}:
+    delete:
+      operationId: deleteTag
+      tags: [tags]
+      summary: Delete a tag
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── STATS ───────────────────────────────────────────────────────────────────
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /stats/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [stats]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # ─── STORAGE ─────────────────────────────────────────────────────────────────
+
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestUploadUrlBody"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestUploadUrlResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +625,620 @@ components:
       required:
         - status
 
+    # ─── GIG ──────────────────────────────────────────────────────────────────
+
+    Gig:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [task, hourly, build]
+        status:
+          type: string
+          enum: [open, closed, in_progress]
+        tags:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: string
+          nullable: true
+        budgetMin:
+          type: number
+          nullable: true
+        budgetMax:
+          type: number
+          nullable: true
+        hourlyRate:
+          type: number
+          nullable: true
+        recordingPath:
+          type: string
+          nullable: true
+        publicSlug:
+          type: string
+        replyCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - type
+        - status
+        - tags
+        - publicSlug
+        - replyCount
+        - createdAt
+        - updatedAt
+
+    CreateGigBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [task, hourly, build]
+        tags:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: string
+          nullable: true
+        budgetMin:
+          type: number
+          nullable: true
+        budgetMax:
+          type: number
+          nullable: true
+        hourlyRate:
+          type: number
+          nullable: true
+        recordingPath:
+          type: string
+          nullable: true
+      required:
+        - title
+        - description
+        - type
+        - tags
+
+    UpdateGigBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [task, hourly, build]
+        status:
+          type: string
+          enum: [open, closed, in_progress]
+        tags:
+          type: array
+          items:
+            type: string
+        requirements:
+          type: string
+          nullable: true
+        budgetMin:
+          type: number
+          nullable: true
+        budgetMax:
+          type: number
+          nullable: true
+        hourlyRate:
+          type: number
+          nullable: true
+        recordingPath:
+          type: string
+          nullable: true
+
+    # ─── GIG REPLY ────────────────────────────────────────────────────────────
+
+    GigReply:
+      type: object
+      properties:
+        id:
+          type: integer
+        gigId:
+          type: integer
+        senderName:
+          type: string
+        message:
+          type: string
+          nullable: true
+        voiceNotePath:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - gigId
+        - senderName
+        - createdAt
+
+    CreateGigReplyBody:
+      type: object
+      properties:
+        senderName:
+          type: string
+        message:
+          type: string
+          nullable: true
+        voiceNotePath:
+          type: string
+          nullable: true
+      required:
+        - senderName
+
+    # ─── FREELANCER ───────────────────────────────────────────────────────────
+
+    Freelancer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarPath:
+          type: string
+          nullable: true
+        skills:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        hourlyRate:
+          type: number
+          nullable: true
+        portfolioLinks:
+          type: array
+          items:
+            type: string
+        contactInfo:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tools:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - skills
+        - tags
+        - portfolioLinks
+        - tools
+        - createdAt
+        - updatedAt
+
+    CreateFreelancerBody:
+      type: object
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarPath:
+          type: string
+          nullable: true
+        skills:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        hourlyRate:
+          type: number
+          nullable: true
+        portfolioLinks:
+          type: array
+          items:
+            type: string
+        contactInfo:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tools:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - skills
+        - tags
+        - portfolioLinks
+        - tools
+
+    UpdateFreelancerBody:
+      type: object
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarPath:
+          type: string
+          nullable: true
+        skills:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        hourlyRate:
+          type: number
+          nullable: true
+        portfolioLinks:
+          type: array
+          items:
+            type: string
+        contactInfo:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tools:
+          type: array
+          items:
+            type: string
+
+    # ─── AVAILABILITY ─────────────────────────────────────────────────────────
+
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: integer
+        freelancerId:
+          type: integer
+        freelancerName:
+          type: string
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        durationHours:
+          type: number
+        hourlyRate:
+          type: number
+          nullable: true
+        workType:
+          type: string
+          enum: [troubleshooting, coworking, build, any]
+        notes:
+          type: string
+          nullable: true
+        isBooked:
+          type: boolean
+        bookedByNote:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - freelancerId
+        - freelancerName
+        - date
+        - startTime
+        - endTime
+        - durationHours
+        - workType
+        - isBooked
+        - createdAt
+
+    CreateAvailabilitySlotBody:
+      type: object
+      properties:
+        freelancerId:
+          type: integer
+        date:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        durationHours:
+          type: number
+        hourlyRate:
+          type: number
+          nullable: true
+        workType:
+          type: string
+          enum: [troubleshooting, coworking, build, any]
+        notes:
+          type: string
+          nullable: true
+      required:
+        - freelancerId
+        - date
+        - startTime
+        - endTime
+        - durationHours
+        - workType
+
+    UpdateAvailabilitySlotBody:
+      type: object
+      properties:
+        isBooked:
+          type: boolean
+        bookedByNote:
+          type: string
+          nullable: true
+        hourlyRate:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+
+    # ─── SHOWCASE ─────────────────────────────────────────────────────────────
+
+    ShowcaseProject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          nullable: true
+        screenshotPath:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        builderName:
+          type: string
+        upvotes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - tags
+        - tools
+        - builderName
+        - upvotes
+        - createdAt
+        - updatedAt
+
+    CreateShowcaseProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          nullable: true
+        screenshotPath:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        builderName:
+          type: string
+      required:
+        - name
+        - description
+        - tags
+        - tools
+        - builderName
+
+    UpdateShowcaseProjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          nullable: true
+        screenshotPath:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        builderName:
+          type: string
+
+    # ─── TAGS ─────────────────────────────────────────────────────────────────
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+          enum: [tool, skill, gig_type, general]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - category
+        - createdAt
+
+    CreateTagBody:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [tool, skill, gig_type, general]
+      required:
+        - name
+        - category
+
+    # ─── STATS ────────────────────────────────────────────────────────────────
+
+    DashboardStats:
+      type: object
+      properties:
+        totalGigs:
+          type: integer
+        openGigs:
+          type: integer
+        totalFreelancers:
+          type: integer
+        openSlots:
+          type: integer
+        totalReplies:
+          type: integer
+        totalShowcaseProjects:
+          type: integer
+        gigsByType:
+          type: object
+          properties:
+            task:
+              type: integer
+            hourly:
+              type: integer
+            build:
+              type: integer
+          required:
+            - task
+            - hourly
+            - build
+      required:
+        - totalGigs
+        - openGigs
+        - totalFreelancers
+        - openSlots
+        - totalReplies
+        - totalShowcaseProjects
+        - gigsByType
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [gig_created, reply_received, freelancer_added, slot_posted, showcase_submitted]
+        title:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - title
+        - description
+        - createdAt
+
+    # ─── STORAGE ──────────────────────────────────────────────────────────────
+
+    RequestUploadUrlBody:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+        contentType:
+          type: string
+      required:
+        - name
+        - size
+        - contentType
+
+    RequestUploadUrlResponse:
+      type: object
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+      required:
+        - uploadURL
+        - objectPath
