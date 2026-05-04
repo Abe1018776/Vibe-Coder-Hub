@@ -50,7 +50,7 @@ export default function FreelancerProfile() {
         <div className="flex items-start gap-4">
           {freelancer.avatarPath ? (
             <img
-              src={`/api/storage/objects/${freelancer.avatarPath.replace(/^\//, "")}`}
+              src={`/api/storage/objects/${freelancer.avatarPath.replace(/^\/objects\//, "")}`}
               className="w-16 h-16 rounded-full object-cover shrink-0"
               alt={freelancer.name}
             />

@@ -67,8 +67,8 @@ export default function GigPublic() {
     setRecording(false);
   }
 
-  async function uploadVoiceNote() {
-    if (!audioBlob) return;
+  async function uploadVoiceNote(): Promise<string | null> {
+    if (!audioBlob) return null;
     setUploading(true);
     try {
       const { uploadURL, objectPath } = await requestUpload.mutateAsync({
@@ -76,6 +76,7 @@ export default function GigPublic() {
       });
       await fetch(uploadURL, { method: "PUT", body: audioBlob, headers: { "Content-Type": "audio/webm" } });
       setVoiceNotePath(objectPath);
+      return objectPath;
     } finally {
       setUploading(false);
     }
@@ -84,8 +85,7 @@ export default function GigPublic() {
   async function onSubmit(data: FormData) {
     let path = voiceNotePath;
     if (audioBlob && !voiceNotePath) {
-      await uploadVoiceNote();
-      path = voiceNotePath;
+      path = await uploadVoiceNote();
     }
     await createReply.mutateAsync({
       id: gigId,
