@@ -8,9 +8,11 @@ import {
   Tag,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useClerk, useUser } from "@clerk/react";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -42,6 +44,29 @@ function NavItem({ to, label, Icon, onClick }: { to: string; label: string; Icon
   );
 }
 
+function SidebarFooter() {
+  const { signOut } = useClerk();
+  const { user } = useUser();
+
+  return (
+    <div className="p-3 border-t border-sidebar-border">
+      {user && (
+        <div className="px-3 py-1.5 mb-1 text-xs text-sidebar-foreground/60 truncate" title={user.primaryEmailAddress?.emailAddress}>
+          {user.primaryEmailAddress?.emailAddress ?? user.fullName}
+        </div>
+      )}
+      <button
+        data-testid="button-sign-out"
+        onClick={() => signOut()}
+        className="flex items-center gap-3 w-full px-4 py-2.5 rounded-md text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors cursor-pointer"
+      >
+        <LogOut size={16} />
+        Sign out
+      </button>
+    </div>
+  );
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
@@ -57,6 +82,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <NavItem key={to} to={to} label={label} Icon={Icon} />
           ))}
         </nav>
+        <SidebarFooter />
       </aside>
 
       {/* Mobile header */}
@@ -86,6 +112,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <NavItem key={to} to={to} label={label} Icon={Icon} onClick={() => setOpen(false)} />
               ))}
             </nav>
+            <SidebarFooter />
           </aside>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useCreateGigReply, useRequestUploadUrl, getListGigRepliesQueryKey } from "@workspace/api-client-react";
+import { useRequestUploadUrl } from "@workspace/api-client-react";
 import type { Gig } from "@workspace/api-client-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,21 +10,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
-import { Mic, MicOff, Upload, Clock, Wrench, Zap, CheckCircle } from "lucide-react";
+import { Mic, MicOff, Upload, Clock, Wrench, Zap, CheckCircle, Copy, ExternalLink } from "lucide-react";
 
 const schema = z.object({
-  senderName: z.string().min(1, "Name required"),
+  freelancerName: z.string().min(1, "Name required"),
+  freelancerEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   message: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
 const TYPE_ICONS: Record<string, React.ElementType> = { task: Zap, hourly: Clock, build: Wrench };
 
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 export default function GigPublicBySlug() {
   const { slug } = useParams<{ slug: string }>();
-  const qc = useQueryClient();
 
   const { data: gig, isLoading } = useQuery<Gig>({
     queryKey: ["gigs", "public", slug],
@@ -39,20 +40,21 @@ export default function GigPublicBySlug() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { senderName: "", message: "" },
+    defaultValues: { freelancerName: "", freelancerEmail: "", message: "" },
   });
 
-  const createReply = useCreateGigReply();
   const requestUpload = useRequestUploadUrl();
 
-  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [threadToken, setThreadToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [voiceNotePath, setVoiceNotePath] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<BlobEvent["data"][]>([]);
+  const chunksRef = useRef<Blob[]>([]);
 
   async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -91,21 +93,39 @@ export default function GigPublicBySlug() {
   }
 
   async function onSubmit(data: FormData) {
-    if (!gig) return;
-    let path = voiceNotePath;
-    if (audioBlob && !voiceNotePath) {
-      path = await uploadVoiceNote();
+    if (!slug) return;
+    setSubmitting(true);
+    try {
+      let path = voiceNotePath;
+      if (audioBlob && !voiceNotePath) {
+        path = await uploadVoiceNote();
+      }
+      const res = await fetch(`/api/gigs/public/${slug}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          freelancerName: data.freelancerName,
+          freelancerEmail: data.freelancerEmail || undefined,
+          message: data.message || undefined,
+          voiceNotePath: path || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to apply");
+      const result = await res.json();
+      setThreadToken(result.threadToken);
+    } finally {
+      setSubmitting(false);
     }
-    await createReply.mutateAsync({
-      id: gig.id,
-      data: {
-        senderName: data.senderName,
-        message: data.message || undefined,
-        voiceNotePath: path || undefined,
-      },
-    });
-    qc.invalidateQueries({ queryKey: getListGigRepliesQueryKey(gig.id) });
-    setSubmitted(true);
+  }
+
+  function getThreadUrl(token: string) {
+    return `${window.location.origin}${basePath}/gigs/thread/${token}`;
+  }
+
+  function copyThreadLink(token: string) {
+    navigator.clipboard.writeText(getThreadUrl(token));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   if (isLoading) {
@@ -129,13 +149,40 @@ export default function GigPublicBySlug() {
 
   const Icon = TYPE_ICONS[gig.type] ?? Zap;
 
-  if (submitted) {
+  if (threadToken) {
+    const threadUrl = getThreadUrl(threadToken);
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
+        <div className="text-center max-w-sm w-full">
           <CheckCircle size={40} className="text-primary mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-foreground" data-testid="reply-submitted-message">Reply sent!</h2>
-          <p className="text-sm text-muted-foreground mt-2">Thanks for applying. The team will be in touch.</p>
+          <h2 className="text-lg font-bold text-foreground" data-testid="reply-submitted-message">Application sent!</h2>
+          <p className="text-sm text-muted-foreground mt-2 mb-5">
+            Bookmark the link below to check the poster's reply and continue the conversation.
+            <br /><strong>Don't lose this link — it's the only way back to your thread.</strong>
+          </p>
+
+          <div className="border border-border rounded-md bg-card p-4 text-left space-y-3">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Your private thread link</div>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs bg-muted px-2 py-1.5 rounded text-foreground break-all" data-testid="thread-link">
+                {threadUrl}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => copyThreadLink(threadToken)}
+                data-testid="button-copy-thread-link"
+              >
+                <Copy size={13} className="mr-1" />
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+            <a href={threadUrl} target="_blank" rel="noreferrer">
+              <Button size="sm" className="w-full mt-1" data-testid="button-open-thread">
+                <ExternalLink size={13} className="mr-1.5" /> Open your thread
+              </Button>
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -176,11 +223,21 @@ export default function GigPublicBySlug() {
           <h2 className="text-sm font-semibold text-foreground mb-4">Apply for this gig</h2>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="senderName" render={({ field }) => (
+              <FormField control={form.control} name="freelancerName" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Your name</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Alex Vibe" data-testid="input-sender-name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="freelancerEmail" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                  <FormControl>
+                    <Input {...field} type="email" placeholder="you@example.com" data-testid="input-freelancer-email" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -226,8 +283,8 @@ export default function GigPublicBySlug() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={createReply.isPending} data-testid="button-submit-reply">
-                {createReply.isPending ? "Sending..." : "Submit reply"}
+              <Button type="submit" className="w-full" disabled={submitting} data-testid="button-submit-reply">
+                {submitting ? "Sending..." : "Submit application"}
               </Button>
             </form>
           </Form>
