@@ -101,7 +101,46 @@ const clerkAppearance = {
   },
 };
 
+function AuthLoadingFallback({ label }: { label: string }) {
+  const [showFallback, setShowFallback] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShowFallback(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!showFallback) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
+      <div className="text-center space-y-4 max-w-sm">
+        <div className="text-4xl">🔒</div>
+        <h1 className="text-xl font-semibold text-gray-900">Vibe Coder Marketplace</h1>
+        <p className="text-gray-500 text-sm leading-relaxed">
+          {label} in a new browser tab — the sign-in page requires a direct connection
+          that isn't available inside this iframe preview.
+        </p>
+        <a
+          href={window.location.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+        >
+          Open in new tab ↗
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function SignInPage() {
+  const { isLoaded } = useAuth();
+  if (!isLoaded) return <AuthLoadingFallback label="Open to sign in" />;
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -110,6 +149,8 @@ function SignInPage() {
 }
 
 function SignUpPage() {
+  const { isLoaded } = useAuth();
+  if (!isLoaded) return <AuthLoadingFallback label="Open to create an account" />;
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
