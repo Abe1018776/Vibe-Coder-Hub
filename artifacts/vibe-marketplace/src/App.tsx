@@ -2,11 +2,12 @@ import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wo
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
 import { shadcn } from "@clerk/themes";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
+import PublicLayout from "@/components/PublicLayout";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import GigBoard from "@/pages/GigBoard";
@@ -20,6 +21,16 @@ import FreelancerProfile from "@/pages/FreelancerProfile";
 import Availability from "@/pages/Availability";
 import Showcase from "@/pages/Showcase";
 import Tags from "@/pages/Tags";
+
+function PublicFreelancers() {
+  return <PublicLayout><Freelancers /></PublicLayout>;
+}
+function PublicFreelancerProfile() {
+  return <PublicLayout><FreelancerProfile /></PublicLayout>;
+}
+function PublicShowcase() {
+  return <PublicLayout><Showcase /></PublicLayout>;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -126,29 +137,40 @@ function ClerkQueryClientCacheInvalidator() {
 }
 
 function ProtectedLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) return;
+    const t = setTimeout(() => setTimedOut(true), 3000);
+    return () => clearTimeout(t);
+  }, [isLoaded]);
+
+  if (!isLoaded && !timedOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return <Redirect to="/sign-in" />;
+  }
+
   return (
-    <>
-      <Show when="signed-in">
-        <Layout>
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/gigs" component={GigBoard} />
-            <Route path="/gigs/new" component={CreateGig} />
-            <Route path="/gigs/:id" component={GigDetail} />
-            <Route path="/freelancers" component={Freelancers} />
-            <Route path="/freelancers/new" component={CreateFreelancer} />
-            <Route path="/freelancers/:id" component={FreelancerProfile} />
-            <Route path="/availability" component={Availability} />
-            <Route path="/showcase" component={Showcase} />
-            <Route path="/tags" component={Tags} />
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/sign-in" />
-      </Show>
-    </>
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/gigs" component={GigBoard} />
+        <Route path="/gigs/new" component={CreateGig} />
+        <Route path="/gigs/:id" component={GigDetail} />
+        <Route path="/freelancers/new" component={CreateFreelancer} />
+        <Route path="/availability" component={Availability} />
+        <Route path="/tags" component={Tags} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 
@@ -202,6 +224,9 @@ function App() {
             {/* Fully public — outside ClerkProvider, no auth context needed */}
             <Route path="/gigs/public/:slug" component={GigPublicBySlug} />
             <Route path="/gigs/thread/:token" component={GigThread} />
+            <Route path="/freelancers/:id" component={PublicFreelancerProfile} />
+            <Route path="/freelancers" component={PublicFreelancers} />
+            <Route path="/showcase" component={PublicShowcase} />
 
             {/* All other routes need Clerk */}
             <Route component={ClerkWrappedApp} />
