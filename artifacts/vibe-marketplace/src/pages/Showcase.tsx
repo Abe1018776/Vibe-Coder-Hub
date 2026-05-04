@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useListShowcaseProjects, useCreateShowcaseProject, useUpvoteShowcaseProject, getListShowcaseProjectsQueryKey } from "@workspace/api-client-react";
+import { useRef, useState } from "react";
+import { useListShowcaseProjects, useCreateShowcaseProject, useUpvoteShowcaseProject, useRequestUploadUrl, getListShowcaseProjectsQueryKey } from "@workspace/api-client-react";
 import type { ShowcaseProject } from "@workspace/api-client-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, ChevronUp, ExternalLink } from "lucide-react";
+import { Plus, ChevronUp, ExternalLink, ImageIcon } from "lucide-react";
 
 const schema = z.object({
   name: z.string().min(1, "Required"),
@@ -71,6 +71,10 @@ function ProjectCard({ project, onUpvote }: { project: ShowcaseProject; onUpvote
 
 export default function Showcase() {
   const [showForm, setShowForm] = useState(false);
+  const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
+  const [screenshotName, setScreenshotName] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -80,6 +84,7 @@ export default function Showcase() {
 
   const createProject = useCreateShowcaseProject();
   const upvote = useUpvoteShowcaseProject();
+  const requestUpload = useRequestUploadUrl();
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -88,6 +93,22 @@ export default function Showcase() {
 
   function splitCSV(val: string) {
     return val ? val.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  }
+
+  async function handleScreenshotUpload(file: File) {
+    setUploading(true);
+    try {
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({
+        data: { name: file.name, size: file.size, contentType: file.type },
+      });
+      await fetch(uploadURL, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      setScreenshotPath(objectPath);
+      setScreenshotName(file.name);
+    } catch {
+      toast({ title: "Screenshot upload failed", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function onSubmit(data: FormData) {
@@ -100,11 +121,14 @@ export default function Showcase() {
           url: data.url || undefined,
           tags: splitCSV(data.tags),
           tools: splitCSV(data.tools),
+          ...(screenshotPath ? { screenshotPath } : {}),
         },
       });
       qc.invalidateQueries({ queryKey: getListShowcaseProjectsQueryKey() });
       toast({ title: "Project submitted" });
       form.reset();
+      setScreenshotPath(null);
+      setScreenshotName(null);
       setShowForm(false);
     } catch {
       toast({ title: "Failed to submit", variant: "destructive" });
@@ -196,6 +220,28 @@ export default function Showcase() {
                     <FormMessage />
                   </FormItem>
                 )} />
+              </div>
+              <div>
+                <div className="text-sm font-medium mb-1.5">Screenshot <span className="text-muted-foreground font-normal">(optional)</span></div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  data-testid="input-screenshot"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScreenshotUpload(f); }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  data-testid="button-upload-screenshot"
+                >
+                  <ImageIcon size={13} className="mr-1.5" />
+                  {uploading ? "Uploading…" : screenshotName ? screenshotName : "Upload screenshot"}
+                </Button>
               </div>
               <div className="flex gap-2 pt-1">
                 <Button type="submit" disabled={createProject.isPending} data-testid="button-submit-showcase-form">

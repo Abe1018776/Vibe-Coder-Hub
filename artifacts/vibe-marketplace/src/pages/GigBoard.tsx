@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListGigs, getListGigsQueryKey } from "@workspace/api-client-react";
+import { useListGigs, useListTags, getListGigsQueryKey, getListTagsQueryKey } from "@workspace/api-client-react";
 import type { Gig } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -68,10 +68,14 @@ function GigRow({ gig }: { gig: Gig }) {
 export default function GigBoard() {
   const [type, setType] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
+  const [tag, setTag] = useState<string>("all");
+
+  const { data: tags } = useListTags({ query: { queryKey: getListTagsQueryKey() } });
 
   const params = {
     ...(type !== "all" && { type: type as "task" | "hourly" | "build" }),
     ...(status !== "all" && { status: status as "open" | "closed" | "in_progress" }),
+    ...(tag !== "all" && { tag }),
   };
 
   const { data: gigs, isLoading } = useListGigs(params, {
@@ -115,6 +119,15 @@ export default function GigBoard() {
             <SelectItem value="open">Open</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="closed">Closed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={tag} onValueChange={setTag}>
+          <SelectTrigger className="w-36 h-8 text-xs" data-testid="select-gig-tag">
+            <SelectValue placeholder="Tag" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All tags</SelectItem>
+            {tags?.map((t) => <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListFreelancers, getListFreelancersQueryKey } from "@workspace/api-client-react";
+import { useListFreelancers, useListTags, getListFreelancersQueryKey, getListTagsQueryKey } from "@workspace/api-client-react";
 import type { Freelancer } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, ExternalLink } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function FreelancerCard({ f }: { f: Freelancer }) {
   return (
@@ -49,8 +50,14 @@ function FreelancerCard({ f }: { f: Freelancer }) {
 
 export default function Freelancers() {
   const [search, setSearch] = useState("");
+  const [tag, setTag] = useState<string>("all");
 
-  const params = { ...(search ? { search } : {}) };
+  const { data: tags } = useListTags({ query: { queryKey: getListTagsQueryKey() } });
+
+  const params = {
+    ...(search ? { search } : {}),
+    ...(tag !== "all" ? { tag } : {}),
+  };
   const { data: freelancers, isLoading } = useListFreelancers(params, {
     query: { queryKey: getListFreelancersQueryKey(params) },
   });
@@ -71,15 +78,26 @@ export default function Freelancers() {
         </Link>
       </div>
 
-      <div className="relative mb-5">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-8 h-9 text-sm"
-          placeholder="Search by name or bio..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          data-testid="input-search-freelancers"
-        />
+      <div className="flex gap-2 mb-5">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-8 h-9 text-sm"
+            placeholder="Search by name or bio..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-search-freelancers"
+          />
+        </div>
+        <Select value={tag} onValueChange={setTag}>
+          <SelectTrigger className="w-36 h-9 text-sm" data-testid="select-freelancer-tag">
+            <SelectValue placeholder="Tag" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All tags</SelectItem>
+            {tags?.map((t) => <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (

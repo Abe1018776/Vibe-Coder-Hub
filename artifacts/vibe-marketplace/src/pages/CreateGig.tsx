@@ -52,8 +52,8 @@ export default function CreateGig() {
   async function handleFileUpload(file: File) {
     setUploading(true);
     try {
-      const { uploadUrl, objectPath } = await requestUpload.mutateAsync({ data: { fileName: file.name, contentType: file.type, isPublic: false } });
-      await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({ data: { name: file.name, size: file.size, contentType: file.type } });
+      await fetch(uploadURL, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
       setRecordingPath(objectPath);
       toast({ title: "Recording uploaded" });
     } catch {

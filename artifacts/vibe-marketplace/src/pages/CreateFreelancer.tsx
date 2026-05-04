@@ -44,8 +44,8 @@ export default function CreateFreelancer() {
   async function handleAvatarUpload(file: File) {
     setUploading(true);
     try {
-      const { uploadUrl, objectPath } = await requestUpload.mutateAsync({ data: { fileName: file.name, contentType: file.type, isPublic: true } });
-      await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({ data: { name: file.name, size: file.size, contentType: file.type } });
+      await fetch(uploadURL, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
       setAvatarPath(objectPath);
     } catch {
       toast({ title: "Upload failed", variant: "destructive" });

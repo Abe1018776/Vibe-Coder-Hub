@@ -39,10 +39,15 @@ router.get("/availability", async (req, res) => {
   }
   const { freelancerId, from, to, booked } = parsed.data;
 
+  // PgDateString column expects YYYY-MM-DD strings
+  function toDateStr(d: Date) {
+    return d.toISOString().slice(0, 10);
+  }
+
   const conditions = [];
   if (freelancerId) conditions.push(eq(availabilitySlotsTable.freelancerId, freelancerId));
-  if (from) conditions.push(gte(availabilitySlotsTable.date, from));
-  if (to) conditions.push(lte(availabilitySlotsTable.date, to));
+  if (from) conditions.push(gte(availabilitySlotsTable.date, toDateStr(from)));
+  if (to) conditions.push(lte(availabilitySlotsTable.date, toDateStr(to)));
   if (booked !== undefined) conditions.push(eq(availabilitySlotsTable.isBooked, booked));
 
   const slots = conditions.length
@@ -75,7 +80,7 @@ router.post("/availability", async (req, res) => {
 
   const [slot] = await db.insert(availabilitySlotsTable).values({
     freelancerId: parsed.data.freelancerId,
-    date: parsed.data.date,
+    date: parsed.data.date.toISOString().slice(0, 10),
     startTime: parsed.data.startTime,
     endTime: parsed.data.endTime,
     durationHours: parsed.data.durationHours,

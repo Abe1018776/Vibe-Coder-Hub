@@ -68,9 +68,6 @@ export default function FreelancerProfile() {
               <p className="text-sm text-muted-foreground mt-2">{freelancer.bio}</p>
             )}
           </div>
-          <Link href={`/freelancers/${freelancerId}/edit`}>
-            <Button size="sm" variant="outline" data-testid="button-edit-freelancer">Edit</Button>
-          </Link>
         </div>
 
         {/* Tools */}

@@ -71,10 +71,10 @@ export default function GigPublic() {
     if (!audioBlob) return;
     setUploading(true);
     try {
-      const { uploadUrl, objectPath } = await requestUpload.mutateAsync({
-        data: { fileName: "voice-note.webm", contentType: "audio/webm", isPublic: true },
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({
+        data: { name: "voice-note.webm", size: audioBlob.size, contentType: "audio/webm" },
       });
-      await fetch(uploadUrl, { method: "PUT", body: audioBlob, headers: { "Content-Type": "audio/webm" } });
+      await fetch(uploadURL, { method: "PUT", body: audioBlob, headers: { "Content-Type": "audio/webm" } });
       setVoiceNotePath(objectPath);
     } finally {
       setUploading(false);

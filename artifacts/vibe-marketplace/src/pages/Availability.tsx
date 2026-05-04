@@ -88,7 +88,6 @@ export default function Availability() {
           hourlyRate: data.hourlyRate ? Number(data.hourlyRate) : undefined,
           workType: data.workType,
           notes: data.notes || undefined,
-          isBooked: false,
         },
       });
       qc.invalidateQueries({ queryKey: getListAvailabilitySlotsQueryKey() });
