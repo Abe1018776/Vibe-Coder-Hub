@@ -1,25 +1,24 @@
-import { Router } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import { db } from "@workspace/db";
 import {
   gigsTable,
   gigConversationsTable,
   gigMessagesTable,
 } from "@workspace/db";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { nanoid } from "nanoid";
 import { z } from "zod/v4";
 
 const router = Router();
 
-function requireAuth(req: any, res: any, next: any) {
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
   const auth = getAuth(req);
-  const userId = auth?.sessionClaims?.userId || auth?.userId;
+  const userId = auth?.userId;
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-  req.userId = userId;
   next();
 }
 
@@ -162,7 +161,7 @@ router.get("/gigs/:id/conversations", requireAuth, async (req, res) => {
     .select()
     .from(gigConversationsTable)
     .where(eq(gigConversationsTable.gigId, gigId))
-    .orderBy(asc(gigConversationsTable.createdAt));
+    .orderBy(desc(gigConversationsTable.createdAt));
 
   const results = await Promise.all(
     conversations.map(async (c) => {

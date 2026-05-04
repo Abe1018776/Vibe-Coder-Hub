@@ -12,7 +12,6 @@ import Dashboard from "@/pages/Dashboard";
 import GigBoard from "@/pages/GigBoard";
 import CreateGig from "@/pages/CreateGig";
 import GigDetail from "@/pages/GigDetail";
-import GigPublic from "@/pages/GigPublic";
 import GigPublicBySlug from "@/pages/GigPublicBySlug";
 import GigThread from "@/pages/GigThread";
 import Freelancers from "@/pages/Freelancers";
@@ -35,7 +34,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
@@ -87,7 +86,6 @@ const clerkAppearance = {
     dividerLine: "bg-gray-200",
     alert: "border-red-200 bg-red-50",
     otpCodeFieldInput: "border-gray-200",
-    formFieldRow: "",
     main: "px-2",
   },
 };
@@ -154,29 +152,17 @@ function ProtectedLayout() {
   );
 }
 
-function Router() {
-  return (
-    <Switch>
-      {/* Public pages — no auth */}
-      <Route path="/gigs/public/:slug" component={GigPublicBySlug} />
-      <Route path="/gigs/:id/public" component={GigPublic} />
-      <Route path="/gigs/thread/:token" component={GigThread} />
-      <Route path="/sign-in/*?" component={SignInPage} />
-      <Route path="/sign-up/*?" component={SignUpPage} />
-
-      {/* All other pages require login */}
-      <Route component={ProtectedLayout} />
-    </Switch>
-  );
-}
-
-function ClerkProviderWithRouter() {
+/**
+ * All auth-aware pages are inside ClerkProvider.
+ * Public pages (GigPublicBySlug, GigThread) are NOT — they render in the outer Switch.
+ */
+function ClerkWrappedApp() {
   const [, setLocation] = useLocation();
 
   return (
     <ClerkProvider
-      publishableKey={clerkPubKey!}
-      proxyUrl={clerkProxyUrl}
+      publishableKey={clerkPubKey}
+      {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
@@ -197,13 +183,12 @@ function ClerkProviderWithRouter() {
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ClerkQueryClientCacheInvalidator />
-          <Router />
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <ClerkQueryClientCacheInvalidator />
+      <Switch>
+        <Route path="/sign-in/*?" component={SignInPage} />
+        <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route component={ProtectedLayout} />
+      </Switch>
     </ClerkProvider>
   );
 }
@@ -211,7 +196,19 @@ function ClerkProviderWithRouter() {
 function App() {
   return (
     <WouterRouter base={basePath}>
-      <ClerkProviderWithRouter />
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Switch>
+            {/* Fully public — outside ClerkProvider, no auth context needed */}
+            <Route path="/gigs/public/:slug" component={GigPublicBySlug} />
+            <Route path="/gigs/thread/:token" component={GigThread} />
+
+            {/* All other routes need Clerk */}
+            <Route component={ClerkWrappedApp} />
+          </Switch>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
     </WouterRouter>
   );
 }

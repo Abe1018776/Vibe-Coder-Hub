@@ -1,8 +1,9 @@
-import { Router } from "express";
+import { Router, type Request, type Response, type NextFunction } from "express";
 import { db } from "@workspace/db";
 import {
   gigsTable,
   gigRepliesTable,
+  gigConversationsTable,
 } from "@workspace/db";
 import { eq, sql, and, arrayContains } from "drizzle-orm";
 import {
@@ -17,9 +18,19 @@ import {
   CreateGigReplyBody,
   DeleteGigReplyParams,
 } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
 import { nanoid } from "nanoid";
 
 const router = Router();
+
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  const auth = getAuth(req);
+  if (!auth?.userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  next();
+}
 
 function gigToResponse(gig: typeof gigsTable.$inferSelect, replyCount = 0) {
   return {
@@ -59,12 +70,12 @@ router.get("/gigs", async (req, res) => {
     ? await db.select().from(gigsTable).where(and(...conditions)).orderBy(sql`${gigsTable.createdAt} DESC`)
     : await db.select().from(gigsTable).orderBy(sql`${gigsTable.createdAt} DESC`);
 
-  // Get reply counts
-  const replyCounts = await db
-    .select({ gigId: gigRepliesTable.gigId, count: sql<number>`count(*)::int` })
-    .from(gigRepliesTable)
-    .groupBy(gigRepliesTable.gigId);
-  const countMap = new Map(replyCounts.map((r) => [r.gigId, r.count]));
+  // Count applicants (gig_conversations) per gig — this is now the primary applicant count
+  const convCounts = await db
+    .select({ gigId: gigConversationsTable.gigId, count: sql<number>`count(*)::int` })
+    .from(gigConversationsTable)
+    .groupBy(gigConversationsTable.gigId);
+  const countMap = new Map(convCounts.map((r) => [r.gigId, r.count]));
 
   res.json(gigs.map((g) => gigToResponse(g, countMap.get(g.id) ?? 0)));
 });
@@ -102,11 +113,11 @@ router.get("/gigs/public/:slug", async (req, res) => {
     res.status(404).json({ error: "Gig not found" });
     return;
   }
-  const [replyRow] = await db
+  const [convRow] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(gigRepliesTable)
-    .where(eq(gigRepliesTable.gigId, gig.id));
-  res.json(gigToResponse(gig, replyRow?.count ?? 0));
+    .from(gigConversationsTable)
+    .where(eq(gigConversationsTable.gigId, gig.id));
+  res.json(gigToResponse(gig, convRow?.count ?? 0));
 });
 
 // GET /gigs/:id
@@ -123,12 +134,12 @@ router.get("/gigs/:id", async (req, res) => {
     return;
   }
 
-  const [replyRow] = await db
+  const [convRow] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(gigRepliesTable)
-    .where(eq(gigRepliesTable.gigId, gig.id));
+    .from(gigConversationsTable)
+    .where(eq(gigConversationsTable.gigId, gig.id));
 
-  res.json(gigToResponse(gig, replyRow?.count ?? 0));
+  res.json(gigToResponse(gig, convRow?.count ?? 0));
 });
 
 // PUT /gigs/:id
@@ -160,12 +171,12 @@ router.put("/gigs/:id", async (req, res) => {
     return;
   }
 
-  const [replyRow] = await db
+  const [convRow] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(gigRepliesTable)
-    .where(eq(gigRepliesTable.gigId, gig.id));
+    .from(gigConversationsTable)
+    .where(eq(gigConversationsTable.gigId, gig.id));
 
-  res.json(gigToResponse(gig, replyRow?.count ?? 0));
+  res.json(gigToResponse(gig, convRow?.count ?? 0));
 });
 
 // DELETE /gigs/:id
@@ -179,8 +190,8 @@ router.delete("/gigs/:id", async (req, res) => {
   res.status(204).send();
 });
 
-// GET /gigs/:id/replies
-router.get("/gigs/:id/replies", async (req, res) => {
+// GET /gigs/:id/replies — auth required, internal read of legacy flat replies
+router.get("/gigs/:id/replies", requireAuth, async (req, res) => {
   const parsed = ListGigRepliesParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid id" });
@@ -203,8 +214,8 @@ router.get("/gigs/:id/replies", async (req, res) => {
   })));
 });
 
-// POST /gigs/:id/replies
-router.post("/gigs/:id/replies", async (req, res) => {
+// POST /gigs/:id/replies — auth required, internal-only legacy endpoint
+router.post("/gigs/:id/replies", requireAuth, async (req, res) => {
   const paramParsed = CreateGigReplyParams.safeParse({ id: Number(req.params.id) });
   const bodyParsed = CreateGigReplyBody.safeParse(req.body);
   if (!paramParsed.success || !bodyParsed.success) {
@@ -235,8 +246,8 @@ router.post("/gigs/:id/replies", async (req, res) => {
   });
 });
 
-// DELETE /gig-replies/:id
-router.delete("/gig-replies/:id", async (req, res) => {
+// DELETE /gig-replies/:id — auth required
+router.delete("/gig-replies/:id", requireAuth, async (req, res) => {
   const parsed = DeleteGigReplyParams.safeParse({ id: Number(req.params.id) });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid id" });
