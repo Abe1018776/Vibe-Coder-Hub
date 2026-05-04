@@ -55,7 +55,10 @@ router.post("/gigs/public/:slug/apply", async (req, res) => {
     freelancerEmail: z.string().email().optional(),
     message: z.string().optional(),
     voiceNotePath: z.string().optional(),
-  });
+  }).refine(
+    (d) => (d.message && d.message.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
+    { message: "Application must include a message or voice note" },
+  );
   const parsed = ApplyBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -123,7 +126,10 @@ router.post("/thread/:token/messages", async (req, res) => {
   const Body = z.object({
     content: z.string().optional(),
     voiceNotePath: z.string().optional(),
-  });
+  }).refine(
+    (d) => (d.content && d.content.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
+    { message: "Message must include text or a voice note" },
+  );
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
@@ -188,7 +194,10 @@ router.post("/conversations/:id/messages", requireAuth, async (req, res) => {
   const Body = z.object({
     content: z.string().optional(),
     voiceNotePath: z.string().optional(),
-  });
+  }).refine(
+    (d) => (d.content && d.content.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
+    { message: "Reply must include text or a voice note" },
+  );
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.flatten() });
