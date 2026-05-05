@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, MicOff, Upload, Send, Clock, Wrench, Zap, ExternalLink } from "lucide-react";
+import { Mic, MicOff, Upload, Send, Clock, Wrench, Zap, ExternalLink, Paperclip, X, FileText, Image } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,8 @@ interface GigMessage {
   senderType: "poster" | "freelancer";
   content: string | null;
   voiceNotePath: string | null;
+  fileAttachmentPath: string | null;
+  fileAttachmentName: string | null;
   createdAt: string;
 }
 
@@ -35,6 +37,36 @@ function VoiceNotePlayer({ path }: { path: string }) {
   return <audio controls src={src} className="w-full h-8 mt-1" />;
 }
 
+function isImagePath(name: string | null) {
+  if (!name) return false;
+  return /\.(png|jpe?g|gif|webp|svg)$/i.test(name);
+}
+
+function FileAttachment({ path, name }: { path: string; name: string | null }) {
+  const src = `/api/storage/objects/${path.replace(/^\/objects\//, "")}`;
+  const displayName = name ?? "Attachment";
+  if (isImagePath(name)) {
+    return (
+      <a href={src} target="_blank" rel="noreferrer" className="block mt-2">
+        <img src={src} alt={displayName} className="max-w-full max-h-48 rounded-md border border-border object-contain" />
+        <span className="text-xs underline opacity-70">{displayName}</span>
+      </a>
+    );
+  }
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noreferrer"
+      download={displayName}
+      className="mt-2 inline-flex items-center gap-1.5 text-xs underline opacity-80 hover:opacity-100"
+    >
+      <FileText size={12} />
+      {displayName}
+    </a>
+  );
+}
+
 function MessageBubble({ message }: { message: GigMessage }) {
   const isFreelancer = message.senderType === "freelancer";
   return (
@@ -52,6 +84,9 @@ function MessageBubble({ message }: { message: GigMessage }) {
         </div>
         {message.content && <p className="whitespace-pre-wrap">{message.content}</p>}
         {message.voiceNotePath && <VoiceNotePlayer path={message.voiceNotePath} />}
+        {message.fileAttachmentPath && (
+          <FileAttachment path={message.fileAttachmentPath} name={message.fileAttachmentName} />
+        )}
       </div>
       <span className="text-xs text-muted-foreground mt-1 px-1">
         {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
@@ -71,8 +106,12 @@ export default function GigThread() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceNotePath, setVoiceNotePath] = useState<string | null>(null);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [fileAttachmentPath, setFileAttachmentPath] = useState<string | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: thread, isLoading } = useQuery<ThreadData>({
     queryKey: ["thread", token],
@@ -86,11 +125,26 @@ export default function GigThread() {
   });
 
   const sendMessage = useMutation({
-    mutationFn: async ({ content, voiceNotePath }: { content?: string; voiceNotePath?: string }) => {
+    mutationFn: async ({
+      content,
+      voiceNotePath,
+      fileAttachmentPath,
+      fileAttachmentName,
+    }: {
+      content?: string;
+      voiceNotePath?: string;
+      fileAttachmentPath?: string;
+      fileAttachmentName?: string;
+    }) => {
       const res = await fetch(`/api/thread/${token}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content || undefined, voiceNotePath: voiceNotePath || undefined }),
+        body: JSON.stringify({
+          content: content || undefined,
+          voiceNotePath: voiceNotePath || undefined,
+          fileAttachmentPath: fileAttachmentPath || undefined,
+          fileAttachmentName: fileAttachmentName || undefined,
+        }),
       });
       if (!res.ok) throw new Error("Failed to send");
       return res.json();
@@ -101,6 +155,8 @@ export default function GigThread() {
       setAudioBlob(null);
       setAudioUrl(null);
       setVoiceNotePath(null);
+      setAttachedFile(null);
+      setFileAttachmentPath(null);
     },
   });
 
@@ -140,13 +196,44 @@ export default function GigThread() {
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAttachedFile(file);
+    setFileAttachmentPath(null);
+  }
+
+  async function uploadAttachedFile(): Promise<string | null> {
+    if (!attachedFile) return null;
+    setFileUploading(true);
+    try {
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({
+        data: { name: attachedFile.name, size: attachedFile.size, contentType: attachedFile.type || "application/octet-stream" },
+      });
+      await fetch(uploadURL, { method: "PUT", body: attachedFile, headers: { "Content-Type": attachedFile.type || "application/octet-stream" } });
+      setFileAttachmentPath(objectPath);
+      return objectPath;
+    } finally {
+      setFileUploading(false);
+    }
+  }
+
   async function handleSend() {
-    if (!text.trim() && !audioBlob) return;
+    if (!text.trim() && !audioBlob && !attachedFile) return;
     let vPath = voiceNotePath;
     if (audioBlob && !voiceNotePath) {
       vPath = await uploadVoiceNote();
     }
-    await sendMessage.mutateAsync({ content: text.trim() || undefined, voiceNotePath: vPath || undefined });
+    let fPath = fileAttachmentPath;
+    if (attachedFile && !fileAttachmentPath) {
+      fPath = await uploadAttachedFile();
+    }
+    await sendMessage.mutateAsync({
+      content: text.trim() || undefined,
+      voiceNotePath: vPath || undefined,
+      fileAttachmentPath: fPath || undefined,
+      fileAttachmentName: attachedFile?.name || undefined,
+    });
   }
 
   if (isLoading) {
@@ -167,6 +254,9 @@ export default function GigThread() {
       </div>
     );
   }
+
+  const isSending = sendMessage.isPending || uploading || fileUploading;
+  const canSend = !isSending && (!!text.trim() || !!audioBlob || !!attachedFile);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -211,6 +301,26 @@ export default function GigThread() {
             }}
           />
 
+          {/* Attached file preview */}
+          {attachedFile && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-md">
+              <FileText size={12} />
+              <span className="truncate flex-1">{attachedFile.name}</span>
+              {fileAttachmentPath
+                ? <span className="text-green-600 font-medium shrink-0">Ready</span>
+                : fileUploading
+                  ? <span className="shrink-0">Uploading…</span>
+                  : null}
+              <button
+                type="button"
+                onClick={() => { setAttachedFile(null); setFileAttachmentPath(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="shrink-0 hover:text-destructive"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-2 flex-wrap">
             {!recording && !audioUrl && (
               <Button type="button" variant="outline" size="sm" onClick={startRecording}>
@@ -237,15 +347,35 @@ export default function GigThread() {
               <span className="text-xs text-green-600 font-medium">Voice note ready</span>
             )}
 
+            {/* File attachment button */}
+            {!attachedFile && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                data-testid="button-attach-file-thread"
+              >
+                <Paperclip size={13} className="mr-1.5" /> Attach file
+              </Button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+              data-testid="input-file-thread"
+            />
+
             <div className="flex-1" />
             <Button
               onClick={handleSend}
-              disabled={sendMessage.isPending || (!text.trim() && !audioBlob)}
+              disabled={!canSend}
               size="sm"
               data-testid="button-send-thread-reply"
             >
               <Send size={13} className="mr-1.5" />
-              {sendMessage.isPending ? "Sending..." : "Send"}
+              {isSending ? "Sending..." : "Send"}
             </Button>
           </div>
         </div>

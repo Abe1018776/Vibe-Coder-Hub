@@ -29,6 +29,8 @@ function messageToResponse(m: typeof gigMessagesTable.$inferSelect) {
     senderType: m.senderType,
     content: m.content ?? null,
     voiceNotePath: m.voiceNotePath ?? null,
+    fileAttachmentPath: m.fileAttachmentPath ?? null,
+    fileAttachmentName: m.fileAttachmentName ?? null,
     createdAt: m.createdAt.toISOString(),
   };
 }
@@ -55,9 +57,14 @@ router.post("/gigs/public/:slug/apply", async (req, res) => {
     freelancerEmail: z.string().email().optional(),
     message: z.string().optional(),
     voiceNotePath: z.string().optional(),
+    fileAttachmentPath: z.string().optional(),
+    fileAttachmentName: z.string().optional(),
   }).refine(
-    (d) => (d.message && d.message.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
-    { message: "Application must include a message or voice note" },
+    (d) =>
+      (d.message && d.message.trim().length > 0) ||
+      (d.voiceNotePath && d.voiceNotePath.trim().length > 0) ||
+      (d.fileAttachmentPath && d.fileAttachmentPath.trim().length > 0),
+    { message: "Application must include a message, voice note, or file attachment" },
   );
   const parsed = ApplyBody.safeParse(req.body);
   if (!parsed.success) {
@@ -84,6 +91,8 @@ router.post("/gigs/public/:slug/apply", async (req, res) => {
     senderType: "freelancer",
     content: parsed.data.message ?? null,
     voiceNotePath: parsed.data.voiceNotePath ?? null,
+    fileAttachmentPath: parsed.data.fileAttachmentPath ?? null,
+    fileAttachmentName: parsed.data.fileAttachmentName ?? null,
   }).returning();
 
   res.status(201).json({
@@ -126,9 +135,14 @@ router.post("/thread/:token/messages", async (req, res) => {
   const Body = z.object({
     content: z.string().optional(),
     voiceNotePath: z.string().optional(),
+    fileAttachmentPath: z.string().optional(),
+    fileAttachmentName: z.string().optional(),
   }).refine(
-    (d) => (d.content && d.content.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
-    { message: "Message must include text or a voice note" },
+    (d) =>
+      (d.content && d.content.trim().length > 0) ||
+      (d.voiceNotePath && d.voiceNotePath.trim().length > 0) ||
+      (d.fileAttachmentPath && d.fileAttachmentPath.trim().length > 0),
+    { message: "Message must include text, a voice note, or a file attachment" },
   );
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
@@ -150,6 +164,8 @@ router.post("/thread/:token/messages", async (req, res) => {
     senderType: "freelancer",
     content: parsed.data.content ?? null,
     voiceNotePath: parsed.data.voiceNotePath ?? null,
+    fileAttachmentPath: parsed.data.fileAttachmentPath ?? null,
+    fileAttachmentName: parsed.data.fileAttachmentName ?? null,
   }).returning();
 
   res.status(201).json(messageToResponse(message));
@@ -194,9 +210,14 @@ router.post("/conversations/:id/messages", requireAuth, async (req, res) => {
   const Body = z.object({
     content: z.string().optional(),
     voiceNotePath: z.string().optional(),
+    fileAttachmentPath: z.string().optional(),
+    fileAttachmentName: z.string().optional(),
   }).refine(
-    (d) => (d.content && d.content.trim().length > 0) || (d.voiceNotePath && d.voiceNotePath.trim().length > 0),
-    { message: "Reply must include text or a voice note" },
+    (d) =>
+      (d.content && d.content.trim().length > 0) ||
+      (d.voiceNotePath && d.voiceNotePath.trim().length > 0) ||
+      (d.fileAttachmentPath && d.fileAttachmentPath.trim().length > 0),
+    { message: "Reply must include text, a voice note, or a file attachment" },
   );
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
@@ -218,6 +239,8 @@ router.post("/conversations/:id/messages", requireAuth, async (req, res) => {
     senderType: "poster",
     content: parsed.data.content ?? null,
     voiceNotePath: parsed.data.voiceNotePath ?? null,
+    fileAttachmentPath: parsed.data.fileAttachmentPath ?? null,
+    fileAttachmentName: parsed.data.fileAttachmentName ?? null,
   }).returning();
 
   res.status(201).json(messageToResponse(message));

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useRef } from "react";
-import { MessageSquare, Share2, Mic, MicOff, Upload, Send, Clock, Wrench, Zap, ExternalLink, ChevronLeft } from "lucide-react";
+import { MessageSquare, Share2, Mic, MicOff, Upload, Send, Clock, Wrench, Zap, ExternalLink, ChevronLeft, Paperclip, X, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,8 @@ interface GigMessage {
   senderType: "poster" | "freelancer";
   content: string | null;
   voiceNotePath: string | null;
+  fileAttachmentPath: string | null;
+  fileAttachmentName: string | null;
   createdAt: string;
 }
 
@@ -47,6 +49,36 @@ function VoiceNotePlayer({ path }: { path: string }) {
   return <audio controls src={src} className="w-full h-8 mt-1" data-testid={`audio-voice-note-${path}`} />;
 }
 
+function isImagePath(name: string | null) {
+  if (!name) return false;
+  return /\.(png|jpe?g|gif|webp|svg)$/i.test(name);
+}
+
+function FileAttachment({ path, name }: { path: string; name: string | null }) {
+  const src = `/api/storage/objects/${path.replace(/^\/objects\//, "")}`;
+  const displayName = name ?? "Attachment";
+  if (isImagePath(name)) {
+    return (
+      <a href={src} target="_blank" rel="noreferrer" className="block mt-2">
+        <img src={src} alt={displayName} className="max-w-full max-h-48 rounded-md border border-border object-contain" />
+        <span className="text-xs underline opacity-70">{displayName}</span>
+      </a>
+    );
+  }
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noreferrer"
+      download={displayName}
+      className="mt-2 inline-flex items-center gap-1.5 text-xs underline opacity-80 hover:opacity-100"
+    >
+      <FileText size={12} />
+      {displayName}
+    </a>
+  );
+}
+
 function MessageBubble({ message }: { message: GigMessage }) {
   const isPoster = message.senderType === "poster";
   return (
@@ -62,6 +94,9 @@ function MessageBubble({ message }: { message: GigMessage }) {
         <div className="text-xs font-semibold mb-1 opacity-70">{isPoster ? "You" : "Applicant"}</div>
         {message.content && <p className="whitespace-pre-wrap text-sm">{message.content}</p>}
         {message.voiceNotePath && <VoiceNotePlayer path={message.voiceNotePath} />}
+        {message.fileAttachmentPath && (
+          <FileAttachment path={message.fileAttachmentPath} name={message.fileAttachmentName} />
+        )}
       </div>
       <span className="text-xs text-muted-foreground mt-0.5 px-1">
         {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
@@ -77,16 +112,35 @@ function PosterReplyBox({ conversationId, onSent }: { conversationId: number; on
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [voiceNotePath, setVoiceNotePath] = useState<string | null>(null);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [fileAttachmentPath, setFileAttachmentPath] = useState<string | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const requestUpload = useRequestUploadUrl();
 
   const sendMessage = useMutation({
-    mutationFn: async ({ content, voiceNotePath }: { content?: string; voiceNotePath?: string }) => {
+    mutationFn: async ({
+      content,
+      voiceNotePath,
+      fileAttachmentPath,
+      fileAttachmentName,
+    }: {
+      content?: string;
+      voiceNotePath?: string;
+      fileAttachmentPath?: string;
+      fileAttachmentName?: string;
+    }) => {
       const res = await fetch(`/api/conversations/${conversationId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content || undefined, voiceNotePath: voiceNotePath || undefined }),
+        body: JSON.stringify({
+          content: content || undefined,
+          voiceNotePath: voiceNotePath || undefined,
+          fileAttachmentPath: fileAttachmentPath || undefined,
+          fileAttachmentName: fileAttachmentName || undefined,
+        }),
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to send");
@@ -97,6 +151,8 @@ function PosterReplyBox({ conversationId, onSent }: { conversationId: number; on
       setAudioBlob(null);
       setAudioUrl(null);
       setVoiceNotePath(null);
+      setAttachedFile(null);
+      setFileAttachmentPath(null);
       onSent();
     },
   });
@@ -137,12 +193,44 @@ function PosterReplyBox({ conversationId, onSent }: { conversationId: number; on
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAttachedFile(file);
+    setFileAttachmentPath(null);
+  }
+
+  async function uploadAttachedFile(): Promise<string | null> {
+    if (!attachedFile) return null;
+    setFileUploading(true);
+    try {
+      const { uploadURL, objectPath } = await requestUpload.mutateAsync({
+        data: { name: attachedFile.name, size: attachedFile.size, contentType: attachedFile.type || "application/octet-stream" },
+      });
+      await fetch(uploadURL, { method: "PUT", body: attachedFile, headers: { "Content-Type": attachedFile.type || "application/octet-stream" } });
+      setFileAttachmentPath(objectPath);
+      return objectPath;
+    } finally {
+      setFileUploading(false);
+    }
+  }
+
   async function handleSend() {
-    if (!text.trim() && !audioBlob) return;
+    if (!text.trim() && !audioBlob && !attachedFile) return;
     let vPath = voiceNotePath;
     if (audioBlob && !voiceNotePath) vPath = await uploadVoiceNote();
-    await sendMessage.mutateAsync({ content: text.trim() || undefined, voiceNotePath: vPath || undefined });
+    let fPath = fileAttachmentPath;
+    if (attachedFile && !fileAttachmentPath) fPath = await uploadAttachedFile();
+    await sendMessage.mutateAsync({
+      content: text.trim() || undefined,
+      voiceNotePath: vPath || undefined,
+      fileAttachmentPath: fPath || undefined,
+      fileAttachmentName: attachedFile?.name || undefined,
+    });
   }
+
+  const isSending = sendMessage.isPending || uploading || fileUploading;
+  const canSend = !isSending && (!!text.trim() || !!audioBlob || !!attachedFile);
 
   return (
     <div className="border-t border-border p-3 space-y-2">
@@ -155,6 +243,27 @@ function PosterReplyBox({ conversationId, onSent }: { conversationId: number; on
         onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSend(); }}
         className="text-sm"
       />
+
+      {/* Attached file preview */}
+      {attachedFile && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-md">
+          <FileText size={12} />
+          <span className="truncate flex-1">{attachedFile.name}</span>
+          {fileAttachmentPath
+            ? <span className="text-green-600 font-medium shrink-0">Ready</span>
+            : fileUploading
+              ? <span className="shrink-0">Uploading…</span>
+              : null}
+          <button
+            type="button"
+            onClick={() => { setAttachedFile(null); setFileAttachmentPath(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+            className="shrink-0 hover:text-destructive"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 flex-wrap">
         {!recording && !audioUrl && (
           <Button type="button" variant="outline" size="sm" onClick={startRecording}>
@@ -176,10 +285,31 @@ function PosterReplyBox({ conversationId, onSent }: { conversationId: number; on
           </>
         )}
         {voiceNotePath && <span className="text-xs text-green-600">Voice ready</span>}
+
+        {/* File attachment button */}
+        {!attachedFile && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="button-attach-file-poster"
+          >
+            <Paperclip size={13} className="mr-1" /> File
+          </Button>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileChange}
+          data-testid="input-file-poster"
+        />
+
         <div className="flex-1" />
-        <Button size="sm" onClick={handleSend} disabled={sendMessage.isPending || (!text.trim() && !audioBlob)} data-testid="button-poster-send">
+        <Button size="sm" onClick={handleSend} disabled={!canSend} data-testid="button-poster-send">
           <Send size={13} className="mr-1" />
-          {sendMessage.isPending ? "Sending..." : "Reply"}
+          {isSending ? "Sending..." : "Reply"}
         </Button>
       </div>
     </div>
@@ -267,7 +397,7 @@ function ConversationPanel({ gigId }: { gigId: number }) {
             </div>
             {last && (
               <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                {last.senderType === "poster" ? "You: " : ""}{last.content ?? "(voice note)"}
+                {last.senderType === "poster" ? "You: " : ""}{last.content ?? (last.voiceNotePath ? "(voice note)" : last.fileAttachmentPath ? `(file: ${last.fileAttachmentName ?? "attachment"})` : "")}
               </div>
             )}
             {c.freelancerEmail && (

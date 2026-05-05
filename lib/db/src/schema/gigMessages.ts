@@ -9,6 +9,8 @@ export const gigMessagesTable = pgTable("gig_messages", {
   senderType: text("sender_type", { enum: ["poster", "freelancer"] }).notNull(),
   content: text("content"),
   voiceNotePath: text("voice_note_path"),
+  fileAttachmentPath: text("file_attachment_path"),
+  fileAttachmentName: text("file_attachment_name"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
