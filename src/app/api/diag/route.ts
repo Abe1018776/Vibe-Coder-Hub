@@ -6,6 +6,7 @@ import {
   availabilitySlotsTable,
   showcaseProjectsTable,
   gigMessagesTable,
+  gigConversationsTable,
 } from "@/lib/db";
 import { eq, sql, desc } from "drizzle-orm";
 
@@ -52,6 +53,21 @@ export async function GET() {
   );
   await run("recentGigs", () =>
     db.select().from(gigsTable).orderBy(desc(gigsTable.createdAt)).limit(8),
+  );
+
+  await run("gigBoardWithMsgCount", () =>
+    db
+      .select({
+        gig: gigsTable,
+        msgCount: sql<number>`(
+          SELECT count(*)::int
+          FROM ${gigMessagesTable}
+          JOIN ${gigConversationsTable} ON ${gigConversationsTable.id} = ${gigMessagesTable.conversationId}
+          WHERE ${gigConversationsTable.gigId} = ${gigsTable.id}
+        )`.as("msg_count"),
+      })
+      .from(gigsTable)
+      .orderBy(desc(gigsTable.createdAt)),
   );
 
   return NextResponse.json(checks);
