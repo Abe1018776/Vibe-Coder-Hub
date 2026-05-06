@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { db, gigsTable, gigMessagesTable, gigConversationsTable } from "@/lib/db";
-import { desc, eq, sql } from "drizzle-orm";
+import { db, gigsTable } from "@/lib/db";
+import { desc, sql } from "drizzle-orm";
 import { Plus, MessageSquare, Clock, Wrench, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatRelativeTime } from "@/lib/utils";
@@ -29,9 +29,9 @@ export default async function GigBoardPage() {
       gig: gigsTable,
       msgCount: sql<number>`(
         SELECT count(*)::int
-        FROM ${gigMessagesTable}
-        JOIN ${gigConversationsTable} ON ${gigConversationsTable.id} = ${gigMessagesTable.conversationId}
-        WHERE ${gigConversationsTable.gigId} = ${gigsTable.id}
+        FROM gig_messages m
+        JOIN gig_conversations c ON c.id = m.conversation_id
+        WHERE c.gig_id = ${gigsTable.id}
       )`.as("msg_count"),
     })
     .from(gigsTable)
