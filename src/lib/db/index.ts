@@ -14,12 +14,18 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const needsSsl = /sslmode=/i.test(process.env.DATABASE_URL);
+const rawUrl = process.env.DATABASE_URL;
+const needsSsl = /sslmode=/i.test(rawUrl);
+const cleanedUrl = needsSsl
+  ? rawUrl.replace(/([?&])sslmode=[^&]*(&|$)/i, (_m, p1, p2) =>
+      p2 === "&" ? p1 : "",
+    ).replace(/[?&]$/, "")
+  : rawUrl;
 
 const pool =
   global.__pgPool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: cleanedUrl,
     max: 10,
     ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
   });
