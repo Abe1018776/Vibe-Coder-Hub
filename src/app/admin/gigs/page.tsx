@@ -31,7 +31,7 @@ export default async function GigBoardPage() {
         SELECT count(*)::int
         FROM gig_messages m
         JOIN gig_conversations c ON c.id = m.conversation_id
-        WHERE c.gig_id = ${gigsTable.id}
+        WHERE c.gig_id = "gigs"."id"
       )`.as("msg_count"),
     })
     .from(gigsTable)
