@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-corepack enable
-corepack prepare pnpm@9.15.0 --activate
-pnpm install --no-frozen-lockfile
-pnpm build
+export NODE_OPTIONS="--max-old-space-size=180"
+npm install --legacy-peer-deps --no-audit --no-fund --jobs=1
+npm run build
+npm prune --omit=dev
