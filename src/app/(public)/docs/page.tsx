@@ -349,10 +349,6 @@ export default function DocsPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-6 border-t border-border text-center text-xs text-muted-foreground">
-        Vibe Coder Hub Docs — Last updated May 2026
-      </footer>
     </div>
   );
 }

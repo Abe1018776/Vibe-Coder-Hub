@@ -139,10 +139,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-6 border-t border-border text-center text-xs text-muted-foreground">
-        Vibe Coder Hub &mdash; Built for AI-native builders
-      </footer>
     </div>
   );
 }
