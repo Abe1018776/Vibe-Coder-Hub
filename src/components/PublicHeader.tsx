@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Users, Star, LogIn, LayoutDashboard, BookOpen, Briefcase } from "lucide-react";
+import { Menu, X, Users, Star, LogIn, LayoutDashboard, BookOpen, Briefcase, Trophy } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV = [
+  { to: "/competitions", label: "Competitions", Icon: Trophy },
   { to: "/freelancers", label: "Builders", Icon: Users },
   { to: "/directory", label: "Directory", Icon: Briefcase },
   { to: "/showcase", label: "Showcase", Icon: Star },

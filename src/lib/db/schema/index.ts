@@ -6,3 +6,4 @@ export * from "./availabilitySlots";
 export * from "./showcaseProjects";
 export * from "./tags";
 export * from "./professionals";
+export * from "./competitions";

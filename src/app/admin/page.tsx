@@ -6,10 +6,11 @@ import {
   showcaseProjectsTable,
   gigMessagesTable,
   gigConversationsTable,
+  competitionsTable,
 } from "@/lib/db";
 import { eq, sql, desc } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
-import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp, Wrench, Pencil } from "lucide-react";
+import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp, Pencil, Trophy } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,8 @@ export default async function DashboardPage() {
     [{ totalShowcase }],
     [{ totalReplies }],
     recentGigs,
+    [{ totalCompetitions }],
+    [{ openCompetitions }],
   ] = await Promise.all([
     db
       .select({
@@ -59,6 +62,14 @@ export default async function DashboardPage() {
       .where(eq(gigsTable.createdBy, userId!))
       .orderBy(desc(gigsTable.createdAt))
       .limit(8),
+    db
+      .select({ totalCompetitions: sql<number>`count(*)::int` })
+      .from(competitionsTable)
+      .where(eq(competitionsTable.createdBy, userId!)),
+    db
+      .select({ openCompetitions: sql<number>`count(*)::int` })
+      .from(competitionsTable)
+      .where(sql`${competitionsTable.createdBy} = ${userId!} AND ${competitionsTable.status} = 'open'`),
   ]);
 
   const totalGigs = gigCounts.reduce((s, r) => s + r.count, 0);
@@ -79,12 +90,14 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <Stat label="Competitions" value={totalCompetitions} Icon={Trophy} color="bg-amber-500" href="/admin/competitions" />
+        <Stat label="Open Bounties" value={openCompetitions} Icon={TrendingUp} color="bg-green-600" href="/admin/competitions" />
         <Stat label="Total Gigs" value={totalGigs} Icon={Briefcase} color="bg-primary" href="/admin/gigs" />
-        <Stat label="Open Gigs" value={openGigs} Icon={TrendingUp} color="bg-green-600" href="/admin/gigs" />
+        <Stat label="Open Gigs" value={openGigs} Icon={TrendingUp} color="bg-green-700" href="/admin/gigs" />
         <Stat label="Freelancers" value={totalFreelancers} Icon={Users} color="bg-blue-600" href="/admin/freelancers" />
         <Stat label="Open Slots" value={openSlots} Icon={Calendar} color="bg-purple-600" href="/admin/availability" />
-        <Stat label="Replies" value={totalReplies} Icon={MessageSquare} color="bg-amber-600" />
+        <Stat label="Replies" value={totalReplies} Icon={MessageSquare} color="bg-amber-700" />
         <Stat label="Showcase" value={totalShowcase} Icon={Star} color="bg-rose-600" href="/showcase" />
       </div>
 
@@ -133,10 +146,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <QuickLink href="/admin/competitions/new" label="New Competition" Icon={Trophy} />
         <QuickLink href="/admin/gigs/new" label="Post Gig" Icon={Briefcase} />
         <QuickLink href="/admin/freelancers/new" label="Add Freelancer" Icon={Users} />
         <QuickLink href="/admin/freelancers" label="Manage Freelancers" Icon={Pencil} />
-        <QuickLink href="/admin/availability" label="Availability" Icon={Calendar} />
       </div>
     </div>
   );

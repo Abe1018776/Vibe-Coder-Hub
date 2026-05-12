@@ -11,6 +11,7 @@ import {
   Calendar,
   Star,
   Tag,
+  Trophy,
   Menu,
   X,
   LogOut,
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", Icon: LayoutDashboard },
+  { to: "/admin/competitions", label: "Competitions", Icon: Trophy },
   { to: "/admin/gigs", label: "Gig Board", Icon: Briefcase },
   { to: "/admin/freelancers", label: "Freelancers", Icon: Users },
   { to: "/admin/availability", label: "Availability", Icon: Calendar },
