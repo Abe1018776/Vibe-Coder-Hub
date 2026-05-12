@@ -2,6 +2,7 @@ import { pgTable, text, serial, real, timestamp } from "drizzle-orm/pg-core";
 
 export const gigsTable = pgTable("gigs", {
   id: serial("id").primaryKey(),
+  createdBy: text("created_by").notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   type: text("type", { enum: ["task", "hourly", "build"] }).notNull(),

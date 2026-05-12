@@ -20,12 +20,21 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { response } = await requireUser();
+  const { response, userId } = await requireUser();
   if (response) return response;
 
   const { id } = await params;
   const gigId = Number(id);
   if (!gigId) return NextResponse.json({ error: "bad id" }, { status: 400 });
+
+  const [existing] = await db
+    .select({ createdBy: gigsTable.createdBy })
+    .from(gigsTable)
+    .where(eq(gigsTable.id, gigId))
+    .limit(1);
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (existing.createdBy !== userId)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const json = await req.json();
   const parsed = patchSchema.safeParse(json);
@@ -47,12 +56,21 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { response } = await requireUser();
+  const { response, userId } = await requireUser();
   if (response) return response;
 
   const { id } = await params;
   const gigId = Number(id);
   if (!gigId) return NextResponse.json({ error: "bad id" }, { status: 400 });
+
+  const [existing] = await db
+    .select({ createdBy: gigsTable.createdBy })
+    .from(gigsTable)
+    .where(eq(gigsTable.id, gigId))
+    .limit(1);
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (existing.createdBy !== userId)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   await db.delete(gigsTable).where(eq(gigsTable.id, gigId));
   return NextResponse.json({ ok: true });

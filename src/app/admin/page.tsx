@@ -5,14 +5,18 @@ import {
   availabilitySlotsTable,
   showcaseProjectsTable,
   gigMessagesTable,
+  gigConversationsTable,
 } from "@/lib/db";
 import { eq, sql, desc } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const { userId } = await auth();
+
   const [
     gigCounts,
     [{ totalFreelancers }],
@@ -28,6 +32,7 @@ export default async function DashboardPage() {
         count: sql<number>`count(*)::int`,
       })
       .from(gigsTable)
+      .where(eq(gigsTable.createdBy, userId!))
       .groupBy(gigsTable.type, gigsTable.status),
     db
       .select({ totalFreelancers: sql<number>`count(*)::int` })
@@ -41,8 +46,19 @@ export default async function DashboardPage() {
       .from(showcaseProjectsTable),
     db
       .select({ totalReplies: sql<number>`count(*)::int` })
-      .from(gigMessagesTable),
-    db.select().from(gigsTable).orderBy(desc(gigsTable.createdAt)).limit(8),
+      .from(gigMessagesTable)
+      .innerJoin(
+        gigConversationsTable,
+        eq(gigConversationsTable.id, gigMessagesTable.conversationId),
+      )
+      .innerJoin(gigsTable, eq(gigsTable.id, gigConversationsTable.gigId))
+      .where(eq(gigsTable.createdBy, userId!)),
+    db
+      .select()
+      .from(gigsTable)
+      .where(eq(gigsTable.createdBy, userId!))
+      .orderBy(desc(gigsTable.createdAt))
+      .limit(8),
   ]);
 
   const totalGigs = gigCounts.reduce((s, r) => s + r.count, 0);

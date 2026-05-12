@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { db, gigsTable } from "@/lib/db";
-import { desc, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { Plus, MessageSquare, Clock, Wrench, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatRelativeTime } from "@/lib/utils";
+import { auth } from "@clerk/nextjs/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default async function GigBoardPage() {
+  const { userId } = await auth();
   const gigs = await db
     .select({
       gig: gigsTable,
@@ -35,6 +37,7 @@ export default async function GigBoardPage() {
       )`.as("msg_count"),
     })
     .from(gigsTable)
+    .where(eq(gigsTable.createdBy, userId!))
     .orderBy(desc(gigsTable.createdAt));
 
   return (

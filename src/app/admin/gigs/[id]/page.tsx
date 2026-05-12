@@ -6,6 +6,7 @@ import {
   gigMessagesTable,
 } from "@/lib/db";
 import { eq, asc, desc } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 import GigDetailClient from "./_client";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default async function GigDetailPage({ params }: Props) {
+  const { userId } = await auth();
   const { id } = await params;
   const gigId = Number(id);
   if (!gigId) notFound();
@@ -22,7 +24,7 @@ export default async function GigDetailPage({ params }: Props) {
     .from(gigsTable)
     .where(eq(gigsTable.id, gigId))
     .limit(1);
-  if (!gig) notFound();
+  if (!gig || gig.createdBy !== userId) notFound();
 
   const conversations = await db
     .select()

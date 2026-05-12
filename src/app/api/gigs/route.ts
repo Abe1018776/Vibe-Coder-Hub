@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, gigsTable } from "@/lib/db";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { slugify } from "@/lib/utils";
@@ -19,7 +19,14 @@ const createGigSchema = z.object({
 });
 
 export async function GET() {
-  const gigs = await db.select().from(gigsTable).orderBy(desc(gigsTable.createdAt));
+  const { response, userId } = await requireUser();
+  if (response) return response;
+
+  const gigs = await db
+    .select()
+    .from(gigsTable)
+    .where(eq(gigsTable.createdBy, userId))
+    .orderBy(desc(gigsTable.createdAt));
   return NextResponse.json(gigs);
 }
 
@@ -38,6 +45,7 @@ export async function POST(req: NextRequest) {
   const [gig] = await db
     .insert(gigsTable)
     .values({
+      createdBy: userId,
       title: data.title,
       description: data.description,
       type: data.type,
