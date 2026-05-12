@@ -149,7 +149,7 @@ export default async function DashboardPage() {
         <QuickLink href="/admin/competitions/new" label="New Competition" Icon={Trophy} />
         <QuickLink href="/admin/gigs/new" label="Post Gig" Icon={Briefcase} />
         <QuickLink href="/admin/freelancers/new" label="Add Freelancer" Icon={Users} />
-        <QuickLink href="/admin/freelancers" label="Manage Freelancers" Icon={Pencil} />
+        <QuickLink href="/admin/directory/new" label="Add to Directory" Icon={Briefcase} />
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ const NAV = [
   { to: "/admin/competitions", label: "Competitions", Icon: Trophy },
   { to: "/admin/gigs", label: "Gig Board", Icon: Briefcase },
   { to: "/admin/freelancers", label: "Freelancers", Icon: Users },
+  { to: "/admin/directory", label: "Directory", Icon: Briefcase },
   { to: "/admin/availability", label: "Availability", Icon: Calendar },
   { to: "/showcase", label: "Showcase", Icon: Star },
   { to: "/admin/tags", label: "Tags", Icon: Tag },
