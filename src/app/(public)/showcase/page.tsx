@@ -1,4 +1,4 @@
-import { db, showcaseProjectsTable, showcaseCommentsTable, showcaseUpvotesTable } from "@/lib/db";
+import { db, showcaseProjectsTable, showcaseCommentsTable } from "@/lib/db";
 import { desc, asc, sql } from "drizzle-orm";
 import ShowcaseClient from "./_client";
 
