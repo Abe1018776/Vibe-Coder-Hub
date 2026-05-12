@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { response } = await requireUser();
+  const { response, userId } = await requireUser();
   if (response) return response;
 
   const json = await req.json();
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       contactInfo: d.contactInfo ?? null,
       notes: d.notes ?? null,
       tools: d.tools,
+      createdBy: userId,
     })
     .returning();
   return NextResponse.json(created, { status: 201 });

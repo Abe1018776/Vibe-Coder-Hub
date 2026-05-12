@@ -5,21 +5,13 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
-const schema = z.object({
-  name: z.string().min(1),
-  bio: z.string().optional(),
-  hourlyRate: z.string().optional(),
-  portfolioLinks: z.string().optional(),
-  contactInfo: z.string().optional(),
-  notes: z.string().optional(),
-});
-type FormData = z.infer<typeof schema>;
+import type { Freelancer } from "@/lib/db";
 
 interface Tag {
   id: number;
@@ -62,13 +54,35 @@ function TagPicker({
   );
 }
 
-export default function CreateFreelancerClient() {
+const schema = z.object({
+  name: z.string().min(1),
+  bio: z.string().optional(),
+  hourlyRate: z.string().optional(),
+  portfolioLinks: z.string().optional(),
+  contactInfo: z.string().optional(),
+  notes: z.string().optional(),
+});
+type FormData = z.infer<typeof schema>;
+
+export default function EditFreelancerClient({ freelancer }: { freelancer: Freelancer }) {
   const router = useRouter();
+  const { userId } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const form = useForm<FormData>({ resolver: zodResolver(schema) });
+  const [selectedTools, setSelectedTools] = useState<string[]>(freelancer.tools);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(freelancer.skills);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: freelancer.name,
+      bio: freelancer.bio ?? "",
+      hourlyRate: freelancer.hourlyRate?.toString() ?? "",
+      portfolioLinks: freelancer.portfolioLinks.join(", "),
+      contactInfo: freelancer.contactInfo ?? "",
+      notes: freelancer.notes ?? "",
+    },
+  });
 
   useEffect(() => {
     fetch("/api/tags")
@@ -87,14 +101,13 @@ export default function CreateFreelancerClient() {
   async function onSubmit(d: FormData) {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/freelancers", {
-        method: "POST",
+      const res = await fetch(`/api/freelancers/${freelancer.id}`, {
+        method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name: d.name,
           bio: d.bio || null,
           skills: selectedSkills,
-          tags: [],
           tools: selectedTools,
           portfolioLinks: d.portfolioLinks
             ? d.portfolioLinks.split(",").map((x) => x.trim()).filter(Boolean)
@@ -105,11 +118,11 @@ export default function CreateFreelancerClient() {
         }),
       });
       if (!res.ok) throw new Error();
-      toast.success("Freelancer added");
-      router.push("/freelancers");
+      toast.success("Freelancer updated");
+      router.push(`/freelancers/${freelancer.id}`);
       router.refresh();
     } catch {
-      toast.error("Failed to add");
+      toast.error("Failed to update");
     } finally {
       setSubmitting(false);
     }
@@ -136,13 +149,13 @@ export default function CreateFreelancerClient() {
         </div>
       </div>
       <TagPicker
-        label="Vibe Coding Tools (select all that apply)"
+        label="Vibe Coding Tools"
         tags={toolTags}
         selected={selectedTools}
         onToggle={(name) => setSelectedTools((prev) => toggleTag(prev, name))}
       />
       <TagPicker
-        label="Skills (select all that apply)"
+        label="Skills"
         tags={skillTags}
         selected={selectedSkills}
         onToggle={(name) => setSelectedSkills((prev) => toggleTag(prev, name))}
@@ -155,9 +168,14 @@ export default function CreateFreelancerClient() {
         <Label>Internal notes</Label>
         <Textarea {...form.register("notes")} rows={2} />
       </div>
-      <Button type="submit" disabled={submitting}>
-        {submitting ? "Saving…" : "Save freelancer"}
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Saving…" : "Save changes"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 }

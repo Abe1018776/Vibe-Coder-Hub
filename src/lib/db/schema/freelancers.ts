@@ -12,6 +12,7 @@ export const freelancersTable = pgTable("freelancers", {
   contactInfo: text("contact_info"),
   notes: text("notes"),
   tools: text("tools").array().notNull().default([]),
+  createdBy: text("created_by").notNull().default(""),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

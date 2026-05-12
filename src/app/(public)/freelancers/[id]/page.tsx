@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { db, freelancersTable, availabilitySlotsTable } from "@/lib/db";
 import { eq, asc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import FreelancerActions from "./_actions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -42,6 +43,7 @@ export default async function FreelancerProfilePage({ params }: Props) {
             <p className="text-sm text-foreground/90 mt-2">{freelancer.bio}</p>
           )}
         </div>
+        <FreelancerActions freelancer={freelancer} />
       </div>
 
       {freelancer.tools.length > 0 && (
