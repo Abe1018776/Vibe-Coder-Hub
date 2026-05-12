@@ -17,11 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import type { Gig } from "@/lib/db";
 
 const schema = z.object({
   title: z.string().min(3, "Min 3 chars"),
   description: z.string().min(10, "Min 10 chars"),
-  type: z.enum(["task", "hourly", "build"]),
   requirements: z.string().optional(),
   budgetMin: z.string().optional(),
   budgetMax: z.string().optional(),
@@ -40,31 +40,30 @@ function num(v: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export default function CreateGigClient() {
+export default function EditGigClient({ gig }: { gig: Gig }) {
   const router = useRouter();
-  const [type, setType] = useState<"task" | "hourly" | "build">("task");
+  const [type, setType] = useState(gig.type);
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      title: "",
-      description: "",
-      type: "task",
-      requirements: "",
-      budgetMin: "",
-      budgetMax: "",
-      hourlyRate: "",
-      loomUrl: "",
-      tags: "",
+      title: gig.title,
+      description: gig.description,
+      requirements: gig.requirements ?? "",
+      budgetMin: gig.budgetMin?.toString() ?? "",
+      budgetMax: gig.budgetMax?.toString() ?? "",
+      hourlyRate: gig.hourlyRate?.toString() ?? "",
+      loomUrl: gig.loomUrl ?? "",
+      tags: gig.tags.join(", "),
     },
   });
 
   async function onSubmit(data: FormData) {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/gigs", {
-        method: "POST",
+      const res = await fetch(`/api/gigs/${gig.id}`, {
+        method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           title: data.title,
@@ -78,14 +77,12 @@ export default function CreateGigClient() {
           tags: csv(data.tags),
         }),
       });
-      if (!res.ok) throw new Error(await res.text());
-      const created = await res.json();
-      toast.success("Gig posted");
-      router.push(`/admin/gigs/${created.id}`);
+      if (!res.ok) throw new Error();
+      toast.success("Gig updated");
+      router.push(`/admin/gigs/${gig.id}`);
       router.refresh();
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to post gig");
+    } catch {
+      toast.error("Failed to update gig");
     } finally {
       setSubmitting(false);
     }
@@ -95,32 +92,17 @@ export default function CreateGigClient() {
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label>Title</Label>
-        <Input {...form.register("title")} placeholder="Build a Stripe checkout flow" />
-        {form.formState.errors.title && (
-          <p className="text-xs text-destructive mt-1">{form.formState.errors.title.message}</p>
-        )}
+        <Input {...form.register("title")} />
       </div>
 
       <div>
         <Label>Description</Label>
-        <Textarea
-          {...form.register("description")}
-          rows={4}
-          placeholder="What needs to be built?"
-        />
-        {form.formState.errors.description && (
-          <p className="text-xs text-destructive mt-1">
-            {form.formState.errors.description.message}
-          </p>
-        )}
+        <Textarea {...form.register("description")} rows={4} />
       </div>
 
       <div>
         <Label>Type</Label>
-        <Select
-          value={type}
-          onValueChange={(v) => setType(v as typeof type)}
-        >
+        <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -134,22 +116,18 @@ export default function CreateGigClient() {
 
       <div>
         <Label>Requirements (optional)</Label>
-        <Textarea
-          {...form.register("requirements")}
-          rows={2}
-          placeholder="Stack constraints, deadlines, etc."
-        />
+        <Textarea {...form.register("requirements")} rows={2} />
       </div>
 
       {type !== "hourly" && (
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>Budget min ($)</Label>
-            <Input {...form.register("budgetMin")} type="number" placeholder="200" />
+            <Input {...form.register("budgetMin")} type="number" />
           </div>
           <div>
             <Label>Budget max ($)</Label>
-            <Input {...form.register("budgetMax")} type="number" placeholder="500" />
+            <Input {...form.register("budgetMax")} type="number" />
           </div>
         </div>
       )}
@@ -157,7 +135,7 @@ export default function CreateGigClient() {
       {type === "hourly" && (
         <div>
           <Label>Hourly rate ($)</Label>
-          <Input {...form.register("hourlyRate")} type="number" placeholder="80" />
+          <Input {...form.register("hourlyRate")} type="number" />
         </div>
       )}
 
@@ -174,7 +152,10 @@ export default function CreateGigClient() {
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={submitting}>
-          {submitting ? "Posting…" : "Post gig"}
+          {submitting ? "Saving…" : "Save changes"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancel
         </Button>
       </div>
     </form>

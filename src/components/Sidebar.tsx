@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/admin", label: "Dashboard", Icon: LayoutDashboard },
   { to: "/admin/gigs", label: "Gig Board", Icon: Briefcase },
-  { to: "/freelancers", label: "Freelancers", Icon: Users },
+  { to: "/admin/freelancers", label: "Freelancers", Icon: Users },
   { to: "/admin/availability", label: "Availability", Icon: Calendar },
   { to: "/showcase", label: "Showcase", Icon: Star },
   { to: "/admin/tags", label: "Tags", Icon: Tag },

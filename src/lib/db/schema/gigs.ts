@@ -15,6 +15,7 @@ export const gigsTable = pgTable("gigs", {
   budgetMax: real("budget_max"),
   hourlyRate: real("hourly_rate"),
   recordingPath: text("recording_path"),
+  loomUrl: text("loom_url"),
   publicSlug: text("public_slug").notNull().unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

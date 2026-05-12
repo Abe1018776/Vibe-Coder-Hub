@@ -13,6 +13,7 @@ const patchSchema = z.object({
   budgetMin: z.number().nullable().optional(),
   budgetMax: z.number().nullable().optional(),
   hourlyRate: z.number().nullable().optional(),
+  loomUrl: z.string().url().nullable().optional().or(z.literal("")).optional(),
   tags: z.array(z.string()).optional(),
 });
 
@@ -44,7 +45,7 @@ export async function PATCH(
 
   const [updated] = await db
     .update(gigsTable)
-    .set({ ...parsed.data, updatedAt: new Date() })
+    .set({ ...parsed.data, loomUrl: parsed.data.loomUrl || null, updatedAt: new Date() })
     .where(eq(gigsTable.id, gigId))
     .returning();
 

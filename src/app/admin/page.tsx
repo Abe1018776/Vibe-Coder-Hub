@@ -9,7 +9,7 @@ import {
 } from "@/lib/db";
 import { eq, sql, desc } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
-import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp } from "lucide-react";
+import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp, Wrench, Pencil } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -80,12 +80,12 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-        <Stat label="Total Gigs" value={totalGigs} Icon={Briefcase} color="bg-primary" />
-        <Stat label="Open Gigs" value={openGigs} Icon={TrendingUp} color="bg-green-600" />
-        <Stat label="Freelancers" value={totalFreelancers} Icon={Users} color="bg-blue-600" />
-        <Stat label="Open Slots" value={openSlots} Icon={Calendar} color="bg-purple-600" />
+        <Stat label="Total Gigs" value={totalGigs} Icon={Briefcase} color="bg-primary" href="/admin/gigs" />
+        <Stat label="Open Gigs" value={openGigs} Icon={TrendingUp} color="bg-green-600" href="/admin/gigs" />
+        <Stat label="Freelancers" value={totalFreelancers} Icon={Users} color="bg-blue-600" href="/admin/freelancers" />
+        <Stat label="Open Slots" value={openSlots} Icon={Calendar} color="bg-purple-600" href="/admin/availability" />
         <Stat label="Replies" value={totalReplies} Icon={MessageSquare} color="bg-amber-600" />
-        <Stat label="Showcase" value={totalShowcase} Icon={Star} color="bg-rose-600" />
+        <Stat label="Showcase" value={totalShowcase} Icon={Star} color="bg-rose-600" href="/showcase" />
       </div>
 
       <div className="border border-border rounded-md p-4 bg-card mb-6">
@@ -118,13 +118,25 @@ export default async function DashboardPage() {
                     {g.type} · {g.status.replace("_", " ")}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground shrink-0 mt-0.5">
-                  {formatRelativeTime(g.createdAt)}
+                <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                  <a href={`/admin/gigs/${g.id}/edit`} className="text-xs text-muted-foreground hover:text-primary">
+                    <Pencil size={13} />
+                  </a>
+                  <div className="text-xs text-muted-foreground">
+                    {formatRelativeTime(g.createdAt)}
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <QuickLink href="/admin/gigs/new" label="Post Gig" Icon={Briefcase} />
+        <QuickLink href="/admin/freelancers/new" label="Add Freelancer" Icon={Users} />
+        <QuickLink href="/admin/freelancers" label="Manage Freelancers" Icon={Pencil} />
+        <QuickLink href="/admin/availability" label="Availability" Icon={Calendar} />
       </div>
     </div>
   );
@@ -135,14 +147,16 @@ function Stat({
   value,
   Icon,
   color,
+  href,
 }: {
   label: string;
   value: number;
   Icon: React.ElementType;
   color: string;
+  href?: string;
 }) {
-  return (
-    <div className="border border-border rounded-md p-4 bg-card flex items-center gap-4">
+  const inner = (
+    <>
       <div className={`p-2.5 rounded-md ${color}`}>
         <Icon size={18} className="text-white" />
       </div>
@@ -150,6 +164,37 @@ function Stat({
         <div className="text-2xl font-bold">{value}</div>
         <div className="text-xs text-muted-foreground">{label}</div>
       </div>
+    </>
+  );
+  return (
+    <div className="border border-border rounded-md p-4 bg-card flex items-center gap-4">
+      {href ? (
+        <a href={href} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+          {inner}
+        </a>
+      ) : (
+        inner
+      )}
     </div>
+  );
+}
+
+function QuickLink({
+  href,
+  label,
+  Icon,
+}: {
+  href: string;
+  label: string;
+  Icon: React.ElementType;
+}) {
+  return (
+    <a
+      href={href}
+      className="border border-border rounded-md p-3 bg-card flex items-center gap-2 hover:bg-muted/30 transition-colors"
+    >
+      <Icon size={16} className="text-muted-foreground" />
+      <span className="text-sm font-medium">{label}</span>
+    </a>
   );
 }

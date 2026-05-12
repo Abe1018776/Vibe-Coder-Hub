@@ -15,6 +15,7 @@ const createGigSchema = z.object({
   budgetMin: z.number().nullable().optional(),
   budgetMax: z.number().nullable().optional(),
   hourlyRate: z.number().nullable().optional(),
+  loomUrl: z.string().url().nullable().optional().or(z.literal("")).optional(),
   tags: z.array(z.string()).default([]),
 });
 
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
       budgetMin: data.budgetMin ?? null,
       budgetMax: data.budgetMax ?? null,
       hourlyRate: data.hourlyRate ?? null,
+      loomUrl: data.loomUrl || null,
       tags: data.tags,
       publicSlug,
     })

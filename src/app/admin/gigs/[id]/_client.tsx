@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, ExternalLink, Send, Share2 } from "lucide-react";
+import { Copy, ExternalLink, Send, Share2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
 import type { Gig, GigConversation, GigMessage } from "@/lib/db";
@@ -33,6 +33,7 @@ export default function GigDetailClient({
   );
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const activeConv = conversations.find((c) => c.id === active);
 
@@ -70,6 +71,27 @@ export default function GigDetailClient({
     } finally {
       setSending(false);
     }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this gig and all its conversations?")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/gigs/${gig.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("Gig deleted");
+      router.push("/admin/gigs");
+    } catch {
+      toast.error("Failed to delete");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function loomEmbedUrl(url: string) {
+    const match = url.match(/loom\.com\/(?:share|embed)\/([a-f0-9]+)/);
+    if (!match) return null;
+    return `https://www.loom.com/embed/${match[1]}`;
   }
 
   const publicUrl =
@@ -125,6 +147,14 @@ export default function GigDetailClient({
           <Button variant="outline" size="sm" onClick={shareWhatsapp}>
             <Share2 size={13} /> WhatsApp
           </Button>
+          <Link href={`/admin/gigs/${gig.id}/edit`}>
+            <Button variant="outline" size="sm">
+              <Pencil size={13} /> Edit
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleting}>
+            <Trash2 size={13} />
+          </Button>
         </div>
       </div>
 
@@ -156,6 +186,16 @@ export default function GigDetailClient({
           )}
           {gig.hourlyRate && <span>Rate: ${gig.hourlyRate}/hr</span>}
         </div>
+        {gig.loomUrl && loomEmbedUrl(gig.loomUrl) && (
+          <div className="mt-4">
+            <div className="text-xs font-semibold text-muted-foreground mb-2">Video walkthrough</div>
+            <iframe
+              src={loomEmbedUrl(gig.loomUrl)!}
+              allowFullScreen
+              className="w-full aspect-video rounded-md border border-border"
+            />
+          </div>
+        )}
         <div className="mt-4 flex items-center gap-2">
           <a href={publicUrl} target="_blank" rel="noreferrer">
             <Button variant="outline" size="sm">

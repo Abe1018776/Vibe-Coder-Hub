@@ -145,6 +145,20 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
             )}
             {gig.hourlyRate && <span>Rate: ${gig.hourlyRate}/hr</span>}
           </div>
+          {gig.loomUrl && (() => {
+            const match = gig.loomUrl.match(/loom\.com\/(?:share|embed)\/([a-f0-9]+)/);
+            if (!match) return null;
+            return (
+              <div className="mt-4">
+                <div className="text-xs font-semibold text-muted-foreground mb-2">Video walkthrough</div>
+                <iframe
+                  src={`https://www.loom.com/embed/${match[1]}`}
+                  allowFullScreen
+                  className="w-full aspect-video rounded-md border border-border"
+                />
+              </div>
+            );
+          })()}
         </div>
 
         <div className="border border-border rounded-md bg-card p-5">
