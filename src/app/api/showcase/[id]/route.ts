@@ -6,7 +6,7 @@ import {
 } from "@/lib/db";
 import { eq, desc, asc } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { requireUser, getAdminContext } from "@/lib/auth";
 
 const patchSchema = z.object({
   name: z.string().min(1).optional(),
@@ -82,8 +82,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { response, userId } = await requireUser();
-  if (response) return response;
+  const { userId, isAdmin } = await getAdminContext();
+  if (!userId)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const pid = Number(id);
@@ -95,7 +96,7 @@ export async function PATCH(
     .where(eq(showcaseProjectsTable.id, pid))
     .limit(1);
   if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
-  if (project.createdBy !== userId)
+  if (project.createdBy !== userId && !isAdmin)
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const json = await req.json();
@@ -122,8 +123,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { response, userId } = await requireUser();
-  if (response) return response;
+  const { userId, isAdmin } = await getAdminContext();
+  if (!userId)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const pid = Number(id);
@@ -135,7 +137,7 @@ export async function DELETE(
     .where(eq(showcaseProjectsTable.id, pid))
     .limit(1);
   if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
-  if (project.createdBy !== userId)
+  if (project.createdBy !== userId && !isAdmin)
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   await db.delete(showcaseProjectsTable).where(eq(showcaseProjectsTable.id, pid));

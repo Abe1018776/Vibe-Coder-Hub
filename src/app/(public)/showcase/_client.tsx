@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,6 +76,15 @@ export default function ShowcaseClient({
   const [sendingComment, setSendingComment] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => setIsAdmin(Boolean(d?.isAdmin)))
+      .catch(() => {});
+  }, [isSignedIn]);
 
   const form = useForm<SubmitData>({
     resolver: zodResolver(submitSchema),
@@ -298,12 +307,16 @@ export default function ShowcaseClient({
                           by {p.builderName}
                         </div>
                       </div>
-                      {p.createdBy === userId && (
+                      {(p.createdBy === userId || isAdmin) && (
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEdit(p)}
                             className="text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer p-1"
-                            title="Edit project"
+                            title={
+                              p.createdBy === userId
+                                ? "Edit project"
+                                : "Edit (admin override)"
+                            }
                           >
                             <Pencil size={13} />
                           </button>
@@ -313,7 +326,11 @@ export default function ShowcaseClient({
                             }}
                             disabled={deleting === p.id}
                             className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer p-1"
-                            title="Remove project"
+                            title={
+                              p.createdBy === userId
+                                ? "Remove project"
+                                : "Remove (admin override)"
+                            }
                           >
                             <Trash2 size={13} />
                           </button>
