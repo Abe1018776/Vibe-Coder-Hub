@@ -25,6 +25,7 @@ import {
   Play,
   Image as ImageIcon,
   Send,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { ShowcaseProject, ShowcaseComment } from "@/lib/db";
@@ -74,6 +75,7 @@ export default function ShowcaseClient({
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
   const [sendingComment, setSendingComment] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const form = useForm<SubmitData>({
     resolver: zodResolver(submitSchema),
@@ -92,31 +94,67 @@ export default function ShowcaseClient({
   async function onSubmit(data: SubmitData) {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/showcase", {
-        method: "POST",
+      const payload = {
+        name: data.name,
+        description: data.description,
+        builderName: data.builderName,
+        url: data.url || null,
+        imageUrl: data.imageUrl || null,
+        videoUrl: data.videoUrl || null,
+        tags: csvSplit(data.tags),
+        tools: csvSplit(data.tools),
+      };
+      const url = editingId
+        ? `/api/showcase/${editingId}`
+        : "/api/showcase";
+      const method = editingId ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          description: data.description,
-          builderName: data.builderName,
-          url: data.url || null,
-          imageUrl: data.imageUrl || null,
-          videoUrl: data.videoUrl || null,
-          tags: csvSplit(data.tags),
-          tools: csvSplit(data.tools),
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Project submitted");
+      toast.success(editingId ? "Project updated" : "Project submitted");
       form.reset();
+      setEditingId(null);
       setOpen(false);
       router.refresh();
     } catch (e) {
-      toast.error("Submit failed");
+      toast.error(editingId ? "Update failed" : "Submit failed");
       console.error(e);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function openEdit(p: ProjectWithComments) {
+    setEditingId(p.id);
+    form.reset({
+      name: p.name,
+      description: p.description,
+      builderName: p.builderName,
+      url: p.url ?? "",
+      imageUrl: p.imageUrl ?? "",
+      videoUrl: p.videoUrl ?? "",
+      tags: p.tags.join(", "),
+      tools: p.tools.join(", "),
+    });
+    setOpen(true);
+  }
+
+  function openNew() {
+    setEditingId(null);
+    form.reset({
+      name: "",
+      description: "",
+      builderName: "",
+      url: "",
+      imageUrl: "",
+      videoUrl: "",
+      tags: "",
+      tools: "",
+    });
+    setOpen(true);
   }
 
   async function upvote(id: number) {
@@ -193,7 +231,7 @@ export default function ShowcaseClient({
           </p>
         </div>
         {isSignedIn && (
-          <Button size="sm" onClick={() => setOpen(true)}>
+          <Button size="sm" onClick={openNew}>
             <Plus size={14} /> Submit project
           </Button>
         )}
@@ -261,14 +299,25 @@ export default function ShowcaseClient({
                         </div>
                       </div>
                       {p.createdBy === userId && (
-                        <button
-                          onClick={() => deleteProject(p.id)}
-                          disabled={deleting === p.id}
-                          className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer p-1"
-                          title="Remove project"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => openEdit(p)}
+                            className="text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer p-1"
+                            title="Edit project"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm("Remove this project?")) deleteProject(p.id);
+                            }}
+                            disabled={deleting === p.id}
+                            className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer p-1"
+                            title="Remove project"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -416,10 +465,16 @@ export default function ShowcaseClient({
       )}
 
       {/* Submit dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setEditingId(null);
+        }}
+      >
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Submit a project</DialogTitle>
+            <DialogTitle>{editingId ? "Edit project" : "Submit a project"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <div>
@@ -483,12 +538,21 @@ export default function ShowcaseClient({
             </div>
             <div className="flex gap-2 pt-1">
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Submitting…" : "Submit"}
+                {submitting
+                  ? editingId
+                    ? "Saving…"
+                    : "Submitting…"
+                  : editingId
+                    ? "Save changes"
+                    : "Submit"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  setOpen(false);
+                  setEditingId(null);
+                }}
               >
                 Cancel
               </Button>
