@@ -8,6 +8,7 @@ const isPublic = createRouteMatcher([
   "/freelancers/(.*)",
   "/showcase",
   "/showcase/(.*)",
+  "/docs",
   "/gigs/public/(.*)",
   "/gigs/thread/(.*)",
   "/api/public/(.*)",

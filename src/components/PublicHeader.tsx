@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, X, Users, Star, LogIn, LayoutDashboard } from "lucide-react";
+import { Menu, X, Users, Star, LogIn, LayoutDashboard, BookOpen } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/freelancers", label: "Builders", Icon: Users },
   { to: "/showcase", label: "Showcase", Icon: Star },
+  { to: "/docs", label: "Docs", Icon: BookOpen },
 ];
 
 function NavLink({
@@ -48,7 +49,7 @@ export default function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 h-13 border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto h-full px-4 flex items-center gap-4">
-        <Link href="/freelancers">
+        <Link href="/">
           <span className="font-bold text-sm tracking-tight cursor-pointer whitespace-nowrap">
             Vibe Coder Hub
           </span>
