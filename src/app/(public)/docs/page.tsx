@@ -49,9 +49,9 @@ const modules = [
     id: "gigs",
     Icon: Briefcase,
     title: "Gig Board",
-    audience: "Admin",
+    audience: "Admin (scoped to your gigs)",
     path: "/admin/gigs",
-    desc: "The internal job board where gigs are posted, managed, and tracked. Three gig types: task (fixed scope), hourly (time-based), and build (full project). Each gig gets a unique public link for applicants.",
+    desc: "The internal job board where you post and manage your gigs. Three gig types: task (fixed scope), hourly (time-based), and build (full project). Each gig gets a unique public link for applicants. You only see gigs you created — other posters' gigs are invisible to you.",
     features: [
       'Three gig types: Task (Zap), Hourly (Clock), Build (Wrench)',
       "Auto-generated public slug for sharing (e.g. /gigs/public/my-project)",
@@ -81,12 +81,13 @@ const modules = [
     title: "Conversation Threads",
     audience: "Token-based access",
     path: "/gigs/thread/[token]",
-    desc: "Each application creates a private thread between the applicant and the gig poster. The freelancer accesses it via a unique token URL — no account needed. The admin replies from the dashboard. Like a lightweight email thread, but in-app.",
+    desc: "Each application creates a private thread between the applicant and the gig poster. The freelancer accesses it via a unique token URL — no account needed. Only the gig owner (the poster who created the gig) can reply from the admin dashboard. Like a lightweight email thread, but in-app.",
     features: [
       "Token-URL access — no login needed for freelancers",
-      "Admin replies from /admin/gigs/[id] detail page",
+      "Only the gig owner can reply from /admin/gigs/[id]",
       "Freelancer checks thread at /gigs/thread/[token]",
       "Messages are timestamped and ordered chronologically",
+      "Other gig posters cannot access your conversations",
     ],
   },
   {
@@ -122,7 +123,7 @@ const modules = [
     title: "Admin Dashboard",
     audience: "Admin (auth required)",
     path: "/admin",
-    desc: "The ops hub. Shows live counts for gigs, freelancers, open slots, replies, and showcase projects. Gig type breakdown and recent gigs list. Everything at a glance.",
+    desc: "The ops hub for your account. Shows live counts for your gigs, total freelancers, open slots, replies on your gigs, and showcase projects. Gig type breakdown and your recent gigs list. Everything at a glance — scoped to your data only.",
     features: [
       "Live stats: total/open gigs, freelancers, slots, replies, showcase count",
       "Gig type breakdown (task/hourly/build)",
@@ -177,13 +178,18 @@ export default function DocsPage() {
           <p>
             Vibe Coder Hub is an AI-native marketplace with two sides: a <strong className="text-foreground">public face</strong> where
             freelancers browse builders, explore showcase projects, and apply to gigs — and an <strong className="text-foreground">admin
-            backend</strong> where gigs are posted, applications are managed, and availability is tracked.
+            backend</strong> where gig posters manage their gigs, review applications, and track conversations.
+          </p>
+          <p>
+            Each user who signs in gets their own isolated workspace. You only see the gigs you posted and the
+            conversations on those gigs. Other gig posters can&apos;t see your data — and you can&apos;t see theirs.
+            Public pages (builder directory, showcase, gig application) are shared across all users.
           </p>
           <p>
             Auth is handled by Clerk. Public pages are open to everyone. Admin pages
-            (under <code className="text-xs bg-muted px-1.5 py-0.5 rounded">/admin/*</code>) require sign-in.
-            The gig application flow is deliberately login-free — freelancers apply with just a name
-            and track their thread via a private token URL.
+            (under <code className="text-xs bg-muted px-1.5 py-0.5 rounded">/admin/*</code>) require sign-in and
+            are scoped to the logged-in user. The gig application flow is deliberately login-free — freelancers
+            apply with just a name and track their thread via a private token URL.
           </p>
         </div>
         <div className="flex gap-3 mt-4 flex-wrap">
