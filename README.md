@@ -36,13 +36,17 @@ Copy the printed `DATABASE_URL_PUBLIC` into Vercel project env vars.
 
 ## Deploy to Vercel
 
+The GitHub repo is connected to Vercel — every push to `main` auto-deploys
+to production, and other branches get preview URLs.
+
+For the initial project setup:
+
 ```
 cd app
 vercel link
 vercel env add DATABASE_URL production
 vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production
 vercel env add CLERK_SECRET_KEY production
-vercel deploy --prod
 ```
 
 After the first deploy, add the resulting `*.vercel.app` domain to
