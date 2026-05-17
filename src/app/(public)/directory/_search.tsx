@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function DirectorySearch({
   initialQ,
@@ -12,6 +13,7 @@ export default function DirectorySearch({
   initialQ: string;
   initialTag: string;
 }) {
+  const t = useTranslations("directory");
   const router = useRouter();
   const [q, setQ] = useState(initialQ);
   const [, startTransition] = useTransition();
@@ -30,11 +32,11 @@ export default function DirectorySearch({
       <div className="relative flex-1">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
         <Input
-          className="pl-8 h-9 text-sm"
-          placeholder="Search by name, title, company..."
+          className="ps-8 h-9 text-sm"
+          placeholder={t("searchPlaceholder")}
           value={q}
           onChange={(e) => {
             setQ(e.target.value);

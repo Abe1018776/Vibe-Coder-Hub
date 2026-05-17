@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { GigMessage } from "@/lib/db";
 
 export default function ThreadClient({
@@ -22,6 +23,7 @@ export default function ThreadClient({
   freelancerName: string;
   initialMessages: GigMessage[];
 }) {
+  const t = useTranslations("gigs");
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -54,14 +56,14 @@ export default function ThreadClient({
           </div>
           <h1 className="text-xl font-bold">{gigTitle}</h1>
           <p className="text-sm text-muted-foreground">
-            Conversation as <strong>{freelancerName}</strong>
+            {t("thread.conversation", { name: freelancerName })}
           </p>
         </div>
 
         <div className="space-y-3 mb-5">
           {initialMessages.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-6">
-              No messages yet.
+              {t("thread.empty")}
             </div>
           ) : (
             initialMessages.map((m) => (
@@ -72,7 +74,7 @@ export default function ThreadClient({
                 }`}
               >
                 <div className="text-xs text-muted-foreground mb-1">
-                  {m.senderType === "freelancer" ? freelancerName : "Poster"} ·{" "}
+                  {m.senderType === "freelancer" ? freelancerName : t("thread.poster")} ·{" "}
                   {formatRelativeTime(m.createdAt)}
                 </div>
                 {m.content && <div className="whitespace-pre-wrap">{m.content}</div>}
@@ -83,7 +85,7 @@ export default function ThreadClient({
 
         <div className="border border-border rounded-md bg-card p-3">
           <Textarea
-            placeholder="Reply…"
+            placeholder={t("thread.placeholder")}
             value={draft}
             rows={3}
             onChange={(e) => setDraft(e.target.value)}
@@ -91,7 +93,7 @@ export default function ThreadClient({
           />
           <div className="flex justify-end mt-2">
             <Button size="sm" onClick={send} disabled={sending || !draft.trim()}>
-              <Send size={13} /> {sending ? "Sending…" : "Send"}
+              <Send size={13} /> {sending ? t("thread.sending") : t("thread.send")}
             </Button>
           </div>
         </div>

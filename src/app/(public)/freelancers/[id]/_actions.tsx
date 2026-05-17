@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Freelancer } from "@/lib/db";
+import { useTranslations } from "next-intl";
 
 export default function FreelancerActions({ freelancer }: { freelancer: Freelancer }) {
+  const t = useTranslations("freelancers");
   const { userId } = useAuth();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
@@ -18,15 +20,15 @@ export default function FreelancerActions({ freelancer }: { freelancer: Freelanc
   if (!isCreator) return null;
 
   async function handleDelete() {
-    if (!confirm("Remove this freelancer?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/freelancers/${freelancer.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.success("Freelancer removed");
+      toast.success(t("deleteSuccess"));
       router.push("/freelancers");
     } catch {
-      toast.error("Delete failed");
+      toast.error(t("deleteFailed"));
     } finally {
       setDeleting(false);
     }
@@ -36,7 +38,7 @@ export default function FreelancerActions({ freelancer }: { freelancer: Freelanc
     <div className="flex items-center gap-2 shrink-0">
       <Link href={`/admin/freelancers/${freelancer.id}`}>
         <Button size="sm" variant="outline">
-          <Pencil size={13} /> Edit
+          <Pencil size={13} /> {t("edit")}
         </Button>
       </Link>
       <Button size="sm" variant="outline" onClick={handleDelete} disabled={deleting}>

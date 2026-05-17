@@ -5,5 +5,9 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <Sidebar>{children}</Sidebar>;
+  return (
+    <div dir="ltr">
+      <Sidebar>{children}</Sidebar>
+    </div>
+  );
 }
