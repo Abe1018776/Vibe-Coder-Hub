@@ -48,6 +48,7 @@ export default function CompetitionPublicClient({
 }) {
   const t = useTranslations("competitions");
   const td = useTranslations("competitions.detail");
+  const tErrors = useTranslations("errors");
 
   const schema = z.object({
     submitterName: z.string().min(1, td("required")),
@@ -97,7 +98,7 @@ export default function CompetitionPublicClient({
       const result = await res.json();
       setSubmitted({ threadToken: result.threadToken });
     } catch {
-      toast.error(td("thankYou"));
+      toast.error(tErrors("generic"));
     } finally {
       setSubmitting(false);
     }
