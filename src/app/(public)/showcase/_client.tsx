@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,6 +67,8 @@ export default function ShowcaseClient({
 }: {
   initialProjects: ProjectWithComments[];
 }) {
+  const t = useTranslations("showcase");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { isSignedIn, userId } = useAuth();
   const [open, setOpen] = useState(false);
@@ -123,13 +126,13 @@ export default function ShowcaseClient({
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
-      toast.success(editingId ? "Project updated" : "Project submitted");
+      toast.success(editingId ? t("toastUpdated") : t("toastSubmitted"));
       form.reset();
       setEditingId(null);
       setOpen(false);
       router.refresh();
     } catch (e) {
-      toast.error(editingId ? "Update failed" : "Submit failed");
+      toast.error(editingId ? t("toastUpdateFailed") : t("toastSubmitFailed"));
       console.error(e);
     } finally {
       setSubmitting(false);
@@ -168,20 +171,20 @@ export default function ShowcaseClient({
 
   async function upvote(id: number) {
     if (!isSignedIn) {
-      toast.error("Sign in to upvote");
+      toast.error(t("toastSignInToUpvote"));
       return;
     }
     setUpvoting(id);
     try {
       const res = await fetch(`/api/showcase/${id}/upvote`, { method: "POST" });
       if (res.status === 409) {
-        toast.error("Already upvoted");
+        toast.error(t("toastAlreadyUpvoted"));
         return;
       }
       if (!res.ok) throw new Error();
       router.refresh();
     } catch {
-      toast.error("Upvote failed");
+      toast.error(t("toastUpvoteFailed"));
     } finally {
       setUpvoting(null);
     }
@@ -201,7 +204,7 @@ export default function ShowcaseClient({
       setCommentDrafts((prev) => ({ ...prev, [projectId]: "" }));
       router.refresh();
     } catch {
-      toast.error("Comment failed");
+      toast.error(t("toastCommentFailed"));
     } finally {
       setSendingComment(null);
     }
@@ -212,10 +215,10 @@ export default function ShowcaseClient({
     try {
       const res = await fetch(`/api/showcase/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.success("Project removed");
+      toast.success(t("toastProjectRemoved"));
       router.refresh();
     } catch {
-      toast.error("Delete failed");
+      toast.error(t("toastDeleteFailed"));
     } finally {
       setDeleting(null);
     }
@@ -234,21 +237,21 @@ export default function ShowcaseClient({
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold">Product Showcase</h1>
+          <h1 className="text-xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Vibe-coded projects ranked by the community
+            {t("subtitle")}
           </p>
         </div>
         {isSignedIn && (
           <Button size="sm" onClick={openNew}>
-            <Plus size={14} /> Submit project
+            <Plus size={14} /> {t("submit")}
           </Button>
         )}
       </div>
 
       {initialProjects.length === 0 ? (
         <div className="text-center py-12 text-sm text-muted-foreground">
-          No projects yet. Be the first to showcase something.
+          {t("empty")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -268,6 +271,7 @@ export default function ShowcaseClient({
                     <button
                       onClick={() => upvote(p.id)}
                       disabled={upvoting === p.id}
+                      aria-label={t("upvote")}
                       className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-md border transition-colors cursor-pointer ${
                         false
                           ? "bg-primary/10 border-primary text-primary"
@@ -281,6 +285,7 @@ export default function ShowcaseClient({
                       className={`text-xs font-bold px-2 py-0.5 rounded-full ${rankBadge(
                         rank,
                       )}`}
+                      title={t("comments")}
                     >
                       #{rank}
                     </span>
@@ -304,7 +309,7 @@ export default function ShowcaseClient({
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          by {p.builderName}
+                          {t("by", { name: p.builderName })}
                         </div>
                       </div>
                       {(p.createdBy === userId || isAdmin) && (
@@ -314,22 +319,22 @@ export default function ShowcaseClient({
                             className="text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer p-1"
                             title={
                               p.createdBy === userId
-                                ? "Edit project"
-                                : "Edit (admin override)"
+                                ? t("editTitle")
+                                : t("editAdminOverride")
                             }
                           >
                             <Pencil size={13} />
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm("Remove this project?")) deleteProject(p.id);
+                              if (confirm(t("deleteConfirm"))) deleteProject(p.id);
                             }}
                             disabled={deleting === p.id}
                             className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer p-1"
                             title={
                               p.createdBy === userId
-                                ? "Remove project"
-                                : "Remove (admin override)"
+                                ? t("removeTitle")
+                                : t("removeAdminOverride")
                             }
                           >
                             <Trash2 size={13} />
@@ -361,7 +366,7 @@ export default function ShowcaseClient({
                     )}
                     {p.videoUrl && !p.imageUrl && (
                       <div className="mt-2 flex items-center gap-1.5 text-xs text-primary">
-                        <Play size={12} /> Video preview available
+                        <Play size={12} /> {t("videoPreview")}
                       </div>
                     )}
 
@@ -372,24 +377,24 @@ export default function ShowcaseClient({
                     {/* Tags & tools */}
                     {p.tools.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {p.tools.map((t) => (
+                        {p.tools.map((tool) => (
                           <span
-                            key={t}
+                            key={tool}
                             className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary"
                           >
-                            {t}
+                            {tool}
                           </span>
                         ))}
                       </div>
                     )}
                     {p.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {p.tags.map((t) => (
+                        {p.tags.map((tag) => (
                           <span
-                            key={t}
+                            key={tag}
                             className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                           >
-                            {t}
+                            {tag}
                           </span>
                         ))}
                       </div>
@@ -401,7 +406,7 @@ export default function ShowcaseClient({
                       className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                     >
                       <MessageSquare size={12} />
-                      {commentCount} comment{commentCount !== 1 ? "s" : ""}
+                      {t("commentCount", { count: commentCount })}
                     </button>
 
                     {/* Comments section */}
@@ -426,14 +431,14 @@ export default function ShowcaseClient({
                           ))
                         ) : (
                           <div className="text-xs text-muted-foreground py-1">
-                            No comments yet.
+                            {t("noComments")}
                           </div>
                         )}
 
                         {isSignedIn && (
                           <div className="flex gap-2 mt-2">
                             <Input
-                              placeholder="Add a comment..."
+                              placeholder={t("addComment")}
                               value={commentDrafts[p.id] || ""}
                               onChange={(e) =>
                                 setCommentDrafts((prev) => ({
@@ -468,7 +473,7 @@ export default function ShowcaseClient({
                             href="/sign-in"
                             className="text-xs text-primary underline"
                           >
-                            Sign in to comment
+                            {t("signInToComment")}
                           </a>
                         )}
                       </div>
@@ -491,12 +496,14 @@ export default function ShowcaseClient({
       >
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit project" : "Submit a project"}</DialogTitle>
+            <DialogTitle>
+              {editingId ? t("dialogEditTitle") : t("dialogSubmitTitle")}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <div>
-              <Label>Project name</Label>
-              <Input {...form.register("name")} placeholder="My Vibe App" />
+              <Label>{t("fieldProjectName")}</Label>
+              <Input {...form.register("name")} placeholder={t("placeholderProjectName")} />
               {form.formState.errors.name && (
                 <p className="text-xs text-destructive mt-1">
                   {form.formState.errors.name.message}
@@ -504,8 +511,8 @@ export default function ShowcaseClient({
               )}
             </div>
             <div>
-              <Label>Your name</Label>
-              <Input {...form.register("builderName")} placeholder="Alex Vibe" />
+              <Label>{t("fieldYourName")}</Label>
+              <Input {...form.register("builderName")} placeholder={t("placeholderBuilderName")} />
               {form.formState.errors.builderName && (
                 <p className="text-xs text-destructive mt-1">
                   {form.formState.errors.builderName.message}
@@ -513,11 +520,11 @@ export default function ShowcaseClient({
               )}
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("fieldDescription")}</Label>
               <Textarea
                 {...form.register("description")}
                 rows={3}
-                placeholder="What does it do? How was it built?"
+                placeholder={t("placeholderDescription")}
               />
               {form.formState.errors.description && (
                 <p className="text-xs text-destructive mt-1">
@@ -526,18 +533,18 @@ export default function ShowcaseClient({
               )}
             </div>
             <div>
-              <Label>Live URL (optional)</Label>
+              <Label>{t("fieldLiveUrl")}</Label>
               <Input {...form.register("url")} placeholder="https://..." />
             </div>
             <div>
-              <Label>Image preview URL (optional)</Label>
+              <Label>{t("fieldImageUrl")}</Label>
               <Input
                 {...form.register("imageUrl")}
                 placeholder="https://...screenshot.png"
               />
             </div>
             <div>
-              <Label>Video preview URL (optional)</Label>
+              <Label>{t("fieldVideoUrl")}</Label>
               <Input
                 {...form.register("videoUrl")}
                 placeholder="https://...demo.mp4"
@@ -545,11 +552,11 @@ export default function ShowcaseClient({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-xs">Tools (CSV)</Label>
+                <Label className="text-xs">{t("fieldTools")}</Label>
                 <Input {...form.register("tools")} placeholder="Cursor, Replit" />
               </div>
               <div>
-                <Label className="text-xs">Tags (CSV)</Label>
+                <Label className="text-xs">{t("fieldTags")}</Label>
                 <Input {...form.register("tags")} placeholder="ai, web-app" />
               </div>
             </div>
@@ -557,11 +564,11 @@ export default function ShowcaseClient({
               <Button type="submit" disabled={submitting}>
                 {submitting
                   ? editingId
-                    ? "Saving…"
-                    : "Submitting…"
+                    ? t("saving")
+                    : t("submitting")
                   : editingId
-                    ? "Save changes"
-                    : "Submit"}
+                    ? t("saveChanges")
+                    : t("submit")}
               </Button>
               <Button
                 type="button"
@@ -571,7 +578,7 @@ export default function ShowcaseClient({
                   setEditingId(null);
                 }}
               >
-                Cancel
+                {tCommon("cancel")}
               </Button>
             </div>
           </form>
