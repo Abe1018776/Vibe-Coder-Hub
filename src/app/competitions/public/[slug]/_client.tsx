@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatRelativeTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Competition } from "@/lib/db";
 
 type PublicSubmission = {
@@ -29,15 +30,6 @@ type PublicSubmission = {
   description: string | null;
   createdAt: Date | string;
 };
-
-const schema = z.object({
-  submitterName: z.string().min(1, "Required"),
-  submitterEmail: z.string().email("Invalid email").optional().or(z.literal("")),
-  submissionUrl: z.string().url("Must be a valid URL"),
-  loomUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  description: z.string().optional(),
-});
-type FormData = z.infer<typeof schema>;
 
 function loomEmbedUrl(url: string) {
   const match = url.match(/loom\.com\/(?:share|embed)\/([a-f0-9]+)/);
@@ -54,6 +46,18 @@ export default function CompetitionPublicClient({
   submissions: PublicSubmission[];
   slug: string;
 }) {
+  const t = useTranslations("competitions");
+  const td = useTranslations("competitions.detail");
+
+  const schema = z.object({
+    submitterName: z.string().min(1, td("required")),
+    submitterEmail: z.string().email(td("invalidEmail")).optional().or(z.literal("")),
+    submissionUrl: z.string().url(td("invalidUrl")),
+    loomUrl: z.string().url(td("invalidUrl")).optional().or(z.literal("")),
+    description: z.string().optional(),
+  });
+  type FormData = z.infer<typeof schema>;
+
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ threadToken: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -93,7 +97,7 @@ export default function CompetitionPublicClient({
       const result = await res.json();
       setSubmitted({ threadToken: result.threadToken });
     } catch {
-      toast.error("Failed to submit entry");
+      toast.error(td("thankYou"));
     } finally {
       setSubmitting(false);
     }
@@ -104,14 +108,13 @@ export default function CompetitionPublicClient({
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="text-center max-w-sm w-full">
           <CheckCircle size={40} className="text-primary mx-auto mb-3" />
-          <h2 className="text-lg font-bold">Entry submitted!</h2>
+          <h2 className="text-lg font-bold">{td("entrySubmitted")}</h2>
           <p className="text-sm text-muted-foreground mt-2 mb-5">
-            Your submission is in. The host will pick a winner manually before the
-            deadline.
+            {td("entrySubmittedDesc")}
           </p>
-          <div className="border border-border rounded-md bg-card p-4 text-left space-y-2">
+          <div className="border border-border rounded-md bg-card p-4 text-start space-y-2">
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Your tracking code
+              {td("trackingCode")}
             </div>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-xs bg-muted px-2 py-1.5 rounded break-all">
@@ -127,11 +130,11 @@ export default function CompetitionPublicClient({
                 }}
               >
                 <Copy size={13} />
-                {copied ? "Copied!" : "Copy"}
+                {copied ? td("copied") : td("copy")}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Save this to identify your entry if you need to follow up.
+              {td("trackingCodeHint")}
             </p>
           </div>
         </div>
@@ -152,7 +155,7 @@ export default function CompetitionPublicClient({
           </h1>
           <div className="flex justify-center items-center gap-3 mt-3 flex-wrap text-sm">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold">
-              <DollarSign size={13} />${competition.prizeAmount.toLocaleString()} prize
+              <DollarSign size={13} />${competition.prizeAmount.toLocaleString()} {td("prize").toLowerCase()}
             </span>
             <span
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${
@@ -162,20 +165,20 @@ export default function CompetitionPublicClient({
               }`}
             >
               <Calendar size={13} />
-              {deadlinePassed ? "Closed " : "Deadline "}
+              {deadlinePassed ? t("closedOn") + " " : td("deadline") + " "}
               {deadline.toLocaleString()}
             </span>
           </div>
         </div>
 
         <div className="border border-border rounded-md bg-card p-5 mb-5">
-          <h2 className="text-sm font-semibold mb-2">The task</h2>
+          <h2 className="text-sm font-semibold mb-2">{td("theTask")}</h2>
           <p className="text-sm whitespace-pre-wrap">{competition.description}</p>
           {competition.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-3">
-              {competition.tags.map((t) => (
-                <span key={t} className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                  {t}
+              {competition.tags.map((tag) => (
+                <span key={tag} className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {tag}
                 </span>
               ))}
             </div>
@@ -183,7 +186,7 @@ export default function CompetitionPublicClient({
           {embed && (
             <div className="mt-4">
               <div className="text-xs font-semibold text-muted-foreground mb-2">
-                Walkthrough video
+                {td("walkthroughVideo")}
               </div>
               <iframe
                 src={embed}
@@ -195,7 +198,7 @@ export default function CompetitionPublicClient({
           {competition.referenceUrls.length > 0 && (
             <div className="mt-4">
               <div className="text-xs font-semibold text-muted-foreground mb-2">
-                Reference materials
+                {td("referenceMaterials")}
               </div>
               <ul className="space-y-1">
                 {competition.referenceUrls.map((u) => (
@@ -218,7 +221,7 @@ export default function CompetitionPublicClient({
         {winner && (
           <div className="border-2 border-amber-500 rounded-md bg-amber-50 p-5 mb-5">
             <div className="flex items-center gap-2 text-amber-700 font-bold text-sm mb-2">
-              <Crown size={16} /> Winner: {winner.submitterName}
+              <Crown size={16} /> {td("winner", { name: winner.submitterName })}
             </div>
             <a
               href={winner.submissionUrl}
@@ -238,15 +241,14 @@ export default function CompetitionPublicClient({
 
         {canSubmit ? (
           <div className="border border-border rounded-md bg-card p-5 mb-5">
-            <h2 className="text-sm font-semibold mb-1">Submit your entry</h2>
+            <h2 className="text-sm font-semibold mb-1">{td("submitEntry")}</h2>
             <p className="text-xs text-muted-foreground mb-4">
-              Upload your file to Imgur, Google Drive, Dropbox, or similar — then paste
-              the public link below.
+              {td("submitHelp")}
             </p>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <Label>Your name</Label>
+                  <Label>{td("yourName")}</Label>
                   <Input {...form.register("submitterName")} placeholder="Alex" />
                   {form.formState.errors.submitterName && (
                     <p className="text-xs text-destructive mt-1">
@@ -255,7 +257,7 @@ export default function CompetitionPublicClient({
                   )}
                 </div>
                 <div>
-                  <Label>Email (optional)</Label>
+                  <Label>{td("email")}</Label>
                   <Input
                     {...form.register("submitterEmail")}
                     type="email"
@@ -269,10 +271,10 @@ export default function CompetitionPublicClient({
                 </div>
               </div>
               <div>
-                <Label>Submission URL</Label>
+                <Label>{td("submissionUrl")}</Label>
                 <Input
                   {...form.register("submissionUrl")}
-                  placeholder="https://imgur.com/abc.png or https://drive.google.com/..."
+                  placeholder={td("submissionUrlPlaceholder")}
                 />
                 {form.formState.errors.submissionUrl && (
                   <p className="text-xs text-destructive mt-1">
@@ -281,40 +283,40 @@ export default function CompetitionPublicClient({
                 )}
               </div>
               <div>
-                <Label>Loom walkthrough (optional)</Label>
+                <Label>{td("loomWalkthrough")}</Label>
                 <Input
                   {...form.register("loomUrl")}
-                  placeholder="https://www.loom.com/share/..."
+                  placeholder={td("loomPlaceholder")}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Explain your approach with a quick video
+                  {td("loomHint")}
                 </p>
               </div>
               <div>
-                <Label>Description (optional)</Label>
+                <Label>{td("descriptionField")}</Label>
                 <Textarea
                   {...form.register("description")}
                   rows={3}
-                  placeholder="Notes about your submission, tools used, etc."
+                  placeholder={td("descriptionPlaceholder")}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? "Submitting…" : "Submit entry"}
+                {submitting ? td("submitting") : td("submit")}
               </Button>
             </form>
           </div>
         ) : (
           <div className="border border-border rounded-md bg-muted/40 p-5 mb-5 text-center text-sm text-muted-foreground">
             {deadlinePassed
-              ? "Submissions closed — deadline has passed."
-              : `Submissions are ${competition.status}.`}
+              ? td("submissionsClosed")
+              : td("submissionsStatus", { status: competition.status })}
           </div>
         )}
 
         {submissions.length > 0 && (
           <div className="mb-5">
             <h2 className="text-sm font-semibold mb-3">
-              Entries ({submissions.length})
+              {td("entriesCount", { count: submissions.length })}
             </h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {submissions.map((s) => {
@@ -330,7 +332,7 @@ export default function CompetitionPublicClient({
                       <div className="text-sm font-semibold">{s.submitterName}</div>
                       {isWinner && (
                         <span className="text-xs text-amber-700 font-bold flex items-center gap-0.5">
-                          <Crown size={11} /> WINNER
+                          <Crown size={11} /> {td("winnerLabel")}
                         </span>
                       )}
                     </div>
