@@ -1,0 +1,226 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "empty": "Nothing here yet.",
+    "error": "Something went wrong.",
+    "retry": "Retry"
+  },
+  "header": {
+    "brand": "Vibe Coder Hub",
+    "nav": {
+      "competitions": "Competitions",
+      "builders": "Builders",
+      "directory": "Directory",
+      "showcase": "Showcase",
+      "docs": "Docs"
+    },
+    "signIn": "Sign in",
+    "dashboard": "Dashboard",
+    "menuToggle": "Toggle menu",
+    "language": "Language"
+  },
+  "footer": {
+    "tagline": "Vibe Coder Hub — Built for AI-native builders",
+    "docs": "Docs",
+    "builders": "Builders",
+    "showcase": "Showcase"
+  },
+  "landing": {
+    "badge": "AI-native marketplace",
+    "hero": {
+      "title1": "Where",
+      "highlight": "vibe coders",
+      "title2": "find work & ship fast",
+      "subtitle": "The hub for builders who code with AI. Browse freelancers, post gigs, and showcase your projects — all in one place."
+    },
+    "cta": {
+      "browseCompetitions": "Browse Competitions",
+      "browseBuilders": "Browse Builders",
+      "getStarted": "Get Started",
+      "explore": "Explore"
+    },
+    "counters": {
+      "competitions": "Competitions",
+      "builders": "Builders",
+      "gigs": "Gigs",
+      "projects": "Projects"
+    },
+    "featuresHeader": "Everything you need",
+    "features": {
+      "competitions": {
+        "title": "Competitions",
+        "desc": "Post a bounty, invite anyone to submit entries, pick a winner. 99designs-style."
+      },
+      "gigs": {
+        "title": "Gig Board",
+        "desc": "Post 1-on-1 gigs, get applications, manage conversations — all in one place."
+      },
+      "builders": {
+        "title": "Builder Directory",
+        "desc": "Find AI-native freelancers by skill, tool, or vibe. Every builder ships fast."
+      },
+      "showcase": {
+        "title": "Showcase",
+        "desc": "Show off vibe-coded projects. Upvote the best builds from the community."
+      }
+    },
+    "outro": {
+      "title": "Ready to vibe?",
+      "subtitle": "Join the marketplace where AI-native builders connect with projects that move fast."
+    }
+  },
+  "freelancers": {
+    "title": "Builders",
+    "subtitle": "AI-native freelancers, ready to ship.",
+    "searchPlaceholder": "Search builders by name or bio…",
+    "filterByTag": "Filter by tag",
+    "empty": "No builders match your search.",
+    "viewProfile": "View profile",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this builder profile?",
+    "tools": "Tools",
+    "tags": "Tags",
+    "hourlyRate": "Hourly rate",
+    "addBuilder": "Add builder"
+  },
+  "directory": {
+    "title": "Jewish AI Professionals",
+    "subtitle": "Operators, founders, and researchers building with AI.",
+    "searchPlaceholder": "Search by name, title, or company…",
+    "empty": "No professionals match your search.",
+    "addEntry": "Add entry",
+    "viewLinkedIn": "LinkedIn",
+    "viewWebsite": "Website"
+  },
+  "showcase": {
+    "title": "Showcase",
+    "subtitle": "Vibe-coded projects from the community.",
+    "empty": "No projects yet — be the first.",
+    "submit": "Submit project",
+    "upvote": "Upvote",
+    "comments": "Comments",
+    "addComment": "Add a comment…",
+    "signInToComment": "Sign in to comment",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this project?"
+  },
+  "competitions": {
+    "title": "Competitions",
+    "subtitle": "Open bounties — pick one, submit your entry, win the prize.",
+    "empty": "No competitions yet.",
+    "status": {
+      "open": "open",
+      "judging": "judging",
+      "closed": "closed"
+    },
+    "closedOn": "Closed",
+    "postedRelative": "Posted {when}",
+    "entries": "{count, plural, one {# entry} other {# entries}}",
+    "detail": {
+      "deadline": "Deadline",
+      "prize": "Prize",
+      "submissions": "Submissions",
+      "submitEntry": "Submit your entry",
+      "yourName": "Your name",
+      "email": "Email (optional)",
+      "submissionUrl": "Submission URL",
+      "message": "Message (optional)",
+      "submit": "Submit entry",
+      "thankYou": "Thanks — your entry has been submitted.",
+      "winnerBanner": "Winner picked!"
+    }
+  },
+  "gigs": {
+    "publicHeader": "Apply for this gig",
+    "postedBy": "Posted by",
+    "budget": "Budget",
+    "hourlyRate": "Hourly rate",
+    "type": {
+      "task": "Task",
+      "hourly": "Hourly",
+      "build": "Build"
+    },
+    "applyForm": {
+      "title": "Apply",
+      "name": "Your name",
+      "email": "Email (optional)",
+      "message": "Message (optional)",
+      "submit": "Send application",
+      "success": "Application sent. Bookmark this page — replies arrive here.",
+      "yourThreadLink": "Your private thread link"
+    },
+    "thread": {
+      "title": "Thread",
+      "subtitle": "Your conversation with the gig poster.",
+      "send": "Send",
+      "placeholder": "Type your reply…",
+      "empty": "No messages yet."
+    }
+  },
+  "docs": {
+    "title": "Documentation",
+    "subtitle": "How Vibe Coder Hub works — every module, every flow.",
+    "overview": {
+      "header": "Overview",
+      "p1": "Vibe Coder Hub is an AI-native marketplace with two sides: a <strong>public face</strong> where freelancers browse builders, explore showcase projects, and apply to gigs — and an <strong>admin backend</strong> where gig posters manage their gigs, review applications, and track conversations.",
+      "p2": "Each user who signs in gets their own isolated workspace. You only see the gigs you posted and the conversations on those gigs. Other gig posters can't see your data — and you can't see theirs. Public pages (builder directory, showcase, gig application) are shared across all users.",
+      "p3": "Auth is handled by Clerk. Public pages are open to everyone. Admin pages (under <code>/admin/*</code>) require sign-in and are scoped to the logged-in user. The gig application flow is deliberately login-free — freelancers apply with just a name and track their thread via a private token URL.",
+      "tagPublic": "Public — no login",
+      "tagAdmin": "Admin — Clerk auth",
+      "tagToken": "Token — no login, secret URL"
+    },
+    "flow": {
+      "header": "Gig Application Flow",
+      "subtitle": "The core loop: post → share → apply → converse.",
+      "step1Title": "Admin posts a gig",
+      "step1Desc": "Via /admin/gigs/new — sets title, type, budget, tags, requirements. A public slug is auto-generated.",
+      "step2Title": "Public link is shared",
+      "step2Desc": "The gig's public page (/gigs/public/[slug]) is shared to freelancers — no login needed to view or apply.",
+      "step3Title": "Freelancer applies",
+      "step3Desc": "They submit their name + optional email + message. A private thread token is returned instantly.",
+      "step4Title": "Thread is created",
+      "step4Desc": "The application opens a conversation thread. The freelancer bookmarks /gigs/thread/[token] to check replies.",
+      "step5Title": "Admin replies",
+      "step5Desc": "From /admin/gigs/[id], the admin sees all conversations and replies inline. The freelancer sees it on their thread page."
+    },
+    "moduleHeader": "Module Reference",
+    "featuresLabel": "Features",
+    "techHeader": "Tech Stack",
+    "gigTypesHeader": "Gig Types",
+    "gigTypes": {
+      "task": "Fixed-scope deliverable. One shot, one price. Budget min/max range.",
+      "hourly": "Time-based engagement. Set an hourly rate. Track as it goes.",
+      "build": "Full project build. Larger scope, budget range, milestones implied."
+    },
+    "audience": {
+      "Public": "Public",
+      "Admin": "Admin",
+      "Token": "Token"
+    }
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signUpTitle": "Sign up"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "subtitle": "This page doesn't exist on Vibe Coder Hub.",
+    "backHome": "Back to home"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "required": "This field is required.",
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidUrl": "Please enter a valid URL."
+  }
+}
