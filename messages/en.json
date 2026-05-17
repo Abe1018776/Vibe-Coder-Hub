@@ -108,7 +108,8 @@
     "empty": "No professionals match your search.",
     "addEntry": "Add entry",
     "viewLinkedIn": "LinkedIn",
-    "viewWebsite": "Website"
+    "viewWebsite": "Website",
+    "professionalCount": "{count, plural, one {# professional} other {# professionals}}"
   },
   "showcase": {
     "title": "Showcase",

@@ -4,6 +4,7 @@ import { desc, ilike, or, sql, eq } from "drizzle-orm";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Briefcase, ExternalLink } from "lucide-react";
 import DirectorySearch from "./_search";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ interface Props {
 
 export default async function DirectoryPage({ searchParams }: Props) {
   const { q, tag } = await searchParams;
+  const t = await getTranslations("directory");
 
   const conditions = [] as ReturnType<typeof eq>[];
   if (q) {
@@ -39,9 +41,9 @@ export default async function DirectoryPage({ searchParams }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold">Jewish AI Professionals</h1>
+          <h1 className="text-xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {professionals.length} professional{professionals.length !== 1 ? "s" : ""}
+            {t("professionalCount", { count: professionals.length })}
           </p>
         </div>
       </div>
@@ -98,6 +100,7 @@ export default async function DirectoryPage({ searchParams }: Props) {
                         href={p.linkedIn}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label={t("viewLinkedIn")}
                         className="text-xs text-muted-foreground hover:text-primary transition-colors"
                       >
                         <ExternalLink size={12} />
@@ -108,6 +111,7 @@ export default async function DirectoryPage({ searchParams }: Props) {
                         href={p.website}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label={t("viewWebsite")}
                         className="text-xs text-muted-foreground hover:text-primary transition-colors"
                       >
                         <Briefcase size={12} />
@@ -121,7 +125,7 @@ export default async function DirectoryPage({ searchParams }: Props) {
         </div>
       ) : (
         <div className="text-center py-12 text-sm text-muted-foreground mt-5">
-          No professionals found.
+          {t("empty")}
         </div>
       )}
     </div>

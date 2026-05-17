@@ -108,7 +108,8 @@
     "empty": "לא נמצאו אנשי מקצוע שתואמים את החיפוש.",
     "addEntry": "הוספת רשומה",
     "viewLinkedIn": "LinkedIn",
-    "viewWebsite": "אתר"
+    "viewWebsite": "אתר",
+    "professionalCount": "{count, plural, one {איש מקצוע אחד} two {# אנשי מקצוע} many {# אנשי מקצוע} other {# אנשי מקצוע}}"
   },
   "showcase": {
     "title": "תצוגה",
