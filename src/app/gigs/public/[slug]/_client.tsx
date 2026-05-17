@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Clock, Wrench, Zap, Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { Gig } from "@/lib/db";
 
 const schema = z.object({
@@ -22,6 +23,7 @@ type FormData = z.infer<typeof schema>;
 const ICONS: Record<string, React.ElementType> = { task: Zap, hourly: Clock, build: Wrench };
 
 export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string }) {
+  const t = useTranslations("gigs");
   const [submitting, setSubmitting] = useState(false);
   const [threadToken, setThreadToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -64,15 +66,15 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="text-center max-w-sm w-full">
           <CheckCircle size={40} className="text-primary mx-auto mb-3" />
-          <h2 className="text-lg font-bold">Application sent!</h2>
+          <h2 className="text-lg font-bold">{t("applyForm.success")}</h2>
           <p className="text-sm text-muted-foreground mt-2 mb-5">
-            Bookmark the link below to check the poster&apos;s reply.
+            {t("applyForm.bookmarkHint")}
             <br />
-            <strong>Don&apos;t lose this link — it&apos;s the only way back.</strong>
+            <strong>{t("applyForm.dontLose")}</strong>
           </p>
-          <div className="border border-border rounded-md bg-card p-4 text-left space-y-3">
+          <div className="border border-border rounded-md bg-card p-4 text-start space-y-3">
             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Your private thread link
+              {t("applyForm.yourThreadLink")}
             </div>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-xs bg-muted px-2 py-1.5 rounded break-all">
@@ -88,12 +90,12 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
                 }}
               >
                 <Copy size={13} />
-                {copied ? "Copied!" : "Copy"}
+                {copied ? t("applyForm.copied") : t("applyForm.copy")}
               </Button>
             </div>
             <a href={url}>
               <Button size="sm" className="w-full mt-1">
-                <ExternalLink size={13} /> Open your thread
+                <ExternalLink size={13} /> {t("applyForm.openThread")}
               </Button>
             </a>
           </div>
@@ -112,7 +114,7 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
           <h1 className="text-2xl font-bold">{gig.title}</h1>
           <div className="flex justify-center items-center gap-2 mt-2">
             <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-              <Icon size={11} /> {gig.type}
+              <Icon size={11} /> {t(`type.${gig.type}`)}
             </span>
           </div>
         </div>
@@ -120,18 +122,18 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
         <div className="border border-border rounded-md bg-card p-4 mb-5">
           <p className="text-sm">{gig.description}</p>
           {gig.requirements && (
-            <p className="text-xs text-muted-foreground mt-3 border-l-2 border-primary/30 pl-2">
+            <p className="text-xs text-muted-foreground mt-3 border-s-2 border-primary/30 ps-2">
               {gig.requirements}
             </p>
           )}
           {gig.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-3">
-              {gig.tags.map((t) => (
+              {gig.tags.map((tag) => (
                 <span
-                  key={t}
+                  key={tag}
                   className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                 >
-                  {t}
+                  {tag}
                 </span>
               ))}
             </div>
@@ -139,18 +141,24 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
           <div className="mt-3 text-xs text-muted-foreground flex gap-4">
             {gig.budgetMin && (
               <span>
-                Budget: ${gig.budgetMin}
+                {t("budget")}: ${gig.budgetMin}
                 {gig.budgetMax ? `–$${gig.budgetMax}` : ""}
               </span>
             )}
-            {gig.hourlyRate && <span>Rate: ${gig.hourlyRate}/hr</span>}
+            {gig.hourlyRate && (
+              <span>
+                {t("hourlyRate")}: ${gig.hourlyRate}/hr
+              </span>
+            )}
           </div>
           {gig.loomUrl && (() => {
             const match = gig.loomUrl.match(/loom\.com\/(?:share|embed)\/([a-f0-9]+)/);
             if (!match) return null;
             return (
               <div className="mt-4">
-                <div className="text-xs font-semibold text-muted-foreground mb-2">Video walkthrough</div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2">
+                  {t("videoWalkthrough")}
+                </div>
                 <iframe
                   src={`https://www.loom.com/embed/${match[1]}`}
                   allowFullScreen
@@ -162,10 +170,10 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
         </div>
 
         <div className="border border-border rounded-md bg-card p-5">
-          <h2 className="text-sm font-semibold mb-4">Apply for this gig</h2>
+          <h2 className="text-sm font-semibold mb-4">{t("publicHeader")}</h2>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <div>
-              <Label>Your name</Label>
+              <Label>{t("applyForm.name")}</Label>
               <Input {...form.register("freelancerName")} placeholder="Alex Vibe" />
               {form.formState.errors.freelancerName && (
                 <p className="text-xs text-destructive mt-1">
@@ -174,7 +182,7 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
               )}
             </div>
             <div>
-              <Label>Email (optional)</Label>
+              <Label>{t("applyForm.email")}</Label>
               <Input
                 {...form.register("freelancerEmail")}
                 type="email"
@@ -187,7 +195,7 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
               )}
             </div>
             <div>
-              <Label>Message (optional)</Label>
+              <Label>{t("applyForm.message")}</Label>
               <Textarea
                 {...form.register("message")}
                 rows={3}
@@ -195,7 +203,7 @@ export default function GigPublicClient({ gig, slug }: { gig: Gig; slug: string 
               />
             </div>
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? "Sending…" : "Submit application"}
+              {submitting ? t("applyForm.sending") : t("applyForm.submit")}
             </Button>
           </form>
         </div>

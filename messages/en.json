@@ -214,6 +214,7 @@
     "postedBy": "Posted by",
     "budget": "Budget",
     "hourlyRate": "Hourly rate",
+    "videoWalkthrough": "Video walkthrough",
     "type": {
       "task": "Task",
       "hourly": "Hourly",
@@ -224,14 +225,23 @@
       "name": "Your name",
       "email": "Email (optional)",
       "message": "Message (optional)",
-      "submit": "Send application",
-      "success": "Application sent. Bookmark this page — replies arrive here.",
-      "yourThreadLink": "Your private thread link"
+      "submit": "Submit application",
+      "sending": "Sending…",
+      "success": "Application sent!",
+      "bookmarkHint": "Bookmark the link below to check the poster's reply.",
+      "dontLose": "Don't lose this link — it's the only way back.",
+      "yourThreadLink": "Your private thread link",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "openThread": "Open your thread"
     },
     "thread": {
       "title": "Thread",
       "subtitle": "Your conversation with the gig poster.",
+      "conversation": "Conversation as {name}",
+      "poster": "Poster",
       "send": "Send",
+      "sending": "Sending…",
       "placeholder": "Type your reply…",
       "empty": "No messages yet."
     }
