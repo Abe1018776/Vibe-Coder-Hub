@@ -90,7 +90,16 @@
     "tools": "כלים",
     "tags": "תגיות",
     "hourlyRate": "תעריף שעתי",
-    "addBuilder": "הוספת מפתח"
+    "addBuilder": "הוספת מפתח",
+    "builderCount": "{count, plural, one {מפתח אחד} two {# מפתחים} many {# מפתחים} other {# מפתחים}}",
+    "addFirst": "הוסיפו את הראשון.",
+    "skills": "מיומנויות",
+    "portfolio": "פורטפוליו",
+    "availability": "זמינות",
+    "slotBooked": "תפוס",
+    "slotOpen": "פנוי",
+    "deleteSuccess": "המפתח הוסר",
+    "deleteFailed": "המחיקה נכשלה"
   },
   "directory": {
     "title": "אנשי מקצוע יהודים בתחום ה-AI",

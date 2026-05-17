@@ -90,7 +90,16 @@
     "tools": "Tools",
     "tags": "Tags",
     "hourlyRate": "Hourly rate",
-    "addBuilder": "Add builder"
+    "addBuilder": "Add builder",
+    "builderCount": "{count, plural, one {# builder} other {# builders}}",
+    "addFirst": "Add the first one.",
+    "skills": "Skills",
+    "portfolio": "Portfolio",
+    "availability": "Availability",
+    "slotBooked": "Booked",
+    "slotOpen": "Open",
+    "deleteSuccess": "Builder removed",
+    "deleteFailed": "Delete failed"
   },
   "directory": {
     "title": "Jewish AI Professionals",

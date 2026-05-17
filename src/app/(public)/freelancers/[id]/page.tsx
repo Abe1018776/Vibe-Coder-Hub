@@ -4,6 +4,7 @@ import { eq, asc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import FreelancerActions from "./_actions";
+import { getTranslations } from "next-intl/server";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -11,6 +12,7 @@ interface Props {
 
 export default async function FreelancerProfilePage({ params }: Props) {
   const { id } = await params;
+  const t = await getTranslations("freelancers");
   const freelancerId = Number(id);
   if (!freelancerId) notFound();
 
@@ -47,11 +49,11 @@ export default async function FreelancerProfilePage({ params }: Props) {
       </div>
 
       {freelancer.tools.length > 0 && (
-        <Section title="Tools">
+        <Section title={t("tools")}>
           <div className="flex flex-wrap gap-1.5">
-            {freelancer.tools.map((t) => (
-              <Badge key={t} variant="secondary">
-                {t}
+            {freelancer.tools.map((tool) => (
+              <Badge key={tool} variant="secondary">
+                {tool}
               </Badge>
             ))}
           </div>
@@ -59,7 +61,7 @@ export default async function FreelancerProfilePage({ params }: Props) {
       )}
 
       {freelancer.skills.length > 0 && (
-        <Section title="Skills">
+        <Section title={t("skills")}>
           <div className="flex flex-wrap gap-1.5">
             {freelancer.skills.map((s) => (
               <Badge key={s} variant="outline">
@@ -71,7 +73,7 @@ export default async function FreelancerProfilePage({ params }: Props) {
       )}
 
       {freelancer.portfolioLinks.length > 0 && (
-        <Section title="Portfolio">
+        <Section title={t("portfolio")}>
           <ul className="space-y-1.5">
             {freelancer.portfolioLinks.map((url) => (
               <li key={url}>
@@ -91,7 +93,7 @@ export default async function FreelancerProfilePage({ params }: Props) {
       )}
 
       {slots.length > 0 && (
-        <Section title="Availability">
+        <Section title={t("availability")}>
           <div className="grid gap-2">
             {slots.map((slot) => (
               <div
@@ -108,9 +110,9 @@ export default async function FreelancerProfilePage({ params }: Props) {
                   </div>
                 </div>
                 {slot.isBooked ? (
-                  <Badge variant="secondary">Booked</Badge>
+                  <Badge variant="secondary">{t("slotBooked")}</Badge>
                 ) : (
-                  <Badge>Open</Badge>
+                  <Badge>{t("slotOpen")}</Badge>
                 )}
               </div>
             ))}

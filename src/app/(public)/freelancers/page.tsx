@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Search } from "lucide-react";
 import FreelancerSearch from "./_search";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ interface Props {
 
 export default async function FreelancersPage({ searchParams }: Props) {
   const { q, tag } = await searchParams;
+  const t = await getTranslations("freelancers");
 
   const conditions = [] as ReturnType<typeof eq>[];
   if (q) {
@@ -38,14 +40,14 @@ export default async function FreelancersPage({ searchParams }: Props) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold">Freelancers</h1>
+          <h1 className="text-xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {freelancers.length} builder{freelancers.length !== 1 ? "s" : ""}
+            {t("builderCount", { count: freelancers.length })}
           </p>
         </div>
         <Link href="/admin/freelancers/new">
           <Button size="sm">
-            <Plus size={14} /> Add Freelancer
+            <Plus size={14} /> {t("addBuilder")}
           </Button>
         </Link>
       </div>
@@ -94,9 +96,9 @@ export default async function FreelancersPage({ searchParams }: Props) {
         </div>
       ) : (
         <div className="text-center py-12 text-sm text-muted-foreground mt-5">
-          No freelancers found.{" "}
+          {t("empty")}{" "}
           <Link href="/admin/freelancers/new">
-            <span className="text-primary underline cursor-pointer">Add the first one.</span>
+            <span className="text-primary underline cursor-pointer">{t("addFirst")}</span>
           </Link>
         </div>
       )}
