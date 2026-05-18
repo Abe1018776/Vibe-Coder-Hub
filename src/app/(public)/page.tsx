@@ -2,7 +2,7 @@ import Link from "next/link";
 import { db, freelancersTable, gigsTable, showcaseProjectsTable, competitionsTable } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
-import { Users, Star, Briefcase, ArrowRight, Zap, Code2, Rocket, Trophy } from "lucide-react";
+import { Users, Star, Briefcase, ArrowRight, Zap, Code2, Rocket, Trophy, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -49,18 +49,18 @@ export default async function LandingPage() {
           <Zap size={12} /> AI-native marketplace
         </div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-          Where <span className="text-primary">vibe coders</span>
+          Discover <span className="text-primary">Torah &amp; AI</span>
           <br />
-          find work &amp; ship fast
+          apps built by vibe coders
         </h1>
         <p className="mt-5 text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          The hub for builders who code with AI. Browse freelancers, post gigs,
-          and showcase your projects — all in one place.
+          Explore the showcase of cool Jewish Torah projects and other AI apps
+          shipped by the community.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
-          <Link href="/competitions">
+          <Link href="/showcase">
             <Button size="lg" className="gap-2">
-              <Trophy size={16} /> Browse Competitions <ArrowRight size={16} />
+              <Sparkles size={16} /> Explore the Showcase <ArrowRight size={16} />
             </Button>
           </Link>
           <Link href="/freelancers">
