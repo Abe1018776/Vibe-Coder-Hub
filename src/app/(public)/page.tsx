@@ -49,13 +49,13 @@ export default async function LandingPage() {
           <Zap size={12} /> AI-native marketplace
         </div>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-          Discover <span className="text-primary">Torah &amp; AI</span>
+          Discover <span className="text-primary">Torah apps &amp; AI tools</span>
           <br />
-          apps built by vibe coders
+          built with AI
         </h1>
         <p className="mt-5 text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Explore the showcase of cool Jewish Torah projects and other AI apps
-          shipped by the community.
+          Explore the showcase of cool Jewish Torah projects and other tools
+          built with AI.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
           <Link href="/showcase">
