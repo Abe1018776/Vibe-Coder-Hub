@@ -4,6 +4,7 @@ import { desc, ilike, or, sql, eq } from "drizzle-orm";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Briefcase, ExternalLink } from "lucide-react";
 import DirectorySearch from "./_search";
+import DirectorySubmit from "./_submit";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ export default async function DirectoryPage({ searchParams }: Props) {
             {professionals.length} professional{professionals.length !== 1 ? "s" : ""}
           </p>
         </div>
+        <DirectorySubmit />
       </div>
 
       <DirectorySearch initialQ={q ?? ""} initialTag={tag ?? ""} />

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, showcaseProjectsTable } from "@/lib/db";
 import { desc, sql } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -13,6 +13,9 @@ const createSchema = z.object({
   builderName: z.string().min(1),
   tags: z.array(z.string()).default([]),
   tools: z.array(z.string()).default([]),
+  // Honeypot — must be empty. Real users never see this field; bots
+  // that auto-fill every input will populate it and get silently rejected.
+  website_url_alt: z.string().max(0).optional(),
 });
 
 export async function GET() {
@@ -24,8 +27,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { response, userId } = await requireUser();
-  if (response) return response;
+  // Anonymous submissions allowed. If the user happens to be signed in we
+  // record their userId so they (and admins) can edit later; otherwise
+  // createdBy stays empty and only admins can edit/remove the project.
+  const { userId } = await auth();
 
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest) {
       builderName: d.builderName,
       tags: d.tags,
       tools: d.tools,
-      createdBy: userId,
+      createdBy: userId ?? "",
     })
     .returning();
   return NextResponse.json(created, { status: 201 });

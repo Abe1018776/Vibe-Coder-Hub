@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, professionalsTable } from "@/lib/db";
 import { desc } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -16,6 +16,8 @@ const createSchema = z.object({
   email: z.string().email().nullable().optional().or(z.literal("")).optional(),
   tags: z.array(z.string()).default([]),
   notes: z.string().nullable().optional(),
+  // Honeypot — must stay empty; bots that auto-fill will populate it.
+  website_url_alt: z.string().max(0).optional(),
 });
 
 export async function GET() {
@@ -27,8 +29,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { response, userId } = await requireUser();
-  if (response) return response;
+  // Anonymous submissions allowed. Signed-in users get their userId recorded
+  // on createdBy; anonymous submissions land with createdBy='' and can only
+  // be edited/removed by admins.
+  const { userId } = await auth();
 
   const json = await req.json();
   const parsed = createSchema.safeParse(json);
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest) {
       email: d.email || null,
       tags: d.tags,
       notes: d.notes || null,
-      createdBy: userId,
+      createdBy: userId ?? "",
     })
     .returning();
 

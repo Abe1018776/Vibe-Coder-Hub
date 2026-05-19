@@ -42,6 +42,8 @@ const submitSchema = z.object({
   videoUrl: z.string().url().optional().or(z.literal("")),
   tags: z.string().optional(),
   tools: z.string().optional(),
+  // Honeypot — hidden field; must stay empty.
+  website_url_alt: z.string().max(0).optional(),
 });
 type SubmitData = z.infer<typeof submitSchema>;
 
@@ -120,6 +122,7 @@ export default function ShowcaseClient({
         videoUrl: data.videoUrl || null,
         tags: csvSplit(data.tags),
         tools: csvSplit(data.tools),
+        website_url_alt: data.website_url_alt ?? "",
       };
       const url = editingId
         ? `/api/showcase/${editingId}`
@@ -247,11 +250,9 @@ export default function ShowcaseClient({
             {subtitle}
           </p>
         </div>
-        {isSignedIn && (
-          <Button size="sm" onClick={openNew}>
-            <Plus size={14} /> Submit project
-          </Button>
-        )}
+        <Button size="sm" onClick={openNew}>
+          <Plus size={14} /> Submit project
+        </Button>
       </div>
 
       {initialProjects.length === 0 ? (
@@ -502,6 +503,21 @@ export default function ShowcaseClient({
             <DialogTitle>{editingId ? "Edit project" : "Submit a project"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            {/* Honeypot — hidden from real users; bots fill it and get rejected. */}
+            <input
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              {...form.register("website_url_alt")}
+              style={{
+                position: "absolute",
+                left: "-10000px",
+                width: 1,
+                height: 1,
+                opacity: 0,
+              }}
+            />
             <div>
               <Label>Project name</Label>
               <Input {...form.register("name")} placeholder="My Vibe App" />
