@@ -63,8 +63,16 @@ function rankBadge(rank: number) {
 
 export default function ShowcaseClient({
   initialProjects,
+  title = "Product Showcase",
+  subtitle = "Vibe-coded projects ranked by the community",
+  emptyText = "No projects yet. Be the first to showcase something.",
+  defaultTags = "",
 }: {
   initialProjects: ProjectWithComments[];
+  title?: string;
+  subtitle?: string;
+  emptyText?: string;
+  defaultTags?: string;
 }) {
   const router = useRouter();
   const { isSignedIn, userId } = useAuth();
@@ -95,7 +103,7 @@ export default function ShowcaseClient({
       url: "",
       imageUrl: "",
       videoUrl: "",
-      tags: "",
+      tags: defaultTags,
       tools: "",
     },
   });
@@ -160,7 +168,7 @@ export default function ShowcaseClient({
       url: "",
       imageUrl: "",
       videoUrl: "",
-      tags: "",
+      tags: defaultTags,
       tools: "",
     });
     setOpen(true);
@@ -234,9 +242,9 @@ export default function ShowcaseClient({
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold">Product Showcase</h1>
+          <h1 className="text-xl font-bold">{title}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Vibe-coded projects ranked by the community
+            {subtitle}
           </p>
         </div>
         {isSignedIn && (
@@ -248,7 +256,7 @@ export default function ShowcaseClient({
 
       {initialProjects.length === 0 ? (
         <div className="text-center py-12 text-sm text-muted-foreground">
-          No projects yet. Be the first to showcase something.
+          {emptyText}
         </div>
       ) : (
         <div className="space-y-3">
