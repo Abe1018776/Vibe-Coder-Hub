@@ -129,6 +129,28 @@ export function builderProjectCount(b: BuilderListItem): number {
   return b.project_count?.[0]?.count ?? 0;
 }
 
+/** Headline counts for the landing page. */
+export async function getLandingStats(): Promise<{
+  builders: number;
+  projects: number;
+  gigs: number;
+}> {
+  const supabase = await createClient();
+  const [builders, projects, gigs] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    supabase.from("projects").select("id", { count: "exact", head: true }),
+    supabase
+      .from("gigs")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
+  ]);
+  return {
+    builders: builders.count ?? 0,
+    projects: projects.count ?? 0,
+    gigs: gigs.count ?? 0,
+  };
+}
+
 export type CommentAuthor = Pick<Profile, "handle" | "name" | "avatar_url">;
 export type CommentWithAuthor = Tables<"comments"> & {
   author: CommentAuthor | null;
