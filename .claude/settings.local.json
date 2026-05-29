@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__github__get_me",
+      "mcp__claude_ai_Vercel__list_teams",
+      "PowerShell(Write-Output \"=== Node ===\"; \\(Get-Command node -ErrorAction SilentlyContinue\\).Source; node -v 2>$null; Write-Output \"=== npm ===\"; npm -v 2>$null; Write-Output \"=== git ===\"; git --version 2>$null; Write-Output \"=== Folder contents ===\"; Get-ChildItem -Force | Select-Object Name, Length | Format-Table -AutoSize; Write-Output \"=== Is git repo? ===\"; if \\(Test-Path .git\\) { \"yes\" } else { \"no\" })",
+      "mcp__github__get_file_contents",
+      "mcp__github__list_branches",
+      "PowerShell($gh = \\(Get-Command gh -ErrorAction SilentlyContinue\\).Source; if \\($gh\\) { \"gh installed: $gh\"; gh --version } else { \"gh CLI: NOT installed\" })",
+      "PowerShell($c = \\(Get-Command claude -ErrorAction SilentlyContinue\\).Source; if \\($c\\) { \"claude CLI: $c\"; claude --version } else { \"claude CLI: NOT on PATH\" })",
+      "PowerShell(claude mcp add --scope project --transport http supabase \"https://mcp.supabase.com/mcp?project_ref=lqfqkivbxeexmrxuxefi\")",
+      "PowerShell(claude mcp list)"
+    ]
+  }
+}
