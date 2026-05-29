@@ -209,6 +209,18 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-sage-mid after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
       </label>
 
+      <Field
+        label="Contact (public)"
+        hint="people use these to reach you — fill what you want shown"
+      >
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <input name="link_email" type="email" defaultValue={links.email ?? ""} className={inputClass} placeholder="Email" />
+          <input name="link_phone" defaultValue={links.phone ?? ""} className={inputClass} placeholder="Phone" />
+          <input name="link_whatsapp" defaultValue={links.whatsapp ?? ""} className={inputClass} placeholder="WhatsApp number" />
+          <input name="link_instagram" defaultValue={links.instagram ?? ""} className={inputClass} placeholder="Instagram @handle" />
+        </div>
+      </Field>
+
       <Field label="Links">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input name="link_website" defaultValue={links.website ?? ""} className={inputClass} placeholder="Website" />

@@ -28,7 +28,15 @@ export function AddCommentForm({ projectId }: { projectId: string }) {
       {state.error && (
         <p className="mt-1 text-xs text-clay-deep">{state.error}</p>
       )}
-      <div className="mt-2 flex justify-end">
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            name="is_anonymous"
+            className="h-3.5 w-3.5 rounded border-border accent-teal-600"
+          />
+          Post anonymously
+        </label>
         <button
           type="submit"
           disabled={pending}

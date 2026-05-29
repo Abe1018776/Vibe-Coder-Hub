@@ -4,6 +4,36 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { hasAnyContact } from "@/lib/site";
+
+type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
+
+/** Commercial flags from the form — forced off when posting anonymously. */
+function commercialFrom(formData: FormData, anon: boolean) {
+  return {
+    seeking_funding: !anon && formData.get("seeking_funding") != null,
+    for_sale: !anon && formData.get("for_sale") != null,
+    open_to_partners: !anon && formData.get("open_to_partners") != null,
+  };
+}
+
+/** Commercial projects must give buyers/investors a way to reach the builder. */
+async function contactErrorIfCommercial(
+  supabase: SupabaseServer,
+  userId: string,
+  c: ReturnType<typeof commercialFrom>,
+): Promise<string | null> {
+  if (!(c.seeking_funding || c.for_sale || c.open_to_partners)) return null;
+  const { data } = await supabase
+    .from("profiles")
+    .select("links")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!hasAnyContact(data?.links as Record<string, string | undefined> | null)) {
+    return "Add a public contact method to your profile first (Settings → Contact) so people can reach you about funding, sale, or partnership.";
+  }
+  return null;
+}
 
 export type ProjectFormState = {
   error?: string;
@@ -29,12 +59,6 @@ const schema = z.object({
 
 function multi(formData: FormData, key: string): string[] {
   return formData.getAll(key).map(String).map((s) => s.trim()).filter(Boolean);
-}
-function csv(value: FormDataEntryValue | null): string[] {
-  return String(value ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 function parse(formData: FormData) {
@@ -69,6 +93,18 @@ export async function createProject(
   const parsed = parse(formData);
   if (!parsed.success) return fieldErrors(parsed);
   const v = parsed.data;
+  if (!v.image_url && !v.url) {
+    return { error: "Add a cover image or a live link so people can see it." };
+  }
+
+  const anon = formData.get("is_anonymous") != null;
+  const commercial = commercialFrom(formData, anon);
+  const contactError = await contactErrorIfCommercial(
+    supabase,
+    user.id,
+    commercial,
+  );
+  if (contactError) return { error: contactError };
 
   const { data, error } = await supabase
     .from("projects")
@@ -79,8 +115,11 @@ export async function createProject(
       url: v.url || null,
       image_url: v.image_url || null,
       video_url: v.video_url || null,
+      images: multi(formData, "images").slice(0, 5),
       tools: multi(formData, "tools"),
-      tags: csv(formData.get("tags")),
+      tags: multi(formData, "tags"),
+      is_anonymous: anon,
+      ...commercial,
     })
     .select("id")
     .single();
@@ -107,6 +146,18 @@ export async function updateProject(
   const parsed = parse(formData);
   if (!parsed.success) return fieldErrors(parsed);
   const v = parsed.data;
+  if (!v.image_url && !v.url) {
+    return { error: "Add a cover image or a live link so people can see it." };
+  }
+
+  const anon = formData.get("is_anonymous") != null;
+  const commercial = commercialFrom(formData, anon);
+  const contactError = await contactErrorIfCommercial(
+    supabase,
+    user.id,
+    commercial,
+  );
+  if (contactError) return { error: contactError };
 
   const { error } = await supabase
     .from("projects")
@@ -116,8 +167,11 @@ export async function updateProject(
       url: v.url || null,
       image_url: v.image_url || null,
       video_url: v.video_url || null,
+      images: multi(formData, "images").slice(0, 5),
       tools: multi(formData, "tools"),
-      tags: csv(formData.get("tags")),
+      tags: multi(formData, "tags"),
+      is_anonymous: anon,
+      ...commercial,
     })
     .eq("id", projectId)
     .eq("owner_id", user.id);

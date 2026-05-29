@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/image/upload";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,45 +16,35 @@ export function ImageInput({
   defaultValue,
   shape = "rect",
   fallbackInitial,
+  seedUrl,
 }: {
   name: string;
   bucket: "avatars" | "project-media";
   defaultValue?: string | null;
   shape?: "circle" | "rect";
   fallbackInitial?: string;
+  /** When this changes to a non-empty value, it becomes the image (e.g. autofill). */
+  seedUrl?: string;
 }) {
   const [url, setUrl] = useState(defaultValue ?? "");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+
+  useEffect(() => {
+    if (seedUrl) setUrl(seedUrl);
+  }, [seedUrl]);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5 MB.");
-      return;
-    }
     setUploading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Your session expired — please sign in again.");
+      const { url: uploaded, error } = await uploadImage(file, bucket);
+      if (error || !uploaded) {
+        toast.error(error ?? "Upload failed.");
         return;
       }
-      const ext = (file.name.split(".").pop() || "png").toLowerCase();
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (error) {
-        toast.error("Upload failed. Try a different image or paste a URL.");
-        return;
-      }
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      setUrl(data.publicUrl);
+      setUrl(uploaded);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";

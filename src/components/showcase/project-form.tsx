@@ -1,9 +1,12 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Wand2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { ImageInput } from "@/components/brand/image-input";
-import { KNOWN_TOOLS } from "@/lib/site";
+import { GalleryInput } from "@/components/brand/gallery-input";
+import { fetchUrlMetadata } from "@/lib/actions/url-metadata";
+import { KNOWN_TOOLS, KNOWN_TAGS } from "@/lib/site";
 import type { ProjectFormState } from "@/lib/actions/projects";
 import type { Project } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -16,13 +19,11 @@ function Field({
   children,
   required,
   hint,
-  error,
 }: {
   label: string;
   children: React.ReactNode;
   required?: boolean;
   hint?: string;
-  error?: string;
 }) {
   return (
     <div>
@@ -36,7 +37,88 @@ function Field({
         )}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-clay-deep">{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * Multi-select chip field with suggestions + custom entries. Carries each value
+ * in a hidden input named `name`. `activeClass` controls the selected-chip color
+ * so tools (blue) and tags (teal) stay visually distinct.
+ */
+function ChipField({
+  name,
+  suggestions,
+  values,
+  setValues,
+  activeClass,
+  placeholder,
+}: {
+  name: string;
+  suggestions: string[];
+  values: string[];
+  setValues: React.Dispatch<React.SetStateAction<string[]>>;
+  activeClass: string;
+  placeholder: string;
+}) {
+  const [custom, setCustom] = useState("");
+  const toggle = (t: string) =>
+    setValues((cur) =>
+      cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t],
+    );
+  const addCustom = () => {
+    const t = custom.trim();
+    if (t && !values.includes(t)) setValues((cur) => [...cur, t]);
+    setCustom("");
+  };
+  const chips = [...new Set([...suggestions, ...values])];
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {chips.map((t) => {
+          const on = values.includes(t);
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggle(t)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-sm transition-colors",
+                on
+                  ? activeClass
+                  : "border-border bg-surface text-muted-foreground hover:border-border-hover",
+              )}
+            >
+              {t}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex gap-2">
+        <input
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addCustom();
+            }
+          }}
+          placeholder={placeholder}
+          className={cn(inputClass, "h-9 max-w-xs")}
+        />
+        <button
+          type="button"
+          onClick={addCustom}
+          className="inline-flex h-9 items-center gap-1 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink hover:bg-secondary"
+        >
+          <Plus size={15} /> Add
+        </button>
+      </div>
+      {values.map((t) => (
+        <input key={t} type="hidden" name={name} value={t} />
+      ))}
     </div>
   );
 }
@@ -58,18 +140,42 @@ export function ProjectForm({
     FormData
   >(action, {});
 
+  const [name, setName] = useState(project?.name ?? "");
+  const [description, setDescription] = useState(project?.description ?? "");
+  const [url, setUrl] = useState(project?.url ?? "");
+  const [cover, setCover] = useState<string | undefined>(undefined);
+  const [fetching, setFetching] = useState(false);
+
   const [tools, setTools] = useState<string[]>(project?.tools ?? []);
-  const [customTool, setCustomTool] = useState("");
-  const toggleTool = (t: string) =>
-    setTools((cur) =>
-      cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t],
-    );
-  const addCustom = () => {
-    const t = customTool.trim();
-    if (t && !tools.includes(t)) setTools((cur) => [...cur, t]);
-    setCustomTool("");
-  };
-  const chipTools = [...new Set([...KNOWN_TOOLS, ...tools])];
+  const [tags, setTags] = useState<string[]>(project?.tags ?? []);
+
+  async function autofill() {
+    if (!url.trim()) {
+      toast.error("Paste your project link first.");
+      return;
+    }
+    setFetching(true);
+    try {
+      const meta = await fetchUrlMetadata(url);
+      if (meta.error) {
+        toast.error(meta.error);
+        return;
+      }
+      if (meta.url) setUrl(meta.url);
+      if (meta.title && !name.trim()) setName(meta.title.slice(0, 100));
+      if (meta.description && !description.trim())
+        setDescription(meta.description.slice(0, 2000));
+      if (meta.image) setCover(meta.image);
+      const got = [meta.title, meta.description, meta.image].filter(Boolean);
+      toast.success(
+        got.length
+          ? "Filled in what we could from your link."
+          : "We saved your link, but couldn't read any details from it.",
+      );
+    } finally {
+      setFetching(false);
+    }
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -79,124 +185,178 @@ export function ProjectForm({
         </div>
       )}
 
-      <Field label="Project image" hint="upload or paste a URL">
+      <div className="rounded-card border border-border bg-secondary/40 p-3">
+        <label className="mb-1.5 block text-sm font-medium text-ink">
+          Project link
+          <span className="ml-2 font-normal text-xs text-muted-foreground">
+            paste it and we&apos;ll fill in the rest
+          </span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            name="url"
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className={inputClass}
+            placeholder="https://your-app.com"
+          />
+          <button
+            type="button"
+            onClick={autofill}
+            disabled={fetching}
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary disabled:opacity-60"
+          >
+            {fetching ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Wand2 size={15} />
+            )}
+            {fetching ? "Reading…" : "Autofill"}
+          </button>
+        </div>
+      </div>
+
+      <Field label="Cover image" hint="upload or paste a URL">
         <ImageInput
           name="image_url"
           bucket="project-media"
           shape="rect"
           defaultValue={project?.image_url}
+          seedUrl={cover}
         />
       </Field>
 
-      <Field label="Name" required error={state.fieldErrors?.name}>
+      <Field label="More screenshots" hint="optional · up to 5">
+        <GalleryInput name="images" defaultValue={project?.images ?? []} />
+      </Field>
+
+      <p className="rounded-lg bg-teal-50 px-3 py-2 text-xs text-teal-800">
+        Add a <strong>cover image</strong> or a <strong>live link</strong> (or
+        both) so people can actually see your project.
+      </p>
+
+      <Field label="Name" required>
         <input
           name="name"
-          defaultValue={project?.name}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           maxLength={100}
           dir="auto"
           className={inputClass}
           placeholder="What's it called?"
         />
+        {state.fieldErrors?.name && (
+          <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.name}</p>
+        )}
       </Field>
 
-      <Field
-        label="Description"
-        required
-        error={state.fieldErrors?.description}
-      >
+      <Field label="Description" required>
         <textarea
           name="description"
-          defaultValue={project?.description}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           maxLength={2000}
           rows={4}
           dir="auto"
           className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
           placeholder="What does it do? Who's it for?"
         />
+        {state.fieldErrors?.description && (
+          <p className="mt-1 text-xs text-clay-deep">
+            {state.fieldErrors.description}
+          </p>
+        )}
       </Field>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Live URL" error={state.fieldErrors?.url}>
-          <input
-            name="url"
-            type="url"
-            defaultValue={project?.url ?? ""}
-            className={inputClass}
-            placeholder="https://your-app.com"
-          />
-        </Field>
-        <Field label="Video / demo URL" error={state.fieldErrors?.video_url}>
-          <input
-            name="video_url"
-            type="url"
-            defaultValue={project?.video_url ?? ""}
-            className={inputClass}
-            placeholder="https://loom.com/…"
-          />
-        </Field>
-      </div>
-
-      <Field label="Tools used">
-        <div className="flex flex-wrap gap-2">
-          {chipTools.map((t) => {
-            const active = tools.includes(t);
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => toggleTool(t)}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-sm transition-colors",
-                  active
-                    ? "border-blue-mid bg-blue-tint text-blue-deep"
-                    : "border-border bg-surface text-muted-foreground hover:border-border-hover",
-                )}
-              >
-                {t}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={customTool}
-            onChange={(e) => setCustomTool(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustom();
-              }
-            }}
-            placeholder="Add another tool"
-            className={cn(inputClass, "h-9 max-w-xs")}
-          />
-          <button
-            type="button"
-            onClick={addCustom}
-            className="inline-flex h-9 items-center gap-1 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink hover:bg-secondary"
-          >
-            <Plus size={15} /> Add
-          </button>
-        </div>
-        {tools.map((t) => (
-          <input key={t} type="hidden" name="tools" value={t} />
-        ))}
-      </Field>
-
-      <Field label="Tags" hint="comma separated">
+      <Field label="Video / demo URL">
         <input
-          name="tags"
-          defaultValue={(project?.tags ?? []).join(", ")}
-          dir="auto"
+          name="video_url"
+          type="url"
+          defaultValue={project?.video_url ?? ""}
           className={inputClass}
-          placeholder="Community, Productivity, Education"
+          placeholder="https://loom.com/…"
+        />
+        {state.fieldErrors?.video_url && (
+          <p className="mt-1 text-xs text-clay-deep">
+            {state.fieldErrors.video_url}
+          </p>
+        )}
+      </Field>
+
+      <Field label="Tools used" hint="how it was built">
+        <ChipField
+          name="tools"
+          suggestions={KNOWN_TOOLS}
+          values={tools}
+          setValues={setTools}
+          activeClass="border-blue-mid bg-blue-tint text-blue-deep"
+          placeholder="Add another tool"
         />
       </Field>
+
+      <Field label="Tags" hint="what it's about">
+        <ChipField
+          name="tags"
+          suggestions={KNOWN_TAGS}
+          values={tags}
+          setValues={setTags}
+          activeClass="border-teal-400 bg-teal-50 text-teal-800"
+          placeholder="Add another tag"
+        />
+      </Field>
+
+      <Field
+        label="Looking for…"
+        hint="optional · shows badges + needs a public contact method"
+      >
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {(
+            [
+              ["seeking_funding", "Funding / investors", project?.seeking_funding],
+              ["for_sale", "A buyer (for sale)", project?.for_sale],
+              ["open_to_partners", "Partners / co-founders", project?.open_to_partners],
+            ] as const
+          ).map(([key, label, on]) => (
+            <label
+              key={key}
+              className="flex cursor-pointer items-center gap-2 rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink"
+            >
+              <input
+                type="checkbox"
+                name={key}
+                defaultChecked={on ?? false}
+                className="h-4 w-4 rounded border-border accent-teal-600"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </Field>
+
+      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+        <span>
+          <span className="block text-sm font-medium text-ink">
+            Post anonymously
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Hide your name publicly — shown as &ldquo;Anonymous.&rdquo; Only you
+            and admins know it&apos;s yours.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          name="is_anonymous"
+          defaultChecked={project?.is_anonymous ?? false}
+          className="peer sr-only"
+        />
+        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+      </label>
 
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[10px] bg-teal-600 px-4 text-[15px] font-medium text-white transition-transform active:scale-[0.99] disabled:opacity-70"
+        className="btn-sweep inline-flex h-11 w-full items-center justify-center rounded-[10px] px-4 text-[15px] font-medium transition-transform active:scale-[0.99] disabled:opacity-70"
       >
         {pending ? "Saving…" : submitLabel}
       </button>

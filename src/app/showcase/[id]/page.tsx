@@ -10,6 +10,7 @@ import {
 import { getCurrentProfile } from "@/lib/current-user";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
+import { PROJECT_COMMERCIAL } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
 import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
@@ -66,6 +67,23 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
+      {project.images.length > 0 && (
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {project.images.map((src) => (
+            <a
+              key={src}
+              href={src}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block aspect-[4/3] overflow-hidden rounded-card border border-border bg-teal-50"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="h-full w-full object-cover" />
+            </a>
+          ))}
+        </div>
+      )}
+
       <div className="mt-6 flex items-start justify-between gap-4">
         <h1 className="font-display text-3xl text-ink" dir="auto">
           {project.name}
@@ -120,6 +138,28 @@ export default async function ProjectDetailPage({
         {project.description}
       </p>
 
+      {(project.seeking_funding ||
+        project.for_sale ||
+        project.open_to_partners) && (
+        <div className="mt-5 rounded-card border border-border bg-secondary/30 p-4">
+          <div className="flex flex-wrap gap-1.5">
+            {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
+              <Pill key={c.key} accent={c.accent}>
+                {c.label}
+              </Pill>
+            ))}
+          </div>
+          {!project.is_anonymous && owner && (
+            <a
+              href={`/u/${owner.handle}#contact`}
+              className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
+            >
+              Contact the builder
+            </a>
+          )}
+        </div>
+      )}
+
       {(project.tools.length > 0 || project.tags.length > 0) && (
         <div className="mt-5 flex flex-wrap gap-1.5">
           {project.tools.map((t) => (
@@ -131,35 +171,57 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      {owner && (
+      {project.is_anonymous ? (
         <div className="mt-8 rounded-card border border-border bg-surface p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Built by
           </p>
           <div className="mt-3 flex items-center gap-3">
-            <AvatarCircle
-              name={owner.name}
-              src={owner.avatar_url}
-              size={44}
-              accent="blue"
-            />
+            <AvatarCircle name="?" src={null} size={44} accent="blue" />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="truncate font-medium text-ink">{owner.name}</p>
-                {owner.available_for_hire && <Pill accent="sage">Available</Pill>}
-              </div>
-              <p className="truncate text-sm text-muted-foreground">
-                @{owner.handle}
-              </p>
+              <p className="font-medium text-ink">Anonymous</p>
+              {isOwner && (
+                <p className="text-sm text-muted-foreground">
+                  Posted anonymously — only you and admins can see it&apos;s
+                  yours.
+                </p>
+              )}
             </div>
-            <Link
-              href={`/u/${owner.handle}`}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-            >
-              View profile <ArrowRight size={15} />
-            </Link>
           </div>
         </div>
+      ) : (
+        owner && (
+          <div className="mt-8 rounded-card border border-border bg-surface p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Built by
+            </p>
+            <div className="mt-3 flex items-center gap-3">
+              <AvatarCircle
+                name={owner.name}
+                src={owner.avatar_url}
+                size={44}
+                accent="blue"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="truncate font-medium text-ink">{owner.name}</p>
+                  {owner.available_for_hire && (
+                    <Pill accent="sage">Available</Pill>
+                  )}
+                </div>
+                <p className="truncate text-sm text-muted-foreground">
+                  @{owner.handle}
+                </p>
+              </div>
+              <Link
+                href={`/u/${owner.handle}`}
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
+              >
+                View profile <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
+        )
       )}
 
       <section className="mt-10">
@@ -195,13 +257,17 @@ export default async function ProjectDetailPage({
               return (
                 <li key={c.id} className="flex gap-3">
                   <AvatarCircle
-                    name={c.author?.name ?? "?"}
-                    src={c.author?.avatar_url}
+                    name={c.is_anonymous ? "?" : c.author?.name ?? "?"}
+                    src={c.is_anonymous ? null : c.author?.avatar_url}
                     size={32}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      {c.author ? (
+                      {c.is_anonymous ? (
+                        <span className="text-sm font-medium text-ink">
+                          Anonymous
+                        </span>
+                      ) : c.author ? (
                         <Link
                           href={`/u/${c.author.handle}`}
                           className="text-sm font-medium text-ink hover:underline"

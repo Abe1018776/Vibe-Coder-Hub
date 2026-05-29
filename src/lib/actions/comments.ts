@@ -20,9 +20,12 @@ export async function addComment(
   if (!body) return { error: "Write something first." };
   if (body.length > 2000) return { error: "That comment is too long." };
 
-  const { error } = await supabase
-    .from("comments")
-    .insert({ project_id: projectId, author_id: user.id, body });
+  const { error } = await supabase.from("comments").insert({
+    project_id: projectId,
+    author_id: user.id,
+    body,
+    is_anonymous: formData.get("is_anonymous") != null,
+  });
   if (error) return { error: "Couldn't post your comment. Please try again." };
 
   revalidatePath(`/showcase/${projectId}`);

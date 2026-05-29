@@ -20,6 +20,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          is_anonymous: boolean
           project_id: string
         }
         Insert: {
@@ -27,6 +28,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          is_anonymous?: boolean
           project_id: string
         }
         Update: {
@@ -34,6 +36,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          is_anonymous?: boolean
           project_id?: string
         }
         Relationships: [
@@ -390,6 +393,11 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          images: string[]
+          is_anonymous: boolean
+          for_sale: boolean
+          open_to_partners: boolean
+          seeking_funding: boolean
           name: string
           owner_id: string
           tags: string[]
@@ -404,6 +412,11 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          images?: string[]
+          is_anonymous?: boolean
+          for_sale?: boolean
+          open_to_partners?: boolean
+          seeking_funding?: boolean
           name: string
           owner_id: string
           tags?: string[]
@@ -418,6 +431,11 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          images?: string[]
+          is_anonymous?: boolean
+          for_sale?: boolean
+          open_to_partners?: boolean
+          seeking_funding?: boolean
           name?: string
           owner_id?: string
           tags?: string[]

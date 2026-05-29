@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { hasAnyContact } from "@/lib/site";
 import { slugify } from "@/lib/utils";
 
 export type GigFormState = {
@@ -41,6 +42,18 @@ export async function createGig(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Please sign in to post a gig." };
+
+  const { data: prof } = await supabase
+    .from("profiles")
+    .select("links")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!hasAnyContact(prof?.links as Record<string, string | undefined> | null)) {
+    return {
+      error:
+        "Add a public contact method to your profile first (Settings → Contact) so people can reach you about this gig.",
+    };
+  }
 
   const parsed = schema.safeParse({
     type: formData.get("type"),

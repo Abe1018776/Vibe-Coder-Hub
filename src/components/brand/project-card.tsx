@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { ToolPill, TagPill, Pill } from "./pill";
 import { UpvoteButton } from "./upvote-button";
+import { PROJECT_COMMERCIAL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import type { ProjectWithOwner } from "@/lib/queries";
 
@@ -70,6 +71,18 @@ export function ProjectCard({
           {project.description}
         </p>
 
+        {(project.seeking_funding ||
+          project.for_sale ||
+          project.open_to_partners) && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
+              <Pill key={c.key} accent={c.accent}>
+                {c.label}
+              </Pill>
+            ))}
+          </div>
+        )}
+
         {(project.url || project.tools.length > 0 || project.tags.length > 0) && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {project.url && <Pill accent="sage">Live</Pill>}
@@ -82,26 +95,36 @@ export function ProjectCard({
           </div>
         )}
 
-        {showBuilder && owner && (
-          <Link
-            href={`/u/${owner.handle}`}
-            className="mt-auto flex items-center gap-2 rounded-md border-t border-border pt-3"
-          >
-            <AvatarCircle name={owner.name} src={owner.avatar_url} size={24} />
-            <span className="truncate text-sm text-muted-foreground">
-              by <span className="text-ink">{owner.name}</span>
-            </span>
-            {owner.available_for_hire && (
-              <Pill accent="sage" className="ml-0.5">
-                Available
-              </Pill>
-            )}
-            <ArrowRight
-              size={15}
-              className="ml-auto shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
-        )}
+        {showBuilder &&
+          (project.is_anonymous ? (
+            <div className="mt-auto flex items-center gap-2 border-t border-border pt-3">
+              <AvatarCircle name="?" src={null} size={24} />
+              <span className="truncate text-sm text-muted-foreground">
+                by <span className="text-ink">Anonymous</span>
+              </span>
+            </div>
+          ) : (
+            owner && (
+              <Link
+                href={`/u/${owner.handle}`}
+                className="mt-auto flex items-center gap-2 rounded-md border-t border-border pt-3"
+              >
+                <AvatarCircle name={owner.name} src={owner.avatar_url} size={24} />
+                <span className="truncate text-sm text-muted-foreground">
+                  by <span className="text-ink">{owner.name}</span>
+                </span>
+                {owner.available_for_hire && (
+                  <Pill accent="sage" className="ml-0.5">
+                    Available
+                  </Pill>
+                )}
+                <ArrowRight
+                  size={15}
+                  className="ml-auto shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            )
+          ))}
       </div>
     </div>
   );

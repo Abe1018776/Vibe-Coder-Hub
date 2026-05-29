@@ -36,6 +36,84 @@ export const KNOWN_TOOLS = [
   "Gemini",
 ];
 
+/**
+ * Curated "what it's about" topic tags — suggestions only; users can add their own.
+ * These render in the teal TagPill family, distinct from the blue tool pills.
+ */
+export const KNOWN_TAGS = [
+  "Community",
+  "Education",
+  "Finance",
+  "Productivity",
+  "Developer Tools",
+  "AI",
+  "Automation",
+  "SaaS",
+  "Marketplace",
+  "Directory",
+  "Finder",
+  "Safety",
+  "Civic Tech",
+  "Map",
+  "Health",
+  "Events",
+  "Design",
+  "Social",
+  "Content",
+  "Games",
+];
+
+/** Project-level commercial intents → badge label + accent. All optional. */
+export const PROJECT_COMMERCIAL: {
+  key: "seeking_funding" | "for_sale" | "open_to_partners";
+  label: string;
+  accent: Accent;
+}[] = [
+  { key: "seeking_funding", label: "Seeking funding", accent: "gold" },
+  { key: "for_sale", label: "For sale", accent: "blue" },
+  { key: "open_to_partners", label: "Open to partners", accent: "teal" },
+];
+
+/** Public contact channels stored in profiles.links (user chooses what to fill). */
+export const CONTACT_KEYS = [
+  "email",
+  "phone",
+  "whatsapp",
+  "instagram",
+  "website",
+  "github",
+  "x",
+  "linkedin",
+] as const;
+export type ContactKey = (typeof CONTACT_KEYS)[number];
+
+/** True when a profile exposes at least one way to be reached. */
+export function hasAnyContact(
+  links: Record<string, string | undefined> | null | undefined,
+): boolean {
+  if (!links) return false;
+  return CONTACT_KEYS.some((k) => !!(links[k] && String(links[k]).trim()));
+}
+
+/** Build a clickable href for a stored contact value. */
+export function contactHref(key: ContactKey, value: string): string {
+  const v = value.trim();
+  switch (key) {
+    case "email":
+      return `mailto:${v}`;
+    case "phone":
+      return `tel:${v.replace(/[^\d+]/g, "")}`;
+    case "whatsapp":
+      return `https://wa.me/${v.replace(/[^\d]/g, "")}`;
+    case "instagram":
+      return /^https?:\/\//i.test(v)
+        ? v
+        : `https://instagram.com/${v.replace(/^@/, "")}`;
+    default:
+      return /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  }
+}
+
 /** tint background + deep-stop text — the BRAND pill pattern. */
 export const ACCENT_PILL: Record<Accent, string> = {
   teal: "bg-teal-50 text-teal-800",

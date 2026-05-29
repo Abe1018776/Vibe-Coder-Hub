@@ -1,7 +1,19 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Globe, Github, Twitter, Linkedin, Pencil, MapPin } from "lucide-react";
+import {
+  Globe,
+  Github,
+  Twitter,
+  Linkedin,
+  Pencil,
+  MapPin,
+  Mail,
+  Phone,
+  MessageCircle,
+  Instagram,
+} from "lucide-react";
+import { contactHref } from "@/lib/site";
 import {
   getProfileByHandle,
   getProjectsByOwner,
@@ -75,7 +87,9 @@ export default async function ProfilePage({
     avatar_url: profile.avatar_url,
     available_for_hire: profile.available_for_hire,
   };
-  const withOwner: ProjectWithOwner[] = projects.map((p) => ({ ...p, owner }));
+  // Don't deanonymize: a visitor must not see projects this person posted anonymously.
+  const visible = isOwner ? projects : projects.filter((p) => !p.is_anonymous);
+  const withOwner: ProjectWithOwner[] = visible.map((p) => ({ ...p, owner }));
 
   return (
     <div className="mx-auto max-w-[1120px] px-4 py-10 md:px-6">
@@ -139,8 +153,38 @@ export default async function ProfilePage({
           </div>
         )}
 
-        {(links.website || links.github || links.x || links.linkedin) && (
-          <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        {(links.email ||
+          links.phone ||
+          links.whatsapp ||
+          links.instagram ||
+          links.website ||
+          links.github ||
+          links.x ||
+          links.linkedin) && (
+          <div
+            id="contact"
+            className="mt-5 flex scroll-mt-20 flex-wrap items-center gap-2.5"
+          >
+            {links.email && (
+              <LinkButton href={contactHref("email", links.email)} icon={<Mail size={15} />}>
+                Email
+              </LinkButton>
+            )}
+            {links.phone && (
+              <LinkButton href={contactHref("phone", links.phone)} icon={<Phone size={15} />}>
+                Call
+              </LinkButton>
+            )}
+            {links.whatsapp && (
+              <LinkButton href={contactHref("whatsapp", links.whatsapp)} icon={<MessageCircle size={15} />}>
+                WhatsApp
+              </LinkButton>
+            )}
+            {links.instagram && (
+              <LinkButton href={contactHref("instagram", links.instagram)} icon={<Instagram size={15} />}>
+                Instagram
+              </LinkButton>
+            )}
             {links.website && (
               <LinkButton href={links.website} icon={<Globe size={15} />}>
                 Website

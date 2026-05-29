@@ -81,6 +81,17 @@ export async function updateProfile(
   if (x) links.x = x;
   if (linkedin) links.linkedin = linkedin;
 
+  // Direct contact channels — stored raw (rendered as mailto:/tel:/wa.me/instagram).
+  const raw = (key: string) => String(formData.get(key) ?? "").trim();
+  const email = raw("link_email");
+  const phone = raw("link_phone");
+  const whatsapp = raw("link_whatsapp");
+  const instagram = raw("link_instagram");
+  if (email) links.email = email;
+  if (phone) links.phone = phone;
+  if (whatsapp) links.whatsapp = whatsapp;
+  if (instagram) links.instagram = instagram;
+
   const { error } = await supabase
     .from("profiles")
     .update({
