@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { SiteNav } from "@/components/site/site-nav";
@@ -25,6 +25,12 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: SITE_TAGLINE,
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1f6e66",
 };
 
 export default function RootLayout({
