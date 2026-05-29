@@ -13,6 +13,7 @@ import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
 import { PROJECT_COMMERCIAL } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
 import { AddCommentForm } from "@/components/showcase/add-comment-form";
+import { InterestButton } from "@/components/showcase/interest-button";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
 import { deleteProject } from "@/lib/actions/projects";
 import { deleteComment } from "@/lib/actions/comments";
@@ -149,14 +150,25 @@ export default async function ProjectDetailPage({
               </Pill>
             ))}
           </div>
-          {!project.is_anonymous && owner && (
-            <a
-              href={`/u/${owner.handle}#contact`}
-              className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-            >
-              Contact the builder
-            </a>
-          )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {!project.is_anonymous && owner && (
+              <a
+                href={`/u/${owner.handle}#contact`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
+              >
+                Contact the builder
+              </a>
+            )}
+            {isAuthed && !isOwner && <InterestButton projectId={id} />}
+            {!isAuthed && (
+              <Link
+                href={`/login?next=/showcase/${id}`}
+                className="inline-flex h-9 items-center rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
+              >
+                Sign in to connect
+              </Link>
+            )}
+          </div>
         </div>
       )}
 

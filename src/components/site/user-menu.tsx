@@ -26,6 +26,8 @@ export function UserMenu({ profile }: { profile: MenuProfile }) {
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <Item href={`/u/${profile.handle}`}>Your profile</Item>
           <Item href="/settings/profile">Edit profile</Item>
+          <Item href="/notifications">Notifications</Item>
+          <Item href="/settings/notifications">Notification settings</Item>
           <Item href="/showcase/submit">Submit a project</Item>
           <Item href="/gigs/post">Post a gig</Item>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />

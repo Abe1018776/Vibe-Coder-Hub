@@ -1,12 +1,36 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/current-user";
+import {
+  getNotificationSummary,
+  describeNotification,
+} from "@/lib/notifications";
 import { Logo } from "./logo";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
 import { MobileMenu } from "./mobile-menu";
+import { NotificationBell, type BellItem } from "./notification-bell";
 
 export async function SiteNav() {
   const profile = await getCurrentProfile();
+
+  let bellItems: BellItem[] = [];
+  let unread = 0;
+  if (profile) {
+    const summary = await getNotificationSummary();
+    unread = summary.unread;
+    bellItems = summary.items.map((n) => {
+      const { text, href } = describeNotification(n);
+      return {
+        id: n.id,
+        text,
+        href,
+        read: n.read_at != null,
+        createdAt: n.created_at,
+        actorName: n.actor?.name ?? null,
+        actorAvatar: n.actor?.avatar_url ?? null,
+      };
+    });
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-canvas/85 backdrop-blur supports-[backdrop-filter]:bg-canvas/75">
@@ -14,6 +38,7 @@ export async function SiteNav() {
         <Logo />
         <NavLinks />
         <div className="flex items-center gap-2">
+          {profile && <NotificationBell items={bellItems} unread={unread} />}
           {profile ? (
             <div className="hidden md:block">
               <UserMenu

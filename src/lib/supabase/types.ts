@@ -294,6 +294,45 @@ export type Database = {
           },
         ]
       }
+      interests: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string | null
@@ -336,6 +375,57 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          data: Json
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          read_at: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          data?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          data?: Json
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          read_at?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           available_for_hire: boolean
@@ -348,6 +438,7 @@ export type Database = {
           links: Json
           location: string | null
           name: string
+          notification_prefs: Json
           skills: string[]
           tags: string[]
           tools: string[]
@@ -364,6 +455,7 @@ export type Database = {
           links?: Json
           location?: string | null
           name: string
+          notification_prefs?: Json
           skills?: string[]
           tags?: string[]
           tools?: string[]
@@ -380,6 +472,7 @@ export type Database = {
           links?: Json
           location?: string | null
           name?: string
+          notification_prefs?: Json
           skills?: string[]
           tags?: string[]
           tools?: string[]
@@ -391,15 +484,15 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          for_sale: boolean
           id: string
           image_url: string | null
           images: string[]
           is_anonymous: boolean
-          for_sale: boolean
-          open_to_partners: boolean
-          seeking_funding: boolean
           name: string
+          open_to_partners: boolean
           owner_id: string
+          seeking_funding: boolean
           tags: string[]
           tools: string[]
           updated_at: string
@@ -410,15 +503,15 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          for_sale?: boolean
           id?: string
           image_url?: string | null
           images?: string[]
           is_anonymous?: boolean
-          for_sale?: boolean
-          open_to_partners?: boolean
-          seeking_funding?: boolean
           name: string
+          open_to_partners?: boolean
           owner_id: string
+          seeking_funding?: boolean
           tags?: string[]
           tools?: string[]
           updated_at?: string
@@ -429,15 +522,15 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          for_sale?: boolean
           id?: string
           image_url?: string | null
           images?: string[]
           is_anonymous?: boolean
-          for_sale?: boolean
-          open_to_partners?: boolean
-          seeking_funding?: boolean
           name?: string
+          open_to_partners?: boolean
           owner_id?: string
+          seeking_funding?: boolean
           tags?: string[]
           tools?: string[]
           updated_at?: string
@@ -496,7 +589,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      notify: {
+        Args: {
+          p_actor?: string
+          p_data?: Json
+          p_entity_id?: string
+          p_entity_type?: string
+          p_type: string
+          p_user: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       competition_status: "open" | "judging" | "closed"
