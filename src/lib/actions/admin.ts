@@ -1,0 +1,97 @@
+"use server";
+
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import {
+  requireAdmin,
+  requireAdminUnlocked,
+  makeUnlockToken,
+  passcodeConfigured,
+  ADMIN_COOKIE_NAME,
+} from "@/lib/admin";
+
+export type UnlockState = { error?: string };
+
+/** Step-up re-auth: verify the admin passcode, then set a short-lived unlock cookie. */
+export async function unlockAdmin(
+  _prev: UnlockState,
+  formData: FormData,
+): Promise<UnlockState> {
+  const ctx = await requireAdmin();
+  if (!passcodeConfigured()) {
+    return { error: "Admin passcode isn't configured on the server." };
+  }
+  const code = String(formData.get("passcode") ?? "");
+  if (code !== process.env.ADMIN_PASSCODE) {
+    return { error: "Wrong passcode." };
+  }
+  (await cookies()).set(ADMIN_COOKIE_NAME, makeUnlockToken(ctx.userId), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,
+    path: "/admin",
+    maxAge: 60 * 60,
+  });
+  redirect("/admin");
+}
+
+export async function lockAdmin() {
+  (await cookies()).delete({ name: ADMIN_COOKIE_NAME, path: "/admin" });
+  redirect("/");
+}
+
+export type ReportAction = "hide" | "delete" | "dismiss";
+
+/** Act on a report. Admin RLS policies let these writes bypass owner-only checks. */
+export async function resolveReport(reportId: string, action: ReportAction) {
+  const ctx = await requireAdminUnlocked();
+  const supabase = await createClient();
+
+  const { data: report } = await supabase
+    .from("reports")
+    .select("*")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (!report) return;
+
+  const id = report.target_id;
+  if (action === "hide") {
+    if (report.target_type === "project")
+      await supabase.from("projects").update({ hidden: true }).eq("id", id);
+    else if (report.target_type === "comment")
+      await supabase.from("comments").update({ hidden: true }).eq("id", id);
+  } else if (action === "delete") {
+    switch (report.target_type) {
+      case "project":
+        await supabase.from("projects").delete().eq("id", id);
+        break;
+      case "comment":
+        await supabase.from("comments").delete().eq("id", id);
+        break;
+      case "gig":
+        await supabase.from("gigs").delete().eq("id", id);
+        break;
+      case "competition":
+        await supabase.from("competitions").delete().eq("id", id);
+        break;
+      case "event":
+        await supabase.from("events").delete().eq("id", id);
+        break;
+      // profile deletion is intentionally deferred (heavy cascade) — dismiss instead.
+    }
+  }
+
+  await supabase
+    .from("reports")
+    .update({
+      status: action === "dismiss" ? "dismissed" : "resolved",
+      resolved_by: ctx.userId,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", reportId);
+
+  revalidatePath("/admin/reports");
+  revalidatePath("/admin");
+}

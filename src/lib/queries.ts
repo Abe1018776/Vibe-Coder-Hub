@@ -40,6 +40,7 @@ export async function getProjectsByOwner(ownerId: string): Promise<Project[]> {
     .from("projects")
     .select("*")
     .eq("owner_id", ownerId)
+    .eq("hidden", false)
     .order("upvote_count", { ascending: false })
     .order("created_at", { ascending: false });
   return data ?? [];
@@ -53,6 +54,7 @@ export async function getProjectById(
     .from("projects")
     .select(PROJECT_WITH_OWNER)
     .eq("id", id)
+    .eq("hidden", false)
     .maybeSingle();
   return (data as ProjectWithOwner | null) ?? null;
 }
@@ -67,7 +69,10 @@ export async function listProjects(
   } = {},
 ): Promise<ProjectWithOwner[]> {
   const supabase = await createClient();
-  let query = supabase.from("projects").select(PROJECT_WITH_OWNER);
+  let query = supabase
+    .from("projects")
+    .select(PROJECT_WITH_OWNER)
+    .eq("hidden", false);
 
   if (opts.q) {
     const s = sanitize(opts.q);
@@ -166,6 +171,7 @@ export async function getComments(
       "*, author:profiles!comments_author_id_fkey(handle,name,avatar_url)",
     )
     .eq("project_id", projectId)
+    .eq("hidden", false)
     .order("created_at", { ascending: true });
   return (data as CommentWithAuthor[] | null) ?? [];
 }
@@ -190,7 +196,10 @@ export async function getProjectFacets(): Promise<{
   tags: string[];
 }> {
   const supabase = await createClient();
-  const { data } = await supabase.from("projects").select("tools, tags");
+  const { data } = await supabase
+    .from("projects")
+    .select("tools, tags")
+    .eq("hidden", false);
   const tools = new Set<string>();
   const tags = new Set<string>();
   for (const row of data ?? []) {

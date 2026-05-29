@@ -19,6 +19,7 @@ export type Database = {
           author_id: string
           body: string
           created_at: string
+          hidden: boolean
           id: string
           is_anonymous: boolean
           project_id: string
@@ -27,6 +28,7 @@ export type Database = {
           author_id: string
           body: string
           created_at?: string
+          hidden?: boolean
           id?: string
           is_anonymous?: boolean
           project_id: string
@@ -35,6 +37,7 @@ export type Database = {
           author_id?: string
           body?: string
           created_at?: string
+          hidden?: boolean
           id?: string
           is_anonymous?: boolean
           project_id?: string
@@ -435,6 +438,7 @@ export type Database = {
           handle: string
           hourly_rate: number | null
           id: string
+          is_admin: boolean
           links: Json
           location: string | null
           name: string
@@ -452,6 +456,7 @@ export type Database = {
           handle: string
           hourly_rate?: number | null
           id: string
+          is_admin?: boolean
           links?: Json
           location?: string | null
           name: string
@@ -469,6 +474,7 @@ export type Database = {
           handle?: string
           hourly_rate?: number | null
           id?: string
+          is_admin?: boolean
           links?: Json
           location?: string | null
           name?: string
@@ -485,6 +491,7 @@ export type Database = {
           created_at: string
           description: string
           for_sale: boolean
+          hidden: boolean
           id: string
           image_url: string | null
           images: string[]
@@ -504,6 +511,7 @@ export type Database = {
           created_at?: string
           description: string
           for_sale?: boolean
+          hidden?: boolean
           id?: string
           image_url?: string | null
           images?: string[]
@@ -523,6 +531,7 @@ export type Database = {
           created_at?: string
           description?: string
           for_sale?: boolean
+          hidden?: boolean
           id?: string
           image_url?: string | null
           images?: string[]
@@ -542,6 +551,60 @@ export type Database = {
           {
             foreignKeyName: "projects_owner_id_fkey"
             columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

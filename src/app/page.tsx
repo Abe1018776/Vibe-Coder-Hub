@@ -245,6 +245,12 @@ export default async function Home() {
               Explore
             </Link>
           </div>
+          <p className="mt-6 text-sm text-white/75">
+            New here?{" "}
+            <Link href="/docs" className="font-medium text-white underline underline-offset-4">
+              See how YidVibe works
+            </Link>
+          </p>
         </div>
       </section>
     </>

@@ -14,6 +14,7 @@ import { PROJECT_COMMERCIAL } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
 import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { InterestButton } from "@/components/showcase/interest-button";
+import { ReportMenu } from "@/components/brand/report-menu";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
 import { deleteProject } from "@/lib/actions/projects";
 import { deleteComment } from "@/lib/actions/comments";
@@ -129,6 +130,11 @@ export default async function ProjectDetailPage({
             </Link>
             <DeleteProjectButton action={deleteThis} />
           </>
+        )}
+        {isAuthed && !isOwner && (
+          <div className="ml-auto flex items-center">
+            <ReportMenu targetType="project" targetId={id} />
+          </div>
         )}
       </div>
 
@@ -294,7 +300,7 @@ export default async function ProjectDetailPage({
                       <span className="text-xs text-muted-foreground">
                         {formatRelativeTime(c.created_at)}
                       </span>
-                      {mine && (
+                      {mine ? (
                         <form action={del} className="ml-auto">
                           <button
                             type="submit"
@@ -303,6 +309,12 @@ export default async function ProjectDetailPage({
                             Delete
                           </button>
                         </form>
+                      ) : (
+                        isAuthed && (
+                          <div className="ml-auto">
+                            <ReportMenu targetType="comment" targetId={c.id} />
+                          </div>
+                        )
                       )}
                     </div>
                     <p

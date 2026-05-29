@@ -19,6 +19,7 @@ export const FOOTER_LINKS: { href: string; label: string }[] = [
   { href: "/gigs", label: "Gigs" },
   { href: "/competitions", label: "Competitions" },
   { href: "/events", label: "Events" },
+  { href: "/docs", label: "How it works" },
 ];
 
 /** Curated AI tools offered as quick-pick chips on the profile form. */

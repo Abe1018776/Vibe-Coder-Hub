@@ -25,6 +25,7 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { ProjectCard } from "@/components/brand/project-card";
 import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
 import { EmptyState } from "@/components/brand/empty-state";
+import { ReportMenu } from "@/components/brand/report-menu";
 
 export async function generateMetadata({
   params,
@@ -125,13 +126,15 @@ export default async function ProfilePage({
                 <span className="text-muted-foreground">/hr</span>
               </span>
             )}
-            {isOwner && (
+            {isOwner ? (
               <Link
                 href="/settings/profile"
                 className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
               >
                 <Pencil size={15} /> Edit profile
               </Link>
+            ) : (
+              isAuthed && <ReportMenu targetType="profile" targetId={profile.id} />
             )}
           </div>
         </div>
