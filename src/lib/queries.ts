@@ -129,6 +129,25 @@ export function builderProjectCount(b: BuilderListItem): number {
   return b.project_count?.[0]?.count ?? 0;
 }
 
+export type CommentAuthor = Pick<Profile, "handle" | "name" | "avatar_url">;
+export type CommentWithAuthor = Tables<"comments"> & {
+  author: CommentAuthor | null;
+};
+
+export async function getComments(
+  projectId: string,
+): Promise<CommentWithAuthor[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("comments")
+    .select(
+      "*, author:profiles!comments_author_id_fkey(handle,name,avatar_url)",
+    )
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: true });
+  return (data as CommentWithAuthor[] | null) ?? [];
+}
+
 /** Project ids the current user has upvoted (empty set when signed out). */
 export async function getMyUpvotedProjectIds(): Promise<Set<string>> {
   const supabase = await createClient();
