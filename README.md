@@ -1,53 +1,53 @@
-# Vibe Coder Hub
+# YidVibe
 
-Next.js 15 + Drizzle + Clerk + Postgres marketplace for AI-native builders.
+A community marketplace for Jewish "vibe coders" — builders shipping apps and
+AI tools. Showcase your work, build a profile, get hired, post gigs, run
+competitions, and find community events.
 
 ## Stack
 
-- **Frontend + API:** Next.js 15 (App Router, server components) on Vercel
-- **Database:** Postgres on Hostinger VPS (or any Postgres URL)
-- **Auth:** Clerk
-- **ORM:** Drizzle
-- **UI:** Tailwind 4 + shadcn/ui
+- **Framework:** Next.js 15 (App Router, React Server Components) + TypeScript
+- **Backend:** Supabase (Postgres + Auth + Storage), Row Level Security on every table
+- **Auth:** Google sign-in via Supabase Auth (`@supabase/ssr`)
+- **UI:** Tailwind v4 + shadcn/ui, Fraunces + Inter + JetBrains Mono
+- **Hosting:** Vercel
+
+## Features
+
+- **Showcase** — project gallery with upvotes (one per user, DB-enforced) and comments
+- **Profiles** — auto portfolio per builder + curated **Builders** page + searchable **Directory**
+- **Gigs** — post work, apply, and message privately (poster ↔ applicant only)
+- **Competitions** — prize + deadline, submissions, pick a winner
+- **Events** — community meetups
 
 ## Local dev
 
-```
-pnpm install
-cp .env.example .env.local        # then fill DATABASE_URL + Clerk keys
-pnpm db:push                       # create tables
-pnpm dev
-```
-
-Open http://localhost:3000 — public marketplace at `/freelancers`,
-admin dashboard at `/admin` (requires sign-in).
-
-## Database (Hostinger VPS)
-
-```
-ssh root@<vps-ip>
-git clone <this-repo> /opt/vibe
-cd /opt/vibe/app/deploy
-sudo bash bootstrap-postgres.sh
-sudo bash expose-postgres.sh
+```bash
+npm install
+cp .env.example .env.local   # fill NEXT_PUBLIC_SUPABASE_URL + ANON_KEY
+npm run dev                  # http://localhost:3000
 ```
 
-Copy the printed `DATABASE_URL_PUBLIC` into Vercel project env vars.
+Google sign-in setup: see **`docs/GOOGLE_OAUTH_SETUP.md`**.
+Database schema lives in Supabase migrations (see `docs/superpowers/specs/`).
 
-## Deploy to Vercel
+## Scripts
 
-The GitHub repo is connected to Vercel — every push to `main` auto-deploys
-to production, and other branches get preview URLs.
+- `npm run dev` — start the dev server
+- `npm run build` — production build
+- `npm run typecheck` — `tsc --noEmit`
+- `npm run lint` — ESLint
 
-For the initial project setup:
+## Deploy (Vercel)
+
+Connected repo auto-deploys `main` to production; other branches get preview URLs.
+Set env vars in the Vercel project:
 
 ```
-cd app
-vercel link
-vercel env add DATABASE_URL production
-vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production
-vercel env add CLERK_SECRET_KEY production
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SITE_URL        # your production domain
 ```
 
-After the first deploy, add the resulting `*.vercel.app` domain to
-**Clerk → Configure → Domains** so authentication works.
+Then set the production Site URL + redirect URLs in Supabase Auth, and add the
+production origin to the Google OAuth credentials.
