@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export function NavLinks() {
   const pathname = usePathname();
   return (
-    <nav className="hidden items-center gap-1 md:flex">
+    <nav className="flex items-center justify-center gap-0.5">
       {NAV_LINKS.map((l) => {
         const active =
           pathname === l.href || pathname.startsWith(l.href + "/");
@@ -17,10 +17,10 @@ export function NavLinks() {
             key={l.href}
             href={l.href}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-sm transition-colors",
+              "rounded-full px-3 py-2 text-sm font-medium transition-colors",
               active
-                ? "bg-secondary font-medium text-ink"
-                : "text-muted-foreground hover:bg-secondary/60 hover:text-ink",
+                ? "bg-teal-50 text-teal-800"
+                : "text-muted-foreground hover:text-ink",
             )}
           >
             {l.label}

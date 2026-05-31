@@ -71,17 +71,17 @@
   --color-ring: var(--color-teal-600);
 
   /* ---- Typography (vars injected by next/font in layout) ---- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-comfortaa), "Nunito Sans", system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "JetBrains Mono", monospace;
 
-  /* ---- Radii ---- */
-  --radius: 0.625rem; /* 10px — buttons + inputs */
+  /* ---- Radii (redesign: 16px cards, full-pill buttons) ---- */
+  --radius: 0.625rem; /* 10px — inputs + shadcn primitives */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-card: 12px;
+  --radius-card: 16px;
   --radius-input: 10px;
   --radius-pill: 9999px;
   --radius-chip: 8px;
@@ -110,19 +110,143 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
-    /* Inter only at 400/500 per BRAND */
+    /* Nunito Sans body weight */
     font-weight: 400;
+    line-height: 1.55;
     text-rendering: optimizeLegibility;
   }
-  /* Headlines use the display face (Fraunces), weight 500. */
+  /* Headlines use the rounded display face (Comfortaa), weight 600. */
   .font-display {
     font-family: var(--font-display);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.01em;
   }
   .font-mono {
     font-family: var(--font-mono);
   }
+}
+
+/*
+  ──────────────────────────────────────────────────────────────────────────
+  Redesign brand layer (ported from docs/redesign-prototype).
+  Plain-var aliases let prototype-derived component classes read familiar names
+  (--accent, --muted, …) without colliding with Tailwind's @theme --color-* set.
+  ──────────────────────────────────────────────────────────────────────────
+*/
+:root {
+  --teal-50: #edf3f2;  --teal-100: #c2d6d1; --teal-400: #5c928a;
+  --teal-600: #1f6e66; --teal-700: #155952; --teal-800: #134b45; --teal-900: #0c2e2a;
+  --gold-50: #fbf3df;  --gold-100: #f8e9c7; --gold-300: #eec56a;
+  --gold-500: #e0a12e; --gold-700: #a9741a; --gold-900: #5a3f0e;
+
+  --canvas: #fbfcfd; --surface: #ffffff;
+  --border: #e5e9ed; --border-hover: #d4dae0;
+  --muted: #5b6670;  --ink: #16202b;
+
+  --orange-bg: #fbede3; --orange-mid: #d17f4a; --orange-deep: #8f4e20;
+  --blue-bg: #eaeff4;   --blue-mid: #4a6d8c;   --blue-deep: #2a4258;
+  --sage-bg: #e6f0eb;   --sage-mid: #3f8a6e;   --sage-deep: #2c5e48;
+  --clay-bg: #fbeee8;   --clay-mid: #c9714e;   --clay-deep: #8c3e22;
+
+  --accent: var(--teal-600);
+  --accent-strong: var(--teal-700);
+
+  --shadow-xs: 0 1px 1px rgba(16, 32, 43, 0.02);
+  --shadow-sm: 0 1px 3px rgba(16, 32, 43, 0.03);
+  --shadow-md: 0 3px 10px rgba(16, 32, 43, 0.035);
+  --shadow-lg: 0 8px 24px rgba(16, 32, 43, 0.05);
+
+  /* airy section rhythm — calms on small screens (see media query below) */
+  --space-section: 112px;
+}
+
+/* ── Eyebrow ─────────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ── Buttons (full-pill brand actions) ───────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 13px 22px;
+  border: 1px solid transparent;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(16, 32, 43, 0.06); }
+.btn-primary:hover { background: var(--accent-strong); box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 22%, transparent); }
+.btn-ghost { background: var(--surface); color: var(--ink); border-color: var(--border); box-shadow: var(--shadow-xs); }
+.btn-ghost:hover { border-color: var(--border-hover); box-shadow: var(--shadow-sm); }
+.btn-gold { background: var(--gold-500); color: var(--gold-900); box-shadow: 0 1px 2px rgba(90, 63, 14, 0.08); }
+.btn-gold:hover { background: var(--gold-300); }
+.btn-orange { background: var(--orange-mid); color: #fff; box-shadow: 0 1px 2px rgba(143, 78, 32, 0.1); }
+.btn-orange:hover { background: var(--orange-deep); }
+.btn-sm { padding: 9px 16px; font-size: 13.5px; }
+.btn-lg { padding: 15px 26px; font-size: 16px; }
+.btn-block { width: 100%; }
+
+/* ── Inline arrow link ───────────────────────────────────────────────────── */
+.link-arrow { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14.5px; color: var(--accent-strong); }
+.link-arrow svg { transition: transform 0.18s ease; }
+.link-arrow:hover svg { transform: translateX(3px); }
+
+/* ── Chips / pills ───────────────────────────────────────────────────────── */
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; padding: 5px 11px; border-radius: 999px; background: var(--teal-50); color: var(--teal-800); border: 1px solid transparent; }
+.chip.mono { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: -0.01em; background: var(--canvas); border-color: var(--border); color: var(--muted); }
+.chip.blue { background: var(--blue-bg); color: var(--blue-deep); }
+.chip.orange { background: var(--orange-bg); color: var(--orange-deep); }
+.chip.clay { background: var(--clay-bg); color: var(--clay-deep); }
+.chip.gold { background: var(--gold-50); color: var(--gold-700); }
+
+.badge-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 7px 15px 7px 12px; border-radius: 999px; white-space: nowrap; background: var(--surface); border: 1px solid var(--border); color: var(--muted); box-shadow: var(--shadow-xs); }
+.badge-pill .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--sage-mid); box-shadow: 0 0 0 4px var(--sage-bg); }
+
+/* ── Icon button (nav bell, kebab, etc.) ─────────────────────────────────── */
+.icon-btn { width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); display: grid; place-items: center; color: var(--muted); transition: border-color 0.15s, color 0.15s, box-shadow 0.15s; }
+.icon-btn:hover { color: var(--ink); border-color: var(--border-hover); box-shadow: var(--shadow-xs); }
+
+/* ── Tints (icon wells) ──────────────────────────────────────────────────── */
+.tint-teal { background: var(--teal-50); color: var(--teal-700); }
+.tint-gold { background: var(--gold-50); color: var(--gold-700); }
+.tint-blue { background: var(--blue-bg); color: var(--blue-deep); }
+.tint-orange { background: var(--orange-bg); color: var(--orange-deep); }
+.tint-sage { background: var(--sage-bg); color: var(--sage-deep); }
+
+/* ── Soft motion: scroll reveal + live pulse ─────────────────────────────── */
+@keyframes yv-reveal-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.yv-reveal { opacity: 0; }
+.yv-reveal.in { animation: yv-reveal-in 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+@keyframes yv-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.yv-live-dot { animation: yv-live-pulse 2s ease-in-out infinite; }
+
+@media (max-width: 860px) {
+  :root { --space-section: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yv-reveal { opacity: 1; }
+  .yv-reveal.in { animation: none; }
+  .yv-live-dot { animation: none; }
 }
 
 /*

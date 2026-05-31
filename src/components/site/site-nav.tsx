@@ -4,10 +4,12 @@ import {
   getNotificationSummary,
   describeNotification,
 } from "@/lib/notifications";
+import { Container } from "@/components/brand/layout";
 import { Logo } from "./logo";
 import { NavLinks } from "./nav-links";
+import { NavShell } from "./nav-shell";
 import { UserMenu } from "./user-menu";
-import { MobileMenu } from "./mobile-menu";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 import { NotificationBell, type BellItem } from "./notification-bell";
 
 export async function SiteNav() {
@@ -33,35 +35,46 @@ export async function SiteNav() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-canvas/85 backdrop-blur supports-[backdrop-filter]:bg-canvas/75">
-      <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-4 md:px-6">
-        <Logo />
-        <NavLinks />
-        <div className="flex items-center gap-2">
-          {profile && <NotificationBell items={bellItems} unread={unread} />}
-          {profile ? (
-            <div className="hidden md:block">
-              <UserMenu
-                profile={{
-                  handle: profile.handle,
-                  name: profile.name,
-                  avatar_url: profile.avatar_url,
-                }}
-              />
-            </div>
-          ) : (
+    <>
+      <NavShell>
+        <Container className="flex h-16 items-center gap-4">
+          <Logo />
+          <div className="hidden flex-1 lg:block">
+            <NavLinks />
+          </div>
+          <div className="ml-auto flex items-center gap-2 lg:gap-3">
+            {profile && <NotificationBell items={bellItems} unread={unread} />}
             <Link
-              href="/login"
-              className="hidden h-9 items-center rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98] md:inline-flex"
+              href="/showcase/submit"
+              className="btn btn-primary btn-sm hidden sm:inline-flex"
             >
-              Sign in
+              Submit
             </Link>
-          )}
-          <MobileMenu
-            profile={profile ? { handle: profile.handle, name: profile.name } : null}
-          />
-        </div>
-      </div>
-    </header>
+            {profile ? (
+              <div className="hidden lg:block">
+                <UserMenu
+                  profile={{
+                    handle: profile.handle,
+                    name: profile.name,
+                    avatar_url: profile.avatar_url,
+                  }}
+                />
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="btn btn-ghost btn-sm hidden lg:inline-flex"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
+        </Container>
+      </NavShell>
+
+      <MobileBottomNav
+        profile={profile ? { handle: profile.handle, name: profile.name } : null}
+      />
+    </>
   );
 }
