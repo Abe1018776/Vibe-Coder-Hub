@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, Trophy } from "lucide-react";
 import { listCompetitions } from "@/lib/competitions";
+import { Container, Eyebrow } from "@/components/brand/layout";
 import { CompetitionCard } from "@/components/brand/competition-card";
 import { EmptyState } from "@/components/brand/empty-state";
 
@@ -13,18 +14,18 @@ export default async function CompetitionsPage() {
   const competitions = await listCompetitions();
 
   return (
-    <div className="mx-auto max-w-[1120px] px-4 py-10 md:px-6">
+    <Container className="py-10 md:py-14">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-ink">Competitions</h1>
-          <p className="mt-2 text-muted-foreground">
+          <Eyebrow style={{ color: "var(--gold-700)" }}>Build &amp; win</Eyebrow>
+          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
+            Competitions
+          </h1>
+          <p className="mt-2 text-[17px] text-muted-foreground">
             Post a bounty. Anyone submits. You pick the winner.
           </p>
         </div>
-        <Link
-          href="/competitions/post"
-          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] bg-clay-mid px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-        >
+        <Link href="/competitions/post" className="btn btn-gold shrink-0">
           <Plus size={16} /> Post a competition
         </Link>
       </div>
@@ -39,12 +40,12 @@ export default async function CompetitionsPage() {
           actionLabel="Post a competition"
         />
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {competitions.map((c) => (
             <CompetitionCard key={c.id} competition={c} />
           ))}
         </div>
       )}
-    </div>
+    </Container>
   );
 }

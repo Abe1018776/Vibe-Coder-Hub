@@ -9,7 +9,7 @@ export function GigCard({ gig }: { gig: GigWithPoster }) {
   return (
     <Link
       href={`/gigs/${gig.slug}`}
-      className="group flex flex-col rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+      className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-md)]"
     >
       <div className="flex items-center justify-between gap-2">
         <Pill accent="orange">{GIG_TYPE_LABEL[gig.type]}</Pill>
@@ -19,7 +19,7 @@ export function GigCard({ gig }: { gig: GigWithPoster }) {
           </Pill>
         )}
       </div>
-      <h3 className="mt-3 line-clamp-2 font-medium text-ink" dir="auto">
+      <h3 className="mt-3 line-clamp-2 font-display text-lg font-bold text-ink" dir="auto">
         {gig.title}
       </h3>
       <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground" dir="auto">

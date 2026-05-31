@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plus, CalendarDays, MapPin, ArrowUpRight } from "lucide-react";
 import { listUpcomingEvents } from "@/lib/events";
+import { Container, Eyebrow } from "@/components/brand/layout";
 import { EmptyState } from "@/components/brand/empty-state";
 
 export const metadata = {
@@ -25,18 +26,18 @@ export default async function EventsPage() {
   const events = await listUpcomingEvents();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 md:px-6">
+    <Container className="max-w-2xl py-10 md:py-14">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-ink">Events</h1>
-          <p className="mt-2 text-muted-foreground">
+          <Eyebrow style={{ color: "var(--sage-deep)" }}>Meet in person</Eyebrow>
+          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
+            Events
+          </h1>
+          <p className="mt-2 text-[17px] text-muted-foreground">
             Community workshops and meetups for builders.
           </p>
         </div>
-        <Link
-          href="/events/post"
-          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] bg-sage-mid px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-        >
+        <Link href="/events/post" className="btn btn-primary shrink-0">
           <Plus size={16} /> Add event
         </Link>
       </div>
@@ -55,11 +56,11 @@ export default async function EventsPage() {
           {events.map((e) => (
             <li
               key={e.id}
-              className="flex items-start gap-4 rounded-card border border-border bg-surface p-4"
+              className="flex items-start gap-4 rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-hover hover:shadow-[var(--shadow-sm)]"
             >
               <DateBlock iso={e.starts_at} />
               <div className="min-w-0 flex-1">
-                <h3 className="font-medium text-ink" dir="auto">
+                <h3 className="font-display text-lg font-bold text-ink" dir="auto">
                   {e.title}
                 </h3>
                 <p className="mt-0.5 text-sm text-muted-foreground">
@@ -90,7 +91,7 @@ export default async function EventsPage() {
                   href={e.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-9 shrink-0 items-center gap-1 rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary"
+                  className="btn btn-ghost btn-sm shrink-0"
                 >
                   RSVP <ArrowUpRight size={14} />
                 </a>
@@ -99,6 +100,6 @@ export default async function EventsPage() {
           ))}
         </ul>
       )}
-    </div>
+    </Container>
   );
 }
