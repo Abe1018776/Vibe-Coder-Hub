@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { listBuilders, getBuilderFacets } from "@/lib/queries";
+import { Container, Eyebrow } from "@/components/brand/layout";
 import { BuilderCard } from "@/components/brand/builder-card";
 import { EmptyState } from "@/components/brand/empty-state";
 
@@ -10,7 +11,7 @@ export const metadata = {
 };
 
 const controlClass =
-  "h-10 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none focus:ring-2 focus:ring-ring";
+  "h-11 rounded-xl border border-border bg-canvas px-3 text-sm font-medium text-ink outline-none transition-colors hover:border-border-hover focus:border-teal-600 focus:bg-surface";
 
 export default async function DirectoryPage({
   searchParams,
@@ -41,27 +42,30 @@ export default async function DirectoryPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-[1120px] px-4 py-10 md:px-6">
-      <h1 className="font-display text-3xl text-ink">Directory</h1>
-      <p className="mt-2 text-muted-foreground">
+    <Container className="py-10 md:py-14">
+      <Eyebrow>Find your builder</Eyebrow>
+      <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
+        Directory
+      </h1>
+      <p className="mt-2 text-[17px] text-muted-foreground">
         Find builders by skill, tool, or vibe. Every one ships fast.
       </p>
 
       <form
         method="get"
-        className="mt-6 flex flex-col gap-3 rounded-card border border-border bg-surface p-4 lg:flex-row lg:items-center"
+        className="mt-7 flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 shadow-[var(--shadow-sm)] lg:flex-row lg:items-center"
       >
         <div className="relative flex-1">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
           <input
             name="q"
             defaultValue={q}
             dir="auto"
             placeholder="Search builders…"
-            className="h-10 w-full rounded-[10px] border border-border bg-surface pl-9 pr-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            className="h-11 w-full rounded-xl border border-transparent bg-canvas pl-10 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:bg-surface"
           />
         </div>
         <select name="tool" defaultValue={tool} className={controlClass} aria-label="Tool">
@@ -80,7 +84,7 @@ export default async function DirectoryPage({
             </option>
           ))}
         </select>
-        <label className="inline-flex items-center gap-2 whitespace-nowrap px-1 text-sm text-ink">
+        <label className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-xl border border-border bg-canvas px-3.5 text-sm text-ink">
           <input
             type="checkbox"
             name="available"
@@ -90,20 +94,18 @@ export default async function DirectoryPage({
           />
           Available
         </label>
-        <button
-          type="submit"
-          className="h-10 rounded-[10px] bg-teal-600 px-5 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-        >
+        <button type="submit" className="btn btn-primary btn-sm h-11">
           Search
         </button>
       </form>
 
       {filtering && (
-        <div className="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
+        <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
           <span>
-            {builders.length} {builders.length === 1 ? "result" : "results"}
+            <strong className="text-ink">{builders.length}</strong>{" "}
+            {builders.length === 1 ? "result" : "results"}
           </span>
-          <Link href="/directory" className="text-teal-800 hover:underline">
+          <Link href="/directory" className="font-medium text-teal-800 hover:underline">
             Clear
           </Link>
         </div>
@@ -111,7 +113,7 @@ export default async function DirectoryPage({
 
       {builders.length === 0 ? (
         <EmptyState
-          className="mt-6"
+          className="mt-8"
           title={filtering ? "No builders found" : "No builders yet"}
           description={
             filtering
@@ -122,12 +124,12 @@ export default async function DirectoryPage({
           actionLabel={filtering ? "Clear filters" : "Create your profile"}
         />
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {builders.map((b) => (
             <BuilderCard key={b.id} builder={b} />
           ))}
         </div>
       )}
-    </div>
+    </Container>
   );
 }

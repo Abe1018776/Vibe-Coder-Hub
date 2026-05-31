@@ -9,7 +9,7 @@ import type { Profile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "h-10 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
 function Field({
   label,
@@ -107,7 +107,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           defaultValue={profile.bio ?? ""}
           maxLength={600}
           rows={4}
-          className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
           placeholder="A short intro — what you build, your background, your passion…"
         />
       </Field>
@@ -169,11 +169,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             placeholder="Add another tool"
             className={cn(inputClass, "h-9 max-w-xs")}
           />
-          <button
-            type="button"
-            onClick={addCustom}
-            className="inline-flex h-9 items-center gap-1 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink hover:bg-secondary"
-          >
+          <button type="button" onClick={addCustom} className="btn btn-ghost btn-sm">
             <Plus size={15} /> Add
           </button>
         </div>
@@ -233,7 +229,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[10px] bg-teal-600 px-4 text-[15px] font-medium text-white transition-transform active:scale-[0.99] disabled:opacity-70"
+        className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
       >
         {pending ? "Saving…" : "Save profile"}
       </button>
