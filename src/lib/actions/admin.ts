@@ -42,6 +42,16 @@ export async function lockAdmin() {
   redirect("/");
 }
 
+/** Admin-only: toggle a project's gold "Featured" flag. */
+export async function setProjectFeatured(projectId: string, featured: boolean) {
+  await requireAdminUnlocked();
+  const supabase = await createClient();
+  await supabase.from("projects").update({ featured }).eq("id", projectId);
+  revalidatePath("/");
+  revalidatePath("/showcase");
+  revalidatePath(`/showcase/${projectId}`);
+}
+
 export type ReportAction = "hide" | "delete" | "dismiss";
 
 /** Act on a report. Admin RLS policies let these writes bypass owner-only checks. */
