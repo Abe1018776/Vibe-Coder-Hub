@@ -31,13 +31,13 @@ export function MessageComposer({
           dir="auto"
           maxLength={4000}
           placeholder="Write a message…"
-          className="flex-1 resize-none rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          className="flex-1 resize-none rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
         />
         <button
           type="submit"
           disabled={pending}
           aria-label="Send"
-          className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-orange-mid px-4 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-70"
+          className="btn btn-orange btn-sm disabled:opacity-70"
         >
           <Send size={15} /> Send
         </button>

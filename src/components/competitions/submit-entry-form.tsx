@@ -5,7 +5,7 @@ import { submitEntry, type SubmissionState } from "@/lib/actions/competitions";
 import { toast } from "sonner";
 
 const inputClass =
-  "h-10 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
 export function SubmitEntryForm({
   competitionId,
@@ -48,14 +48,14 @@ export function SubmitEntryForm({
         rows={3}
         dir="auto"
         maxLength={1000}
-        className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+        className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
         placeholder="Tell the judge about your entry (optional)"
       />
       {state.error && <p className="text-xs text-clay-deep">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-10 items-center rounded-[10px] bg-clay-mid px-5 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-70"
+        className="btn btn-gold btn-sm disabled:opacity-70"
       >
         {pending ? "Submitting…" : "Submit entry"}
       </button>

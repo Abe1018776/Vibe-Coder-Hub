@@ -61,7 +61,7 @@ export default async function GigDetailPage({
         )}
       </div>
 
-      <h1 className="mt-3 font-display text-3xl text-ink" dir="auto">
+      <h1 className="mt-3 font-display text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight text-ink" dir="auto">
         {gig.title}
       </h1>
       {budget && <p className="mt-2 text-lg font-medium text-ink">{budget}</p>}
@@ -86,7 +86,7 @@ export default async function GigDetailPage({
           href={gig.loom_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
+          className="btn btn-ghost btn-sm mt-4"
         >
           <Play size={15} /> Watch the brief
         </a>
@@ -140,7 +140,7 @@ export default async function GigDetailPage({
               })}
             </div>
 
-            <h2 className="mt-7 font-display text-xl text-ink">
+            <h2 className="mt-7 font-display text-xl font-bold text-ink">
               Applicants{threads.length > 0 ? ` (${threads.length})` : ""}
             </h2>
             {threads.length === 0 ? (
@@ -176,25 +176,19 @@ export default async function GigDetailPage({
         ) : myThread ? (
           <Link
             href={`/gigs/${slug}/thread/${myThread.id}`}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-orange-mid px-5 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
+            className="btn btn-orange"
           >
             <MessageSquare size={16} /> View your conversation
           </Link>
         ) : gig.status === "open" ? (
           me ? (
             <form action={apply}>
-              <button
-                type="submit"
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-orange-mid px-6 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
-              >
+              <button type="submit" className="btn btn-orange">
                 Apply to this gig
               </button>
             </form>
           ) : (
-            <Link
-              href={`/login?next=/gigs/${slug}`}
-              className="inline-flex h-11 items-center rounded-[10px] bg-orange-mid px-6 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
-            >
+            <Link href={`/login?next=/gigs/${slug}`} className="btn btn-orange">
               Sign in to apply
             </Link>
           )

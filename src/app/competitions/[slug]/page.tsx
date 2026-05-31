@@ -57,7 +57,7 @@ export default async function CompetitionDetailPage({
         )}
       </div>
 
-      <h1 className="mt-3 font-display text-3xl text-ink" dir="auto">
+      <h1 className="mt-3 font-display text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight text-ink" dir="auto">
         {comp.title}
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -84,7 +84,7 @@ export default async function CompetitionDetailPage({
           href={comp.loom_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
+          className="btn btn-ghost btn-sm mt-4"
         >
           <Play size={15} /> Watch the brief
         </a>
@@ -115,7 +115,7 @@ export default async function CompetitionDetailPage({
       <section className="mt-8">
         {canSubmit ? (
           <div className="rounded-card border border-border bg-surface p-5">
-            <h2 className="font-display text-lg text-ink">Submit your entry</h2>
+            <h2 className="font-display text-lg font-bold text-ink">Submit your entry</h2>
             <div className="mt-3">
               <SubmitEntryForm competitionId={comp.id} slug={slug} />
             </div>
@@ -127,7 +127,7 @@ export default async function CompetitionDetailPage({
         ) : !me ? (
           <Link
             href={`/login?next=/competitions/${slug}`}
-            className="inline-flex h-11 items-center rounded-[10px] bg-clay-mid px-6 text-[15px] font-medium text-white transition-transform active:scale-[0.98]"
+            className="btn btn-gold"
           >
             Sign in to submit an entry
           </Link>
@@ -139,7 +139,7 @@ export default async function CompetitionDetailPage({
       </section>
 
       <section className="mt-10">
-        <h2 className="font-display text-xl text-ink">
+        <h2 className="font-display text-xl font-bold text-ink">
           Entries{submissions.length > 0 ? ` (${submissions.length})` : ""}
         </h2>
         {submissions.length === 0 ? (

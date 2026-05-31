@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { createEvent, type EventFormState } from "@/lib/actions/events";
 
 const inputClass =
-  "h-10 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
 function Field({
   label,
@@ -73,7 +73,7 @@ export function EventForm() {
           maxLength={2000}
           rows={4}
           dir="auto"
-          className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
           placeholder="What's happening?"
         />
       </Field>
@@ -90,7 +90,7 @@ export function EventForm() {
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[10px] bg-sage-mid px-4 text-[15px] font-medium text-white transition-transform active:scale-[0.99] disabled:opacity-70"
+        className="btn btn-primary btn-block h-12 text-[15px] disabled:opacity-70"
       >
         {pending ? "Adding…" : "Add event"}
       </button>

@@ -8,9 +8,10 @@ import {
   type AuthFormState,
 } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "@/components/brand/sparkle";
 
 const inputClass =
-  "h-10 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
 function GoogleIcon() {
   return (
@@ -69,8 +70,11 @@ export function AuthForms({
   >(signUpWithPassword, {});
 
   return (
-    <div className="w-full rounded-card border border-border bg-surface p-7">
-      <h1 className="text-center font-display text-[1.6rem] leading-tight text-ink">
+    <div className="w-full rounded-3xl border border-border bg-surface p-7 shadow-[var(--shadow-md)]">
+      <div className="mb-4 flex justify-center">
+        <LogoMark size={40} />
+      </div>
+      <h1 className="text-center font-display text-2xl font-bold leading-tight text-ink">
         {mode === "signin" ? "Welcome back" : "Join YidVibe"}
       </h1>
       <p className="mt-1.5 text-center text-sm text-muted-foreground">
@@ -81,10 +85,7 @@ export function AuthForms({
 
       <form action={signInWithGoogle} className="mt-6">
         <input type="hidden" name="next" value={next} />
-        <button
-          type="submit"
-          className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-[10px] border border-border bg-surface px-4 text-[15px] font-medium text-ink transition-colors hover:bg-secondary active:scale-[0.99]"
-        >
+        <button type="submit" className="btn btn-ghost btn-block h-11 gap-2.5">
           <GoogleIcon />
           Continue with Google
         </button>
@@ -118,7 +119,7 @@ export function AuthForms({
           <button
             type="submit"
             disabled={signingIn}
-            className="btn-sweep inline-flex h-11 w-full items-center justify-center rounded-[10px] px-4 text-[15px] font-medium transition-transform active:scale-[0.99] disabled:opacity-70"
+            className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
           >
             {signingIn ? "Signing in…" : "Sign in"}
           </button>
@@ -186,7 +187,7 @@ export function AuthForms({
           <button
             type="submit"
             disabled={signingUp}
-            className="btn-sweep inline-flex h-11 w-full items-center justify-center rounded-[10px] px-4 text-[15px] font-medium transition-transform active:scale-[0.99] disabled:opacity-70"
+            className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
           >
             {signingUp ? "Creating…" : "Create account"}
           </button>
