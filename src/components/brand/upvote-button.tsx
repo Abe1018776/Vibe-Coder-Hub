@@ -12,15 +12,17 @@ export function UpvoteButton({
   initialCount,
   initialUpvoted,
   isAuthed,
-  topRanked = false,
   redirectTo = "/showcase",
+  className,
 }: {
   projectId: string;
   initialCount: number;
   initialUpvoted: boolean;
   isAuthed: boolean;
+  /** kept for call-site compatibility; styling now lives in the .upvote class */
   topRanked?: boolean;
   redirectTo?: string;
+  className?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -57,23 +59,10 @@ export function UpvoteButton({
       disabled={isPending}
       aria-pressed={state.upvoted}
       aria-label={state.upvoted ? "Remove upvote" : "Upvote"}
-      className={cn(
-        "inline-flex shrink-0 flex-col items-center justify-center rounded-[10px] border px-2.5 py-1 leading-none transition-colors",
-        state.upvoted
-          ? "border-teal-600 bg-teal-50 text-teal-800"
-          : topRanked
-            ? "border-teal-600/50 bg-surface text-ink hover:bg-teal-50"
-            : "border-border bg-surface text-ink hover:border-border-hover",
-        isPending && "opacity-70",
-      )}
+      className={cn("upvote shrink-0", className)}
     >
-      <ChevronUp
-        size={16}
-        className={cn(state.upvoted ? "text-teal-600" : "text-muted-foreground")}
-      />
-      <span className="mt-0.5 text-xs font-medium tabular-nums">
-        {state.count}
-      </span>
+      <ChevronUp size={16} strokeWidth={2.4} />
+      <span className="tabular-nums">{state.count}</span>
     </button>
   );
 }

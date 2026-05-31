@@ -490,6 +490,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          featured: boolean
           for_sale: boolean
           hidden: boolean
           id: string
@@ -510,6 +511,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          featured?: boolean
           for_sale?: boolean
           hidden?: boolean
           id?: string
@@ -530,6 +532,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          featured?: boolean
           for_sale?: boolean
           hidden?: boolean
           id?: string

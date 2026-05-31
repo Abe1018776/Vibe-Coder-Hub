@@ -1,0 +1,200 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutGrid,
+  Users,
+  Briefcase,
+  Plus,
+  Menu,
+  X,
+  Trophy,
+  Calendar,
+  Compass,
+  HelpCircle,
+  UserRound,
+} from "lucide-react";
+import { NAV_LINKS } from "@/lib/site";
+import { signOut } from "@/lib/actions/auth";
+import { cn } from "@/lib/utils";
+
+type MenuProfile = { handle: string; name: string } | null;
+
+const TABS = [
+  { href: "/showcase", label: "Showcase", Icon: LayoutGrid },
+  { href: "/directory", label: "Directory", Icon: Users },
+  { href: "/gigs", label: "Gigs", Icon: Briefcase },
+];
+
+const MORE_ICONS: Record<string, typeof LayoutGrid> = {
+  "/showcase": LayoutGrid,
+  "/builders": Users,
+  "/directory": Compass,
+  "/gigs": Briefcase,
+  "/competitions": Trophy,
+  "/events": Calendar,
+  "/docs": HelpCircle,
+};
+
+/**
+ * App-style bottom tab bar for phones: primary destinations + a raised Submit
+ * action + a "More" sheet that carries the full nav and account actions.
+ * Hidden from md up (desktop uses the top nav). The body reserves space for it.
+ */
+export function MobileBottomNav({ profile }: { profile: MenuProfile }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
+  return (
+    <>
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-surface/95 backdrop-blur lg:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="Primary"
+      >
+        {TABS.slice(0, 2).map(({ href, label, Icon }) => (
+          <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
+        ))}
+
+        <Link
+          href="/showcase/submit"
+          aria-label="Submit a project"
+          className="flex flex-col items-center justify-center pt-1.5"
+        >
+          <span className="-mt-5 grid h-12 w-12 place-items-center rounded-full bg-teal-600 text-white shadow-[0_4px_14px_rgba(31,110,102,0.4)] ring-4 ring-canvas">
+            <Plus size={22} />
+          </span>
+          <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+            Submit
+          </span>
+        </Link>
+
+        {TABS.slice(2).map(({ href, label, Icon }) => (
+          <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex flex-col items-center justify-center gap-0.5 py-2 text-muted-foreground"
+          aria-label="More"
+        >
+          <Menu size={20} />
+          <span className="text-[11px] font-medium">More</span>
+        </button>
+      </nav>
+
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+          <button
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-black/30"
+          />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-border bg-surface p-5 pb-8 shadow-float">
+            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" />
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-display text-lg font-semibold text-ink">Menu</span>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="icon-btn"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {NAV_LINKS.map((l) => {
+                const Icon = MORE_ICONS[l.href] ?? Compass;
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl border px-4 py-3 text-[15px]",
+                      isActive(l.href)
+                        ? "border-teal-100 bg-teal-50 text-teal-800"
+                        : "border-border text-ink hover:bg-secondary",
+                    )}
+                  >
+                    <Icon size={18} className="shrink-0 opacity-80" />
+                    {l.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="my-4 h-px bg-border" />
+
+            {profile ? (
+              <div className="flex flex-col gap-2">
+                <Link
+                  href={`/u/${profile.handle}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] text-ink hover:bg-secondary"
+                >
+                  <UserRound size={18} className="opacity-80" /> Your profile
+                </Link>
+                <Link
+                  href="/settings/profile"
+                  onClick={() => setOpen(false)}
+                  className="rounded-2xl px-4 py-3 text-[15px] text-ink hover:bg-secondary"
+                >
+                  Edit profile
+                </Link>
+                <form action={signOut}>
+                  <button
+                    type="submit"
+                    className="w-full rounded-2xl px-4 py-3 text-left text-[15px] text-ink hover:bg-secondary"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="btn btn-primary btn-block"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Tab({
+  href,
+  label,
+  Icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  Icon: typeof LayoutGrid;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex flex-col items-center justify-center gap-0.5 py-2",
+        active ? "text-teal-700" : "text-muted-foreground",
+      )}
+    >
+      <Icon size={20} />
+      <span className="text-[11px] font-medium">{label}</span>
+    </Link>
+  );
+}

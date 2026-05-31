@@ -1,15 +1,18 @@
 export const SITE_NAME = "YidVibe";
-export const SITE_TAGLINE = "Marketplace for AI builders";
+export const SITE_TAGLINE = "the home for our community's builders";
 
 /** Warm accent shelf — one accent per section (see BRAND.md). */
 export type Accent = "teal" | "blue" | "orange" | "clay" | "sage" | "gold";
 
-/** Primary nav (BRAND order). UI chrome stays English/LTR. */
+/** Primary nav (redesign order). UI chrome stays English/LTR. */
 export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/showcase", label: "Showcase" },
   { href: "/builders", label: "Builders" },
   { href: "/directory", label: "Directory" },
+  { href: "/gigs", label: "Gigs" },
   { href: "/competitions", label: "Competitions" },
+  { href: "/events", label: "Events" },
+  { href: "/docs", label: "How it works" },
 ];
 
 export const FOOTER_LINKS: { href: string; label: string }[] = [
