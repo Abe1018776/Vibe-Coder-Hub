@@ -10,7 +10,7 @@ export function BuilderCard({ builder }: { builder: BuilderListItem }) {
   return (
     <Link
       href={`/u/${builder.handle}`}
-      className="group flex flex-col rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+      className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-md)]"
     >
       <div className="flex items-center gap-3">
         <AvatarCircle
@@ -21,7 +21,9 @@ export function BuilderCard({ builder }: { builder: BuilderListItem }) {
         />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="truncate font-medium text-ink">{builder.name}</p>
+            <p className="truncate font-display font-bold text-ink">
+              {builder.name}
+            </p>
             {builder.available_for_hire && <Pill accent="sage">Available</Pill>}
           </div>
           <p className="truncate text-sm text-muted-foreground">

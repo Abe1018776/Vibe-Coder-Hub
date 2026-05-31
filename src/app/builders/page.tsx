@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Users } from "lucide-react";
 import { listBuilders } from "@/lib/queries";
+import { Container, Eyebrow } from "@/components/brand/layout";
 import { BuilderCard } from "@/components/brand/builder-card";
 import { EmptyState } from "@/components/brand/empty-state";
 
@@ -16,18 +17,18 @@ export default async function BuildersPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-[1120px] px-4 py-10 md:px-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <Container className="py-10 md:py-14">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-3xl text-ink">Builders</h1>
-          <p className="mt-2 max-w-xl text-muted-foreground">
+          <Eyebrow>The people behind it</Eyebrow>
+          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
+            Builders
+          </h1>
+          <p className="mt-2 max-w-xl text-[17px] text-muted-foreground">
             Meet the people shipping AI apps and tools in the community.
           </p>
         </div>
-        <Link
-          href="/directory"
-          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
-        >
+        <Link href="/directory" className="btn btn-ghost shrink-0">
           Search the full directory
           <ArrowRight size={16} />
         </Link>
@@ -46,7 +47,7 @@ export default async function BuildersPage() {
         <div className="mt-8 space-y-12">
           {available.length > 0 && (
             <section>
-              <h2 className="mb-4 font-display text-xl text-ink">
+              <h2 className="mb-5 font-display text-xl font-bold text-ink">
                 Available for hire
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -58,7 +59,7 @@ export default async function BuildersPage() {
           )}
 
           <section>
-            <h2 className="mb-4 font-display text-xl text-ink">
+            <h2 className="mb-5 font-display text-xl font-bold text-ink">
               Newest builders
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,6 +70,6 @@ export default async function BuildersPage() {
           </section>
         </div>
       )}
-    </div>
+    </Container>
   );
 }

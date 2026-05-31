@@ -21,6 +21,7 @@ import {
   type ProjectWithOwner,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
+import { Container } from "@/components/brand/layout";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { ProjectCard } from "@/components/brand/project-card";
 import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
@@ -55,7 +56,7 @@ function LinkButton({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink transition-colors hover:bg-secondary"
+      className="btn btn-ghost btn-sm"
     >
       {icon}
       {children}
@@ -93,8 +94,8 @@ export default async function ProfilePage({
   const withOwner: ProjectWithOwner[] = visible.map((p) => ({ ...p, owner }));
 
   return (
-    <div className="mx-auto max-w-[1120px] px-4 py-10 md:px-6">
-      <header className="rounded-card border border-border bg-surface p-6 md:p-8">
+    <Container className="py-10 md:py-14">
+      <header className="rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
             <AvatarCircle
@@ -105,7 +106,9 @@ export default async function ProfilePage({
             />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl text-ink">{profile.name}</h1>
+                <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+                  {profile.name}
+                </h1>
                 {profile.available_for_hire && (
                   <Pill accent="sage">Available for hire</Pill>
                 )}
@@ -127,10 +130,7 @@ export default async function ProfilePage({
               </span>
             )}
             {isOwner ? (
-              <Link
-                href="/settings/profile"
-                className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
-              >
+              <Link href="/settings/profile" className="btn btn-ghost btn-sm">
                 <Pencil size={15} /> Edit profile
               </Link>
             ) : (
@@ -212,8 +212,8 @@ export default async function ProfilePage({
         )}
       </header>
 
-      <section className="mt-8">
-        <h2 className="font-display text-xl text-ink">
+      <section className="mt-10">
+        <h2 className="font-display text-2xl font-bold text-ink">
           {isOwner ? "Your projects" : "Projects"}
         </h2>
         {withOwner.length === 0 ? (
@@ -229,7 +229,7 @@ export default async function ProfilePage({
             actionLabel={isOwner ? "Submit a project" : undefined}
           />
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {withOwner.map((p) => (
               <ProjectCard
                 key={p.id}
@@ -242,6 +242,6 @@ export default async function ProfilePage({
           </div>
         )}
       </section>
-    </div>
+    </Container>
   );
 }

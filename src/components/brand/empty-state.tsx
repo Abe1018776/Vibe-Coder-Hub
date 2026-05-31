@@ -32,15 +32,12 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className="font-display text-lg text-ink">{title}</h3>
-      <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
+      <h3 className="font-display text-xl font-bold text-ink">{title}</h3>
+      <p className="mt-1.5 max-w-sm text-[15px] text-muted-foreground">
         {description}
       </p>
       {actionHref && actionLabel && (
-        <Link
-          href={actionHref}
-          className="mt-5 inline-flex h-10 items-center rounded-[10px] bg-teal-600 px-5 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-        >
+        <Link href={actionHref} className="btn btn-primary mt-6">
           {actionLabel}
         </Link>
       )}

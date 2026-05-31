@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ExternalLink, Play, Pencil, ArrowRight } from "lucide-react";
+import { ExternalLink, Play, Pencil, ArrowRight, ArrowLeft } from "lucide-react";
 import {
   getProjectById,
   getComments,
   getMyUpvotedProjectIds,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
+import { getAdminContext } from "@/lib/admin";
+import { Container } from "@/components/brand/layout";
+import { Sparkle } from "@/components/brand/sparkle";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
 import { PROJECT_COMMERCIAL } from "@/lib/site";
@@ -16,6 +19,7 @@ import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
+import { FeatureToggle } from "@/components/admin/feature-toggle";
 import { deleteProject } from "@/lib/actions/projects";
 import { deleteComment } from "@/lib/actions/comments";
 import { formatRelativeTime } from "@/lib/utils";
@@ -40,10 +44,11 @@ export default async function ProjectDetailPage({
   const project = await getProjectById(id);
   if (!project) notFound();
 
-  const [comments, me, upvoted] = await Promise.all([
+  const [comments, me, upvoted, admin] = await Promise.all([
     getComments(id),
     getCurrentProfile(),
     getMyUpvotedProjectIds(),
+    getAdminContext(),
   ]);
   const isAuthed = !!me;
   const isOwner = me?.id === project.owner_id;
@@ -51,22 +56,43 @@ export default async function ProjectDetailPage({
   const deleteThis = deleteProject.bind(null, id);
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-10 md:px-6">
-      <div className="overflow-hidden rounded-card border border-border bg-teal-100">
-        <div className="aspect-[16/9] w-full">
-          {project.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={project.image_url}
-              alt={project.name}
-              className="h-full w-full object-cover"
+    <Container className="max-w-3xl py-10">
+      <Link
+        href="/showcase"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-teal-800"
+      >
+        <ArrowLeft size={15} /> Back to Showcase
+      </Link>
+
+      <div className="relative mt-5 aspect-[16/8] overflow-hidden rounded-3xl border border-border bg-teal-50">
+        {project.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={project.image_url}
+            alt={project.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="grid h-full place-items-center">
+            <Sparkle
+              size={24}
+              color="var(--teal-400)"
+              style={{ position: "absolute", top: 16, right: 16, opacity: 0.7 }}
             />
-          ) : (
-            <div className="flex h-full items-center justify-center font-display text-6xl text-teal-600/60">
+            <span className="font-display text-6xl font-bold text-teal-700">
               {project.name.slice(0, 1).toUpperCase()}
-            </div>
-          )}
-        </div>
+            </span>
+          </div>
+        )}
+        {project.featured ? (
+          <span className="pc-flag">
+            <Sparkle size={12} color="var(--gold-900)" /> Featured
+          </span>
+        ) : project.url ? (
+          <span className="pc-flag is-live">
+            <span className="dot yv-live-dot" /> Live
+          </span>
+        ) : null}
       </div>
 
       {project.images.length > 0 && (
@@ -77,7 +103,7 @@ export default async function ProjectDetailPage({
               href={src}
               target="_blank"
               rel="noopener noreferrer"
-              className="block aspect-[4/3] overflow-hidden rounded-card border border-border bg-teal-50"
+              className="block aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-teal-50"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt="" className="h-full w-full object-cover" />
@@ -86,8 +112,11 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="mt-6 flex items-start justify-between gap-4">
-        <h1 className="font-display text-3xl text-ink" dir="auto">
+      <div className="mt-7 flex items-start justify-between gap-4">
+        <h1
+          className="font-display text-[clamp(1.8rem,4vw,2.75rem)] font-bold tracking-tight text-ink"
+          dir="auto"
+        >
           {project.name}
         </h1>
         <UpvoteButton
@@ -99,87 +128,8 @@ export default async function ProjectDetailPage({
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {project.url && (
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-          >
-            <ExternalLink size={15} /> Visit live
-          </a>
-        )}
-        {project.video_url && (
-          <a
-            href={project.video_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
-          >
-            <Play size={15} /> Watch demo
-          </a>
-        )}
-        {isOwner && (
-          <>
-            <Link
-              href={`/showcase/${id}/edit`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-sm text-ink transition-colors hover:bg-secondary"
-            >
-              <Pencil size={15} /> Edit
-            </Link>
-            <DeleteProjectButton action={deleteThis} />
-          </>
-        )}
-        {isAuthed && !isOwner && (
-          <div className="ml-auto flex items-center">
-            <ReportMenu targetType="project" targetId={id} />
-          </div>
-        )}
-      </div>
-
-      <p
-        className="mt-6 whitespace-pre-line text-[15px] leading-relaxed text-ink/90"
-        dir="auto"
-      >
-        {project.description}
-      </p>
-
-      {(project.seeking_funding ||
-        project.for_sale ||
-        project.open_to_partners) && (
-        <div className="mt-5 rounded-card border border-border bg-secondary/30 p-4">
-          <div className="flex flex-wrap gap-1.5">
-            {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
-              <Pill key={c.key} accent={c.accent}>
-                {c.label}
-              </Pill>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {!project.is_anonymous && owner && (
-              <a
-                href={`/u/${owner.handle}#contact`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-              >
-                Contact the builder
-              </a>
-            )}
-            {isAuthed && !isOwner && <InterestButton projectId={id} />}
-            {!isAuthed && (
-              <Link
-                href={`/login?next=/showcase/${id}`}
-                className="inline-flex h-9 items-center rounded-[10px] border border-border bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-secondary"
-              >
-                Sign in to connect
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
       {(project.tools.length > 0 || project.tags.length > 0) && (
-        <div className="mt-5 flex flex-wrap gap-1.5">
+        <div className="mt-3.5 flex flex-wrap gap-1.5">
           {project.tools.map((t) => (
             <ToolPill key={t}>{t}</ToolPill>
           ))}
@@ -189,61 +139,113 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      {project.is_anonymous ? (
-        <div className="mt-8 rounded-card border border-border bg-surface p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Built by
-          </p>
-          <div className="mt-3 flex items-center gap-3">
-            <AvatarCircle name="?" src={null} size={44} accent="blue" />
-            <div className="min-w-0 flex-1">
-              <p className="font-medium text-ink">Anonymous</p>
-              {isOwner && (
-                <p className="text-sm text-muted-foreground">
-                  Posted anonymously — only you and admins can see it&apos;s
-                  yours.
-                </p>
-              )}
-            </div>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        {project.url && (
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary btn-sm"
+          >
+            <ExternalLink size={15} /> Visit live
+          </a>
+        )}
+        {project.video_url && (
+          <a
+            href={project.video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-ghost btn-sm"
+          >
+            <Play size={15} /> Watch demo
+          </a>
+        )}
+        {isOwner && (
+          <>
+            <Link href={`/showcase/${id}/edit`} className="btn btn-ghost btn-sm">
+              <Pencil size={15} /> Edit
+            </Link>
+            <DeleteProjectButton action={deleteThis} />
+          </>
+        )}
+        {admin && (
+          <FeatureToggle projectId={id} featured={!!project.featured} />
+        )}
+        {isAuthed && !isOwner && (
+          <div className="ml-auto flex items-center">
+            <ReportMenu targetType="project" targetId={id} />
+          </div>
+        )}
+      </div>
+
+      <p
+        className="mt-6 whitespace-pre-line text-[17px] leading-relaxed text-ink/90"
+        dir="auto"
+      >
+        {project.description}
+      </p>
+
+      {(project.seeking_funding ||
+        project.for_sale ||
+        project.open_to_partners) && (
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
+          <div className="flex flex-wrap gap-1.5">
+            {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
+              <Pill key={c.key} accent={c.accent}>
+                {c.label}
+              </Pill>
+            ))}
+          </div>
+          <div className="mt-3.5 flex flex-wrap items-center gap-2">
+            {!project.is_anonymous && owner && (
+              <a href={`/u/${owner.handle}#contact`} className="btn btn-primary btn-sm">
+                Contact the builder
+              </a>
+            )}
+            {isAuthed && !isOwner && <InterestButton projectId={id} />}
+            {!isAuthed && (
+              <Link href={`/login?next=/showcase/${id}`} className="btn btn-ghost btn-sm">
+                Sign in to connect
+              </Link>
+            )}
           </div>
         </div>
+      )}
+
+      {project.is_anonymous ? (
+        <BuiltByCard>
+          <AvatarCircle name="?" src={null} size={44} accent="blue" />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-ink">Anonymous</p>
+            {isOwner && (
+              <p className="text-sm text-muted-foreground">
+                Posted anonymously — only you and admins can see it&apos;s yours.
+              </p>
+            )}
+          </div>
+        </BuiltByCard>
       ) : (
         owner && (
-          <div className="mt-8 rounded-card border border-border bg-surface p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Built by
-            </p>
-            <div className="mt-3 flex items-center gap-3">
-              <AvatarCircle
-                name={owner.name}
-                src={owner.avatar_url}
-                size={44}
-                accent="blue"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-medium text-ink">{owner.name}</p>
-                  {owner.available_for_hire && (
-                    <Pill accent="sage">Available</Pill>
-                  )}
-                </div>
-                <p className="truncate text-sm text-muted-foreground">
-                  @{owner.handle}
-                </p>
+          <BuiltByCard>
+            <AvatarCircle name={owner.name} src={owner.avatar_url} size={44} accent="blue" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate font-semibold text-ink">{owner.name}</p>
+                {owner.available_for_hire && <Pill accent="sage">Available</Pill>}
               </div>
-              <Link
-                href={`/u/${owner.handle}`}
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
-              >
-                View profile <ArrowRight size={15} />
-              </Link>
+              <p className="truncate text-sm text-muted-foreground">
+                @{owner.handle}
+              </p>
             </div>
-          </div>
+            <Link href={`/u/${owner.handle}`} className="btn btn-ghost btn-sm shrink-0">
+              View profile <ArrowRight size={15} />
+            </Link>
+          </BuiltByCard>
         )
       )}
 
-      <section className="mt-10">
-        <h2 className="font-display text-xl text-ink">
+      <section className="mt-12">
+        <h2 className="font-display text-2xl font-bold text-ink">
           Comments{" "}
           {comments.length > 0 && (
             <span className="text-muted-foreground">({comments.length})</span>
@@ -254,10 +256,7 @@ export default async function ProjectDetailPage({
           {isAuthed ? (
             <AddCommentForm projectId={id} />
           ) : (
-            <Link
-              href={`/login?next=/showcase/${id}`}
-              className="inline-flex h-10 items-center rounded-[10px] border border-border bg-surface px-4 text-sm text-ink transition-colors hover:bg-secondary"
-            >
+            <Link href={`/login?next=/showcase/${id}`} className="btn btn-ghost btn-sm">
               Sign in to comment
             </Link>
           )}
@@ -282,18 +281,18 @@ export default async function ProjectDetailPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       {c.is_anonymous ? (
-                        <span className="text-sm font-medium text-ink">
+                        <span className="text-sm font-semibold text-ink">
                           Anonymous
                         </span>
                       ) : c.author ? (
                         <Link
                           href={`/u/${c.author.handle}`}
-                          className="text-sm font-medium text-ink hover:underline"
+                          className="text-sm font-semibold text-ink hover:underline"
                         >
                           {c.author.name}
                         </Link>
                       ) : (
-                        <span className="text-sm font-medium text-ink">
+                        <span className="text-sm font-semibold text-ink">
                           Someone
                         </span>
                       )}
@@ -330,6 +329,17 @@ export default async function ProjectDetailPage({
           )}
         </ul>
       </section>
-    </article>
+    </Container>
+  );
+}
+
+function BuiltByCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-8 rounded-2xl border border-border bg-surface p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        Built by
+      </p>
+      <div className="mt-3.5 flex items-center gap-3">{children}</div>
+    </div>
   );
 }
