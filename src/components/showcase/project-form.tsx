@@ -12,7 +12,7 @@ import type { Project } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 const inputClass =
-  "h-10 w-full rounded-[10px] border border-border bg-surface px-3 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring";
+  "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
 function Field({
   label,
@@ -259,7 +259,7 @@ export function ProjectForm({
           maxLength={2000}
           rows={4}
           dir="auto"
-          className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
           placeholder="What does it do? Who's it for?"
         />
         {state.fieldErrors?.description && (
@@ -356,7 +356,7 @@ export function ProjectForm({
       <button
         type="submit"
         disabled={pending}
-        className="btn-sweep inline-flex h-11 w-full items-center justify-center rounded-[10px] px-4 text-[15px] font-medium transition-transform active:scale-[0.99] disabled:opacity-70"
+        className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
       >
         {pending ? "Saving…" : submitLabel}
       </button>

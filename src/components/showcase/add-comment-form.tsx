@@ -16,20 +16,24 @@ export function AddCommentForm({ projectId }: { projectId: string }) {
   }, [state]);
 
   return (
-    <form ref={ref} action={formAction}>
+    <form
+      ref={ref}
+      action={formAction}
+      className="rounded-2xl border border-border bg-surface p-4"
+    >
       <textarea
         name="body"
         rows={3}
         dir="auto"
         maxLength={2000}
         placeholder="Add a comment…"
-        className="w-full resize-y rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+        className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-shadow placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
       />
       {state.error && (
         <p className="mt-1 text-xs text-clay-deep">{state.error}</p>
       )}
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
           <input
             type="checkbox"
             name="is_anonymous"
@@ -37,11 +41,7 @@ export function AddCommentForm({ projectId }: { projectId: string }) {
           />
           Post anonymously
         </label>
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex h-9 items-center rounded-[10px] bg-teal-600 px-4 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-70"
-        >
+        <button type="submit" disabled={pending} className="btn btn-primary btn-sm">
           {pending ? "Posting…" : "Comment"}
         </button>
       </div>

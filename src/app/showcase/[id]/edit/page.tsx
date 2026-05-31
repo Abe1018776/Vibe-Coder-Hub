@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getProjectById } from "@/lib/queries";
 import { getAuthUser } from "@/lib/current-user";
+import { Container, Eyebrow } from "@/components/brand/layout";
 import { ProjectForm } from "@/components/showcase/project-form";
 import { updateProject } from "@/lib/actions/projects";
 
@@ -22,18 +23,23 @@ export default async function EditProjectPage({
   const updateAction = updateProject.bind(null, id);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 md:px-6">
-      <h1 className="font-display text-3xl text-ink">Edit project</h1>
-      <p className="mt-2 text-muted-foreground">
-        Update your project details.
-      </p>
-      <div className="mt-8 rounded-card border border-border bg-surface p-6 md:p-8">
+    <Container className="max-w-2xl py-12 md:py-16">
+      <div className="text-center">
+        <Eyebrow>Update your work</Eyebrow>
+        <h1 className="mt-3 font-display text-[clamp(2rem,5vw,2.75rem)] font-bold tracking-tight text-ink">
+          Edit project
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-[17px] text-muted-foreground">
+          Update your project details.
+        </p>
+      </div>
+      <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
         <ProjectForm
           action={updateAction}
           project={project}
           submitLabel="Save changes"
         />
       </div>
-    </div>
+    </Container>
   );
 }
