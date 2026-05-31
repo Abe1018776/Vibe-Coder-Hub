@@ -7,6 +7,7 @@ import {
   CalendarDays,
   ShieldCheck,
 } from "lucide-react";
+import { Container, Eyebrow } from "@/components/brand/layout";
 
 export const metadata = {
   title: "How YidVibe works",
@@ -25,7 +26,7 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-20 border-t border-border pt-8">
-      <h2 className="font-display text-2xl text-ink">{title}</h2>
+      <h2 className="font-display text-2xl font-bold text-ink">{title}</h2>
       <div className="mt-3 space-y-3 text-[15px] leading-relaxed text-ink/90">
         {children}
       </div>
@@ -63,9 +64,9 @@ const PILLARS = [
 
 export default function DocsPage() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12 md:px-6">
-      <p className="text-sm font-medium text-teal-700">How it works</p>
-      <h1 className="mt-1 font-display text-4xl leading-tight text-ink">
+    <Container className="max-w-2xl py-12 md:py-16">
+      <Eyebrow>How it works</Eyebrow>
+      <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3rem)] font-bold leading-tight tracking-tight text-ink">
         The home for our community&apos;s builders
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
@@ -80,9 +81,9 @@ export default function DocsPage() {
             {PILLARS.map((p) => (
               <div
                 key={p.title}
-                className="rounded-card border border-border bg-surface p-4"
+                className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-border-hover"
               >
-                <p className="flex items-center gap-2 font-medium text-ink">
+                <p className="flex items-center gap-2 font-semibold text-ink">
                   <p.icon size={17} className="text-teal-600" />
                   {p.title}
                 </p>
@@ -167,13 +168,13 @@ export default function DocsPage() {
           <div className="pt-2">
             <Link
               href="/showcase"
-              className="btn-sweep inline-flex h-11 items-center justify-center rounded-[10px] px-5 text-[15px] font-medium"
+              className="btn-sweep inline-flex h-12 items-center justify-center rounded-full px-6 text-[15px] font-semibold"
             >
               Explore the showcase
             </Link>
           </div>
         </Section>
       </div>
-    </div>
+    </Container>
   );
 }
