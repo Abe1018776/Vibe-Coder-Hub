@@ -105,6 +105,7 @@ export async function updateProfile(
       avatar_url: v.avatar_url ? v.avatar_url : null,
       cover_url: v.cover_url ? v.cover_url : null,
       available_for_hire: formData.get("available_for_hire") != null,
+      is_builder: formData.get("is_builder") != null,
       tools,
       skills,
       links,

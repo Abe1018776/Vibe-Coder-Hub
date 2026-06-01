@@ -110,6 +110,8 @@ export default async function ProfilePage({
 
   const isOwner = me?.id === profile.id;
   const isAuthed = !!me;
+  // Private accounts have no public profile page until they go public.
+  if (!profile.is_public && !isOwner) notFound();
   const links = (profile.links ?? {}) as Record<string, string | undefined>;
   const accent = accentFor(profile.handle);
   const joined = new Date(profile.created_at).toLocaleDateString(undefined, {

@@ -69,6 +69,8 @@ export function describeNotification(n: NotificationRow): {
       return { text: `${who} upvoted ${d.project_name ?? "your project"}`, href: project };
     case "comment":
       return { text: `${who} commented on ${d.project_name ?? "your project"}`, href: project };
+    case "follow_post":
+      return { text: `${who} posted ${d.project_name ?? "a new project"}`, href: project };
     case "interest": {
       const k = d.kind && d.kind !== "general" ? ` (${d.kind})` : "";
       return {

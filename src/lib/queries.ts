@@ -170,7 +170,10 @@ export async function listBuilders(
   const supabase = await createClient();
   let query = supabase
     .from("profiles")
-    .select("*, project_count:projects!projects_owner_id_fkey(count)");
+    .select("*, project_count:projects!projects_owner_id_fkey(count)")
+    // Only self-declared builders who have gone public appear in the directory.
+    .eq("is_builder", true)
+    .eq("is_public", true);
 
   if (opts.q) {
     const s = sanitize(opts.q);
@@ -205,7 +208,9 @@ export async function countBuilders(
   const supabase = await createClient();
   let query = supabase
     .from("profiles")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("is_builder", true)
+    .eq("is_public", true);
   if (opts.q) {
     const s = sanitize(opts.q);
     if (s)
