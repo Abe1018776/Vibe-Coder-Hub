@@ -1,15 +1,21 @@
 import Link from "next/link";
-import { Flag } from "lucide-react";
+import { Flag, Trophy } from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboard() {
   await requireAdminUnlocked();
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("reports")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "open");
+  const [{ count }, { count: pendingComps }] = await Promise.all([
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
+    supabase
+      .from("competitions")
+      .select("id", { count: "exact", head: true })
+      .eq("review_status", "pending"),
+  ]);
 
   return (
     <div>
@@ -29,6 +35,20 @@ export default async function AdminDashboard() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {count ?? 0} open {count === 1 ? "report" : "reports"} to review.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/competitions"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Trophy size={18} className="text-gold-mid" />
+            <span className="font-medium">Competition review</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingComps ?? 0} pending{" "}
+            {pendingComps === 1 ? "competition" : "competitions"}.
           </p>
         </Link>
       </div>

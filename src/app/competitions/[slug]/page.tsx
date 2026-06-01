@@ -8,6 +8,7 @@ import {
   deadlineLabel,
 } from "@/lib/competitions";
 import { getCurrentProfile } from "@/lib/current-user";
+import { getAdminContext } from "@/lib/admin";
 import { pickWinner } from "@/lib/actions/competitions";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill } from "@/components/brand/pill";
@@ -35,12 +36,15 @@ export default async function CompetitionDetailPage({
   const comp = await getCompetitionBySlug(slug);
   if (!comp) notFound();
 
-  const [submissions, me] = await Promise.all([
+  const [submissions, me, admin] = await Promise.all([
     getSubmissions(comp.id),
     getCurrentProfile(),
+    getAdminContext(),
   ]);
   const dl = deadlineLabel(comp.deadline);
   const isCreator = me?.id === comp.creator_id;
+  // Pending competitions are visible only to their creator and admins.
+  if (comp.review_status !== "approved" && !isCreator && !admin) notFound();
   const winnerId = comp.winner_submission_id;
   const canSubmit = !!me && !isCreator && !dl.ended && comp.status === "open";
 
@@ -67,6 +71,14 @@ export default async function CompetitionDetailPage({
           tags={comp.tags.map((t) => ({ label: t }))}
         />
       </div>
+
+      {comp.review_status !== "approved" && (
+        <div className="mt-4 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm text-gold-700">
+          {comp.review_status === "rejected"
+            ? "This competition wasn't approved. Only you and admins can see it."
+            : "Pending review — only you and admins can see this until an admin approves it."}
+        </div>
+      )}
 
       <p className="mt-3 text-sm text-muted-foreground">
         Deadline: {new Date(comp.deadline).toLocaleString()}

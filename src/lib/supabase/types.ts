@@ -113,6 +113,7 @@ export type Database = {
           id: string
           loom_url: string | null
           prize_amount: number
+          review_status: string
           slug: string
           status: Database["public"]["Enums"]["competition_status"]
           tags: string[]
@@ -127,6 +128,7 @@ export type Database = {
           id?: string
           loom_url?: string | null
           prize_amount: number
+          review_status?: string
           slug: string
           status?: Database["public"]["Enums"]["competition_status"]
           tags?: string[]
@@ -141,6 +143,7 @@ export type Database = {
           id?: string
           loom_url?: string | null
           prize_amount?: number
+          review_status?: string
           slug?: string
           status?: Database["public"]["Enums"]["competition_status"]
           tags?: string[]
