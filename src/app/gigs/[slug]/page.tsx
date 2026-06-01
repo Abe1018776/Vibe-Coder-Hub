@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Play, MessageSquare, ArrowRight } from "lucide-react";
+import { Play, MessageSquare, ArrowRight, ArrowLeft, Briefcase } from "lucide-react";
 import {
   getGigBySlug,
   getThreadsForGig,
@@ -11,7 +11,7 @@ import {
 } from "@/lib/gigs";
 import { getCurrentProfile } from "@/lib/current-user";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
-import { Pill, TagPill } from "@/components/brand/pill";
+import { DetailHero } from "@/components/brand/detail-hero";
 import { applyToGig, setGigStatus } from "@/lib/actions/gigs";
 import { cn } from "@/lib/utils";
 
@@ -52,34 +52,39 @@ export default async function GigDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
-      <div className="flex items-center gap-2">
-        <Pill accent="orange">{GIG_TYPE_LABEL[gig.type]}</Pill>
-        {gig.status !== "open" && (
-          <Pill accent="neutral">
-            {gig.status === "in_progress" ? "In progress" : "Closed"}
-          </Pill>
-        )}
+      <Link
+        href="/gigs"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-ink"
+      >
+        <ArrowLeft size={15} /> Back to Gigs
+      </Link>
+
+      <div className="mt-5">
+        <DetailHero
+          accent="clay"
+          title={gig.title}
+          watermarkIcon={<Briefcase strokeWidth={1.5} />}
+          badge={
+            <span className="inline-flex items-center gap-1.5">
+              <Briefcase size={14} /> {GIG_TYPE_LABEL[gig.type]}
+              {budget ? ` · ${budget}` : ""}
+              {gig.status !== "open"
+                ? gig.status === "in_progress"
+                  ? " · In progress"
+                  : " · Closed"
+                : ""}
+            </span>
+          }
+          tags={gig.tags.map((t) => ({ label: t }))}
+        />
       </div>
 
-      <h1 className="mt-3 font-display text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight text-ink" dir="auto">
-        {gig.title}
-      </h1>
-      {budget && <p className="mt-2 text-lg font-medium text-ink">{budget}</p>}
-
       <p
-        className="mt-5 whitespace-pre-line text-[15px] leading-relaxed text-ink/90"
+        className="mt-6 whitespace-pre-line text-[15px] leading-relaxed text-ink/90"
         dir="auto"
       >
         {gig.description}
       </p>
-
-      {gig.tags.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {gig.tags.map((t) => (
-            <TagPill key={t}>{t}</TagPill>
-          ))}
-        </div>
-      )}
 
       {gig.loom_url && (
         <a

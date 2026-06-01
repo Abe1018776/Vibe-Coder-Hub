@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Trophy, ExternalLink, Play } from "lucide-react";
+import { Trophy, ExternalLink, Play, ArrowLeft } from "lucide-react";
 import {
   getCompetitionBySlug,
   getSubmissions,
@@ -10,7 +10,8 @@ import {
 import { getCurrentProfile } from "@/lib/current-user";
 import { pickWinner } from "@/lib/actions/competitions";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
-import { Pill, TagPill } from "@/components/brand/pill";
+import { Pill } from "@/components/brand/pill";
+import { DetailHero } from "@/components/brand/detail-hero";
 import { SubmitEntryForm } from "@/components/competitions/submit-entry-form";
 import { formatRelativeTime, cn } from "@/lib/utils";
 
@@ -45,22 +46,29 @@ export default async function CompetitionDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
-      <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-2 font-display text-3xl text-clay-deep">
-          <Trophy size={24} />
-          {"$" + comp.prize_amount.toLocaleString()}
-        </span>
-        {winnerId ? (
-          <Pill accent="gold">Winner picked</Pill>
-        ) : (
-          <Pill accent="clay">{dl.text}</Pill>
-        )}
+      <Link
+        href="/competitions"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-ink"
+      >
+        <ArrowLeft size={15} /> Back to Competitions
+      </Link>
+
+      <div className="mt-5">
+        <DetailHero
+          accent="gold"
+          title={comp.title}
+          watermarkIcon={<Trophy strokeWidth={1.5} />}
+          badge={
+            <span className="inline-flex items-center gap-1.5">
+              <Trophy size={14} /> ${comp.prize_amount.toLocaleString()} ·{" "}
+              {winnerId ? "Winner picked" : dl.text}
+            </span>
+          }
+          tags={comp.tags.map((t) => ({ label: t }))}
+        />
       </div>
 
-      <h1 className="mt-3 font-display text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight text-ink" dir="auto">
-        {comp.title}
-      </h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-3 text-sm text-muted-foreground">
         Deadline: {new Date(comp.deadline).toLocaleString()}
       </p>
 
@@ -70,14 +78,6 @@ export default async function CompetitionDetailPage({
       >
         {comp.description}
       </p>
-
-      {comp.tags.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {comp.tags.map((t) => (
-            <TagPill key={t}>{t}</TagPill>
-          ))}
-        </div>
-      )}
 
       {comp.loom_url && (
         <a
