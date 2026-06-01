@@ -208,6 +208,45 @@ export type Database = {
           },
         ]
       }
+      directory_listings: {
+        Row: {
+          category: string
+          contact: Json
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          status: string
+          submitted_by: string | null
+          wants: string | null
+          what_you_do: string
+        }
+        Insert: {
+          category: string
+          contact?: Json
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          status?: string
+          submitted_by?: string | null
+          wants?: string | null
+          what_you_do: string
+        }
+        Update: {
+          category?: string
+          contact?: Json
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          status?: string
+          submitted_by?: string | null
+          wants?: string | null
+          what_you_do?: string
+        }
+        Relationships: []
+      }
       event_requests: {
         Row: {
           contact: string

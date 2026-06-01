@@ -67,6 +67,18 @@ export const KNOWN_TAGS = [
   "Games",
 ];
 
+/** Categories offered in the Directory (filter chips + the apply form). */
+export const DIRECTORY_CATEGORIES = [
+  "Developer",
+  "Designer",
+  "Agency",
+  "Marketing",
+  "Service",
+  "Product",
+  "Content",
+  "Other",
+];
+
 /** Notification types the user can toggle in settings (default: all on). */
 export const NOTIFICATION_TYPES: {
   key: string;
