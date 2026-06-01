@@ -133,7 +133,7 @@ export async function createProject(
   if (!anon) await goPublic(supabase, user.id);
 
   revalidatePath("/showcase");
-  redirect(`/showcase/${data.id}`);
+  redirect(`/showcase/${data.id}?posted=1`);
 }
 
 export async function updateProject(

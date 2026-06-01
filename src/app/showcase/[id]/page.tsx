@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ExternalLink, Play, Pencil, ArrowRight, ArrowLeft } from "lucide-react";
+import { ExternalLink, Play, Pencil, ArrowRight } from "lucide-react";
 import {
   getProjectById,
   getComments,
@@ -14,19 +14,21 @@ import { Container } from "@/components/brand/layout";
 import { Sparkle } from "@/components/brand/sparkle";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill } from "@/components/brand/pill";
-import { DetailHero, type HeroTag } from "@/components/brand/detail-hero";
-import { PROJECT_COMMERCIAL, accentFor } from "@/lib/site";
+import { Panel, PanelLabel } from "@/components/brand/panel";
+import { MediaGallery } from "@/components/brand/media-gallery";
+import { CommentsCard } from "@/components/showcase/comments-card";
+import { PROJECT_COMMERCIAL, accentFor, ACCENT_HERO } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
 import { SaveButton } from "@/components/brand/save-button";
 import { ShareButton } from "@/components/brand/share-button";
-import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
+import { NoteButton } from "@/components/messaging/note-button";
+import { PostedShareCard } from "@/components/brand/posted-share-card";
 import { FeatureToggle } from "@/components/admin/feature-toggle";
 import { deleteProject } from "@/lib/actions/projects";
-import { deleteComment } from "@/lib/actions/comments";
-import { formatRelativeTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -39,12 +41,45 @@ export async function generateMetadata({
   return { title: project.name, description: project.description.slice(0, 155) };
 }
 
+function DetailRow({ k, children }: { k: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b border-border/60 py-2 text-sm last:border-0">
+      <span className="shrink-0 font-medium text-muted-foreground">{k}</span>
+      <span className="flex flex-wrap justify-end gap-1.5 text-right text-ink">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function ChipLink({
+  href,
+  tone,
+  children,
+}: {
+  href: string;
+  tone: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", tone)}
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ posted?: string }>;
 }) {
   const { id } = await params;
+  const justPosted = (await searchParams)?.posted === "1";
   const project = await getProjectById(id);
   if (!project) notFound();
 
@@ -58,287 +93,292 @@ export default async function ProjectDetailPage({
   const isAuthed = !!me;
   const isOwner = me?.id === project.owner_id;
   const owner = project.owner;
+  const accent = accentFor(project.name);
   const deleteThis = deleteProject.bind(null, id);
 
-  const heroTags: HeroTag[] = [
-    ...project.tools.map((t) => ({
-      label: t,
-      href: `/showcase?tool=${encodeURIComponent(t)}`,
-    })),
-    ...project.tags.map((t) => ({
-      label: t,
-      href: `/showcase?tag=${encodeURIComponent(t)}`,
-    })),
-  ];
+  const postedDate = new Date(project.created_at).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
   const badge = project.featured ? (
-    <span className="inline-flex items-center gap-1.5">
-      <Sparkle size={13} color="#fff" /> Featured
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-tint px-2.5 py-0.5 text-xs font-semibold text-gold-deep">
+      <Sparkle size={12} color="var(--gold-500)" /> Featured
     </span>
   ) : project.url ? (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="h-2 w-2 rounded-full bg-white yv-live-dot" /> Live
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-tint px-2.5 py-0.5 text-xs font-semibold text-sage-deep">
+      <span className="yv-live-dot h-1.5 w-1.5 rounded-full bg-sage-deep" /> Live
     </span>
-  ) : undefined;
+  ) : null;
+
+  const hasCommercial =
+    project.seeking_funding || project.for_sale || project.open_to_partners;
 
   return (
-    <Container className="max-w-3xl py-10">
-      <Link
-        href="/showcase"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-teal-800"
-      >
-        <ArrowLeft size={15} /> Back to Showcase
-      </Link>
-
-      <div className="mt-5">
-        <DetailHero
-          accent={accentFor(project.name)}
-          title={project.name}
-          badge={badge}
-          tags={heroTags}
-          coverImage={project.image_url}
-          watermark={
-            project.image_url ? undefined : project.name.slice(0, 1).toUpperCase()
-          }
-          topRight={
-            <SaveButton
-              projectId={id}
-              initialSaved={saved.has(id)}
-              isAuthed={isAuthed}
-              redirectTo={`/showcase/${id}`}
-            />
-          }
-        />
-      </div>
-
-      {project.images.length > 0 && (
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {project.images.map((src) => (
-            <a
-              key={src}
-              href={src}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-teal-50"
+    <Container className="max-w-6xl py-8">
+      {/* Full-width header — both columns start below this */}
+      <header className="flex flex-wrap items-start gap-3.5 border-b border-border pb-5">
+        <span
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-xl font-display text-lg font-bold text-white"
+          style={{ backgroundImage: ACCENT_HERO[accent] }}
+        >
+          {project.name.slice(0, 1).toUpperCase()}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1
+              className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl"
+              dir="auto"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="h-full w-full object-cover" />
-            </a>
-          ))}
+              {project.name}
+            </h1>
+            {badge}
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {project.is_anonymous || !owner ? (
+              "by Anonymous"
+            ) : (
+              <>
+                by{" "}
+                <Link
+                  href={`/u/${owner.handle}`}
+                  className="font-medium text-ink hover:underline"
+                >
+                  {owner.name}
+                </Link>
+              </>
+            )}
+            {" · posted "}
+            {postedDate}
+          </p>
         </div>
-      )}
-
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <UpvoteButton
-          projectId={project.id}
-          initialCount={project.upvote_count}
-          initialUpvoted={upvoted.has(project.id)}
+        <SaveButton
+          projectId={id}
+          initialSaved={saved.has(id)}
           isAuthed={isAuthed}
           redirectTo={`/showcase/${id}`}
         />
-        <ShareButton
-          path={`/showcase/${id}`}
-          title={project.name}
-          label="Share"
-          className="btn-sm"
-        />
-        {project.url && (
-          <a
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-primary btn-sm"
-          >
-            <ExternalLink size={15} /> Visit live
-          </a>
-        )}
-        {project.video_url && (
-          <a
-            href={project.video_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ghost btn-sm"
-          >
-            <Play size={15} /> Watch demo
-          </a>
-        )}
-        {isOwner && (
-          <>
-            <Link href={`/showcase/${id}/edit`} className="btn btn-ghost btn-sm">
-              <Pencil size={15} /> Edit
-            </Link>
-            <DeleteProjectButton action={deleteThis} />
-          </>
-        )}
-        {admin && <FeatureToggle projectId={id} featured={!!project.featured} />}
-        {isAuthed && !isOwner && (
-          <div className="ml-auto flex items-center">
-            <ReportMenu targetType="project" targetId={id} />
-          </div>
-        )}
-      </div>
+      </header>
 
-      <p
-        className="mt-6 whitespace-pre-line text-[17px] leading-relaxed text-ink/90"
-        dir="auto"
-      >
-        {project.description}
-      </p>
-
-      {(project.seeking_funding ||
-        project.for_sale ||
-        project.open_to_partners) && (
-        <div className="mt-6 rounded-2xl border border-border bg-surface p-5">
-          <div className="flex flex-wrap gap-1.5">
-            {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
-              <Pill key={c.key} accent={c.accent}>
-                {c.label}
-              </Pill>
-            ))}
-          </div>
-          <div className="mt-3.5 flex flex-wrap items-center gap-2">
-            {!project.is_anonymous && owner && (
-              <a href={`/u/${owner.handle}#contact`} className="btn btn-primary btn-sm">
-                Contact the builder
-              </a>
-            )}
-            {isAuthed && !isOwner && <InterestButton projectId={id} />}
-            {!isAuthed && (
-              <Link href={`/login?next=/showcase/${id}`} className="btn btn-ghost btn-sm">
-                Sign in to connect
-              </Link>
-            )}
-          </div>
+      {justPosted && isOwner && (
+        <div className="mt-5">
+          <PostedShareCard
+            path={`/showcase/${id}`}
+            title={project.name}
+            caption={`Check out my project "${project.name}" on YidVibe →`}
+          />
         </div>
       )}
 
-      {project.is_anonymous ? (
-        <BuiltByCard>
-          <AvatarCircle name="?" src={null} size={44} accent="blue" />
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-ink">Anonymous</p>
-            {isOwner && (
-              <p className="text-sm text-muted-foreground">
-                Posted anonymously — only you and admins can see it&apos;s yours.
-              </p>
-            )}
-          </div>
-        </BuiltByCard>
-      ) : (
-        owner && (
-          <BuiltByCard>
-            <AvatarCircle name={owner.name} src={owner.avatar_url} size={44} accent="blue" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="truncate font-semibold text-ink">{owner.name}</p>
-                {owner.available_for_hire && <Pill accent="sage">Available</Pill>}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr] lg:items-start">
+        {/* LEFT */}
+        <div className="space-y-5">
+          <MediaGallery
+            name={project.name}
+            coverImage={project.image_url}
+            images={project.images}
+            liveUrl={project.url}
+            accent={accent}
+          />
+
+          <Panel>
+            <PanelLabel>About this project</PanelLabel>
+            <p
+              className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink/90"
+              dir="auto"
+            >
+              {project.description}
+            </p>
+          </Panel>
+
+          {hasCommercial && (
+            <Panel>
+              <PanelLabel>Looking for</PanelLabel>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
+                  <Pill key={c.key} accent={c.accent}>
+                    {c.label}
+                  </Pill>
+                ))}
               </div>
-              <p className="truncate text-sm text-muted-foreground">
-                @{owner.handle}
-              </p>
-            </div>
-            <Link href={`/u/${owner.handle}`} className="btn btn-ghost btn-sm shrink-0">
-              View profile <ArrowRight size={15} />
-            </Link>
-          </BuiltByCard>
-        )
-      )}
-
-      <section className="mt-12">
-        <h2 className="font-display text-2xl font-bold text-ink">
-          Comments{" "}
-          {comments.length > 0 && (
-            <span className="text-muted-foreground">({comments.length})</span>
-          )}
-        </h2>
-
-        <div className="mt-4">
-          {isAuthed ? (
-            <AddCommentForm projectId={id} />
-          ) : (
-            <Link href={`/login?next=/showcase/${id}`} className="btn btn-ghost btn-sm">
-              Sign in to comment
-            </Link>
+              <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                {!project.is_anonymous && owner && (
+                  <a
+                    href={`/u/${owner.handle}#contact`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Contact the builder
+                  </a>
+                )}
+                {isAuthed && !isOwner && <InterestButton projectId={id} />}
+                {!isAuthed && (
+                  <Link
+                    href={`/login?next=/showcase/${id}`}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Sign in to connect
+                  </Link>
+                )}
+              </div>
+            </Panel>
           )}
         </div>
 
-        <ul className="mt-6 space-y-5">
-          {comments.length === 0 ? (
-            <li className="text-sm text-muted-foreground">
-              No comments yet — be the first.
-            </li>
-          ) : (
-            comments.map((c) => {
-              const del = deleteComment.bind(null, c.id, id);
-              const mine = me?.id === c.author_id;
-              return (
-                <li key={c.id} className="flex gap-3">
-                  <AvatarCircle
-                    name={c.is_anonymous ? "?" : c.author?.name ?? "?"}
-                    src={c.is_anonymous ? null : c.author?.avatar_url}
-                    size={32}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      {c.is_anonymous ? (
-                        <span className="text-sm font-semibold text-ink">
-                          Anonymous
-                        </span>
-                      ) : c.author ? (
-                        <Link
-                          href={`/u/${c.author.handle}`}
-                          className="text-sm font-semibold text-ink hover:underline"
-                        >
-                          {c.author.name}
-                        </Link>
-                      ) : (
-                        <span className="text-sm font-semibold text-ink">
-                          Someone
-                        </span>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatRelativeTime(c.created_at)}
-                      </span>
-                      {mine ? (
-                        <form action={del} className="ml-auto">
-                          <button
-                            type="submit"
-                            className="text-xs text-muted-foreground transition-colors hover:text-clay-deep"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                      ) : (
-                        isAuthed && (
-                          <div className="ml-auto">
-                            <ReportMenu targetType="comment" targetId={c.id} />
-                          </div>
-                        )
-                      )}
-                    </div>
-                    <p
-                      className="mt-1 whitespace-pre-line text-sm text-ink/90"
-                      dir="auto"
-                    >
-                      {c.body}
-                    </p>
-                  </div>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      </section>
-    </Container>
-  );
-}
+        {/* RIGHT rail */}
+        <div className="space-y-4 lg:sticky lg:top-16">
+          <Panel className="space-y-3.5">
+            <div className="flex justify-center">
+              <UpvoteButton
+                projectId={project.id}
+                initialCount={project.upvote_count}
+                initialUpvoted={upvoted.has(project.id)}
+                isAuthed={isAuthed}
+                redirectTo={`/showcase/${id}`}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              {project.url && (
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary btn-sm w-full justify-center"
+                >
+                  <ExternalLink size={15} /> Visit live
+                </a>
+              )}
+              <ShareButton
+                path={`/showcase/${id}`}
+                title={project.name}
+                label="Share project"
+                className="btn-sm w-full justify-center"
+              />
+              {project.video_url && (
+                <a
+                  href={project.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost btn-sm w-full justify-center"
+                >
+                  <Play size={15} /> Watch demo
+                </a>
+              )}
+              {isOwner && (
+                <>
+                  <Link
+                    href={`/showcase/${id}/edit`}
+                    className="btn btn-ghost btn-sm w-full justify-center"
+                  >
+                    <Pencil size={15} /> Edit
+                  </Link>
+                  <DeleteProjectButton action={deleteThis} />
+                </>
+              )}
+              {admin && <FeatureToggle projectId={id} featured={!!project.featured} />}
+              {isAuthed && !isOwner && (
+                <div className="flex justify-center pt-0.5">
+                  <ReportMenu targetType="project" targetId={id} />
+                </div>
+              )}
+            </div>
+          </Panel>
 
-function BuiltByCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-8 rounded-2xl border border-border bg-surface p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-        Built by
-      </p>
-      <div className="mt-3.5 flex items-center gap-3">{children}</div>
-    </div>
+          <Panel>
+            <PanelLabel>Built by</PanelLabel>
+            {project.is_anonymous || !owner ? (
+              <div className="mt-3 flex items-center gap-3">
+                <AvatarCircle name="?" src={null} size={40} accent="blue" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">Anonymous</p>
+                  {isOwner && (
+                    <p className="text-xs text-muted-foreground">
+                      Only you and admins can see it&apos;s yours.
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 flex items-center gap-3">
+                <AvatarCircle
+                  name={owner.name}
+                  src={owner.avatar_url}
+                  size={40}
+                  accent="blue"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate font-semibold text-ink">{owner.name}</p>
+                    {owner.available_for_hire && <Pill accent="sage">Available</Pill>}
+                  </div>
+                  <p className="truncate text-sm text-muted-foreground">
+                    @{owner.handle}
+                  </p>
+                </div>
+                <Link
+                  href={`/u/${owner.handle}`}
+                  className="btn btn-ghost btn-sm shrink-0"
+                >
+                  View <ArrowRight size={15} />
+                </Link>
+              </div>
+            )}
+            {isAuthed && !isOwner && !project.is_anonymous && (
+              <div className="mt-3 border-t border-border/60 pt-3">
+                <NoteButton
+                  otherId={project.owner_id}
+                  about={{ type: "project", id }}
+                  label="Reply privately"
+                  className="btn-ghost w-full justify-center"
+                />
+              </div>
+            )}
+          </Panel>
+
+          <Panel>
+            <PanelLabel>Details</PanelLabel>
+            <div className="mt-2">
+              {project.tools.length > 0 && (
+                <DetailRow k="Built with">
+                  {project.tools.map((t) => (
+                    <ChipLink
+                      key={t}
+                      href={`/showcase?tool=${encodeURIComponent(t)}`}
+                      tone="bg-blue-tint text-blue-deep"
+                    >
+                      {t}
+                    </ChipLink>
+                  ))}
+                </DetailRow>
+              )}
+              {project.tags.length > 0 && (
+                <DetailRow k="Topics">
+                  {project.tags.map((t) => (
+                    <ChipLink
+                      key={t}
+                      href={`/showcase?tag=${encodeURIComponent(t)}`}
+                      tone="bg-teal-50 text-teal-800"
+                    >
+                      {t}
+                    </ChipLink>
+                  ))}
+                </DetailRow>
+              )}
+              <DetailRow k="Posted">{postedDate}</DetailRow>
+              <DetailRow k="Status">
+                {project.featured ? "Featured" : project.url ? "Live" : "Listed"}
+              </DetailRow>
+            </div>
+          </Panel>
+
+          <CommentsCard
+            projectId={id}
+            comments={comments}
+            meId={me?.id ?? null}
+            isAuthed={isAuthed}
+          />
+        </div>
+      </div>
+    </Container>
   );
 }

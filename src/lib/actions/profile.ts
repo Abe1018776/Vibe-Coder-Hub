@@ -94,6 +94,10 @@ export async function updateProfile(
   if (whatsapp) links.whatsapp = whatsapp;
   if (instagram) links.instagram = instagram;
 
+  const dmRaw = String(formData.get("dm_privacy") ?? "everyone");
+  const dm_privacy: "everyone" | "followers" | "none" =
+    dmRaw === "followers" ? "followers" : dmRaw === "none" ? "none" : "everyone";
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -106,6 +110,7 @@ export async function updateProfile(
       cover_url: v.cover_url ? v.cover_url : null,
       available_for_hire: formData.get("available_for_hire") != null,
       is_builder: formData.get("is_builder") != null,
+      dm_privacy,
       tools,
       skills,
       links,

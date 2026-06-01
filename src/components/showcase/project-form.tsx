@@ -5,6 +5,8 @@ import { Plus, Wand2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ImageInput } from "@/components/brand/image-input";
 import { GalleryInput } from "@/components/brand/gallery-input";
+import { CancelButton } from "@/components/brand/cancel-button";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { fetchUrlMetadata } from "@/lib/actions/url-metadata";
 import { KNOWN_TOOLS, KNOWN_TAGS } from "@/lib/site";
 import type { ProjectFormState } from "@/lib/actions/projects";
@@ -159,6 +161,9 @@ export function ProjectForm({
   const [tools, setTools] = useState<string[]>(project?.tools ?? []);
   const [tags, setTags] = useState<string[]>(project?.tags ?? []);
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   async function autofill() {
     if (!url.trim()) {
       toast.error("Paste your project link first.");
@@ -189,7 +194,11 @@ export function ProjectForm({
   }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      action={formAction}
+      onChange={() => setDirty(true)}
+      className="space-y-6"
+    >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -378,13 +387,19 @@ export function ProjectForm({
         <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
-      >
-        {pending ? "Saving…" : submitLabel}
-      </button>
+      <div className="flex items-center gap-3 pt-1">
+        <CancelButton
+          dirty={dirty}
+          fallbackHref={project ? `/showcase/${project.id}` : "/showcase"}
+        />
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn-sweep inline-flex h-12 flex-1 items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
+        >
+          {pending ? "Saving…" : submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

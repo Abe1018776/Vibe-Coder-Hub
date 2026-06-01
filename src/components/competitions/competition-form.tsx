@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { CancelButton } from "@/components/brand/cancel-button";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import {
   createCompetition,
   type CompetitionFormState,
@@ -45,8 +47,15 @@ export function CompetitionForm() {
     FormData
   >(createCompetition, {});
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   return (
-    <form action={action} className="space-y-6">
+    <form
+      action={action}
+      onChange={() => setDirty(true)}
+      className="space-y-6"
+    >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -111,13 +120,16 @@ export function CompetitionForm() {
         />
       </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn btn-gold btn-block h-12 text-[15px] disabled:opacity-70"
-      >
-        {pending ? "Posting…" : "Post competition"}
-      </button>
+      <div className="flex items-center gap-3 pt-1">
+        <CancelButton dirty={dirty} fallbackHref="/competitions" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn btn-gold h-12 flex-1 text-[15px] disabled:opacity-70"
+        >
+          {pending ? "Posting…" : "Post competition"}
+        </button>
+      </div>
     </form>
   );
 }

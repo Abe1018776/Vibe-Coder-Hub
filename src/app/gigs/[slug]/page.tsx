@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Play, MessageSquare, ArrowRight, ArrowLeft, Briefcase } from "lucide-react";
+import { Play, MessageSquare, ArrowRight, Briefcase } from "lucide-react";
 import {
   getGigBySlug,
   getThreadsForGig,
@@ -52,13 +52,6 @@ export default async function GigDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
-      <Link
-        href="/gigs"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-ink"
-      >
-        <ArrowLeft size={15} /> Back to Gigs
-      </Link>
-
       <div className="mt-5">
         <DetailHero
           accent="clay"

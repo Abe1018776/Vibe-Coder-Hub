@@ -3,6 +3,7 @@ import { Comfortaa, Nunito_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
+import { ContextBar } from "@/components/site/context-bar";
 import { FeedbackWidget } from "@/components/site/feedback-widget";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 import "./globals.css";
@@ -45,8 +46,9 @@ export default function RootLayout({
       lang="en"
       className={`${nunito.variable} ${comfortaa.variable} ${jetbrains.variable}`}
     >
-      <body className="flex min-h-dvh flex-col overflow-x-clip bg-canvas pb-16 text-ink lg:pb-0">
+      <body className="flex min-h-dvh flex-col overflow-x-clip bg-canvas pb-16 text-ink lg:pb-0 lg:pl-64">
         <SiteNav />
+        <ContextBar />
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <Toaster richColors position="top-center" />

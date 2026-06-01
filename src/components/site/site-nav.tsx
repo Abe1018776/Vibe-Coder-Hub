@@ -10,6 +10,7 @@ import { Logo } from "./logo";
 import { NavLinks } from "./nav-links";
 import { NavShell } from "./nav-shell";
 import { UserMenu } from "./user-menu";
+import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { NotificationBell, type BellItem } from "./notification-bell";
 import { PostMenu } from "./post-menu";
@@ -38,9 +39,19 @@ export async function SiteNav() {
     });
   }
 
+  const sidebarProfile = profile
+    ? { handle: profile.handle, name: profile.name, avatar_url: profile.avatar_url }
+    : null;
+
   return (
     <>
-      <NavShell>
+      <Sidebar
+        profile={sidebarProfile}
+        bellItems={bellItems}
+        unread={unread}
+        isAdmin={!!admin}
+      />
+      <NavShell className="lg:hidden">
         <Container className="flex h-16 items-center gap-4">
           <Logo />
           <div className="hidden flex-1 lg:block">
