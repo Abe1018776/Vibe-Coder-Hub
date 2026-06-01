@@ -1,21 +1,26 @@
 import Link from "next/link";
-import { Flag, Trophy } from "lucide-react";
+import { Flag, Trophy, Calendar } from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboard() {
   await requireAdminUnlocked();
   const supabase = await createClient();
-  const [{ count }, { count: pendingComps }] = await Promise.all([
-    supabase
-      .from("reports")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "open"),
-    supabase
-      .from("competitions")
-      .select("id", { count: "exact", head: true })
-      .eq("review_status", "pending"),
-  ]);
+  const [{ count }, { count: pendingComps }, { count: pendingEvents }] =
+    await Promise.all([
+      supabase
+        .from("reports")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "open"),
+      supabase
+        .from("competitions")
+        .select("id", { count: "exact", head: true })
+        .eq("review_status", "pending"),
+      supabase
+        .from("event_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+    ]);
 
   return (
     <div>
@@ -49,6 +54,20 @@ export default async function AdminDashboard() {
           <p className="mt-2 text-sm text-muted-foreground">
             {pendingComps ?? 0} pending{" "}
             {pendingComps === 1 ? "competition" : "competitions"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/events"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Calendar size={18} className="text-sage-mid" />
+            <span className="font-medium">Event requests</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingEvents ?? 0} pending{" "}
+            {pendingEvents === 1 ? "request" : "requests"}.
           </p>
         </Link>
       </div>

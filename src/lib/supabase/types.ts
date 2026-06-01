@@ -208,6 +208,36 @@ export type Database = {
           },
         ]
       }
+      event_requests: {
+        Row: {
+          contact: string
+          created_at: string
+          details: string
+          id: string
+          requester_id: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          contact: string
+          created_at?: string
+          details: string
+          id?: string
+          requester_id?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          contact?: string
+          created_at?: string
+          details?: string
+          id?: string
+          requester_id?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           builder_id: string

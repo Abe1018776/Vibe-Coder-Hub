@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, CalendarDays, MapPin, ArrowUpRight } from "lucide-react";
+import { CalendarDays, MapPin, ArrowUpRight } from "lucide-react";
 import { listUpcomingEvents } from "@/lib/events";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { EmptyState } from "@/components/brand/empty-state";
@@ -27,19 +27,14 @@ export default async function EventsPage() {
 
   return (
     <Container className="max-w-2xl py-10 md:py-14">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Eyebrow style={{ color: "var(--sage-deep)" }}>Meet in person</Eyebrow>
-          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
-            Events
-          </h1>
-          <p className="mt-2 text-[17px] text-muted-foreground">
-            Community workshops and meetups for builders.
-          </p>
-        </div>
-        <Link href="/events/post" className="btn btn-primary shrink-0">
-          <Plus size={16} /> Add event
-        </Link>
+      <div>
+        <Eyebrow style={{ color: "var(--sage-deep)" }}>Meet in person</Eyebrow>
+        <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
+          Events
+        </h1>
+        <p className="mt-2 text-[17px] text-muted-foreground">
+          Community workshops and meetups for builders.
+        </p>
       </div>
 
       {events.length === 0 ? (
@@ -48,8 +43,8 @@ export default async function EventsPage() {
           icon={<CalendarDays size={22} />}
           title="No upcoming events"
           description="Hosting a workshop or meetup? Add it so the community can join."
-          actionHref="/events/post"
-          actionLabel="Add an event"
+          actionHref="/events/request"
+          actionLabel="Request an event"
         />
       ) : (
         <ul className="mt-8 space-y-3">
@@ -100,6 +95,15 @@ export default async function EventsPage() {
           ))}
         </ul>
       )}
+
+      <div className="mt-10 rounded-2xl border border-border bg-surface p-5 text-center">
+        <p className="text-sm text-muted-foreground">
+          Hosting a workshop or meetup?
+        </p>
+        <Link href="/events/request" className="btn btn-primary btn-sm mt-3">
+          Request to post an event
+        </Link>
+      </div>
     </Container>
   );
 }
