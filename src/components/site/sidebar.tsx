@@ -89,14 +89,14 @@ export function Sidebar({
         {profile ? (
           <div className="flex items-center gap-2">
             <UserMenu profile={profile} isAdmin={isAdmin} />
-            <div className="min-w-0 flex-1">
+            <Link href="/dashboard" className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink">
                 {profile.name}
               </p>
               <p className="truncate text-xs text-muted-foreground">
                 @{profile.handle}
               </p>
-            </div>
+            </Link>
             <NotificationBell items={bellItems} unread={unread} />
           </div>
         ) : (

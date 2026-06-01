@@ -30,6 +30,7 @@ export function UserMenu({
             <p className="truncate text-xs text-muted-foreground">@{profile.handle}</p>
           </div>
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
+          <Item href="/dashboard">Dashboard</Item>
           <Item href={`/u/${profile.handle}`}>Your profile</Item>
           <Item href="/saved">Saved</Item>
           <Item href="/settings/profile">Edit profile</Item>
