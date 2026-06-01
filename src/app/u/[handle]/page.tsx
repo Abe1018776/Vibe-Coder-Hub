@@ -142,72 +142,75 @@ export default async function ProfilePage({
   return (
     <Container className="py-8 md:py-12">
       <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-[var(--shadow-sm)]">
-        <div
-          className="relative h-32 sm:h-44"
-          style={profile.cover_url ? undefined : { backgroundImage: BANNER[accent] }}
-        >
-          {profile.cover_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.cover_url}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
-          <div className="absolute right-4 top-4 flex items-center gap-2">
-            {isOwner ? (
-              <Link href="/settings/profile" className="btn btn-ghost btn-sm">
-                <Pencil size={15} /> Edit profile
-              </Link>
-            ) : (
-              <>
-                <FollowButton
-                  builderId={profile.id}
-                  initialFollowing={following}
-                  isAuthed={isAuthed}
-                  redirectTo={`/u/${profile.handle}`}
-                />
-                {isAuthed && (
-                  <ReportMenu targetType="profile" targetId={profile.id} />
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        {profile.cover_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profile.cover_url}
+            alt=""
+            className="h-20 w-full object-cover sm:h-24"
+          />
+        ) : (
+          <div
+            className="h-20 sm:h-24"
+            style={{ backgroundImage: BANNER[accent] }}
+          />
+        )}
 
         <div className="px-5 pb-6 md:px-8 md:pb-8">
-          <div className="-mt-12 flex">
+          <div className="flex flex-wrap items-start gap-4 pt-4">
             <AvatarCircle
               name={profile.name}
               src={profile.avatar_url}
-              size={96}
+              size={80}
               accent={accent}
-              className="ring-4 ring-surface"
+              className="shadow-[0_2px_12px_rgba(0,0,0,0.12)]"
             />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+                  {profile.name}
+                </h1>
+                {profile.is_verified && (
+                  <span title="Verified">
+                    <Sparkle size={20} color="var(--gold-500)" />
+                  </span>
+                )}
+                {profile.available_for_hire && (
+                  <Pill accent="sage">Available for hire</Pill>
+                )}
+                {profile.hourly_rate != null && (
+                  <Pill accent="gold">${profile.hourly_rate}/hr</Pill>
+                )}
+              </div>
+              <p className="mt-0.5 inline-flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
+                <span>@{profile.handle}</span>
+                {profile.location && (
+                  <span className="inline-flex items-center gap-1">
+                    · <MapPin size={13} /> {profile.location}
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {isOwner ? (
+                <Link href="/settings/profile" className="btn btn-ghost btn-sm">
+                  <Pencil size={15} /> Edit profile
+                </Link>
+              ) : (
+                <>
+                  <FollowButton
+                    builderId={profile.id}
+                    initialFollowing={following}
+                    isAuthed={isAuthed}
+                    redirectTo={`/u/${profile.handle}`}
+                  />
+                  {isAuthed && (
+                    <ReportMenu targetType="profile" targetId={profile.id} />
+                  )}
+                </>
+              )}
+            </div>
           </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
-              {profile.name}
-            </h1>
-            {profile.is_verified && (
-              <span title="Verified">
-                <Sparkle size={20} color="var(--gold-500)" />
-              </span>
-            )}
-            {profile.available_for_hire && <Pill accent="sage">Available for hire</Pill>}
-            {profile.hourly_rate != null && (
-              <Pill accent="gold">${profile.hourly_rate}/hr</Pill>
-            )}
-          </div>
-          <p className="mt-0.5 inline-flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
-            <span>@{profile.handle}</span>
-            {profile.location && (
-              <span className="inline-flex items-center gap-1">
-                · <MapPin size={13} /> {profile.location}
-              </span>
-            )}
-          </p>
 
           {profile.bio && (
             <p className="mt-4 max-w-2xl whitespace-pre-line text-[15px] leading-relaxed text-ink/90">

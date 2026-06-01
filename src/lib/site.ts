@@ -144,6 +144,16 @@ export function contactHref(key: ContactKey, value: string): string {
   }
 }
 
+/** Deep accent gradient (header icons, covers). Mirrors DetailHero's HERO map. */
+export const ACCENT_HERO: Record<Accent, string> = {
+  teal: "linear-gradient(135deg, var(--teal-400) 0%, var(--teal-800) 100%)",
+  blue: "linear-gradient(135deg, var(--blue-mid) 0%, var(--blue-deep) 100%)",
+  orange: "linear-gradient(135deg, var(--orange-mid) 0%, var(--orange-deep) 100%)",
+  clay: "linear-gradient(135deg, var(--clay-mid) 0%, var(--clay-deep) 100%)",
+  sage: "linear-gradient(135deg, var(--sage-mid) 0%, var(--sage-deep) 100%)",
+  gold: "linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%)",
+};
+
 /** tint background + deep-stop text — the BRAND pill pattern. */
 export const ACCENT_PILL: Record<Accent, string> = {
   teal: "bg-teal-50 text-teal-800",
