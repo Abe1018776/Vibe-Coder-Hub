@@ -19,7 +19,10 @@ const TABS = [
 export function DashboardTabs() {
   const pathname = usePathname();
   return (
-    <div className="flex flex-wrap gap-2 border-b border-border pb-3">
+    <nav
+      aria-label="Dashboard"
+      className="-mx-1 flex gap-1.5 overflow-x-auto border-b border-border px-1 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {TABS.map((t) => {
         const active = t.exact
           ? pathname === t.href
@@ -28,17 +31,18 @@ export function DashboardTabs() {
           <Link
             key={t.href}
             href={t.href}
+            aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+              "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors",
               active
-                ? "bg-teal-700 text-white"
-                : "border border-border bg-surface text-muted-foreground hover:text-ink",
+                ? "bg-teal-700 text-white shadow-[var(--shadow-sm)]"
+                : "text-muted-foreground hover:bg-secondary hover:text-ink",
             )}
           >
             {t.label}
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

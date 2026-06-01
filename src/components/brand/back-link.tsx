@@ -4,17 +4,37 @@ import { useRouter, usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Parent path: strip the last segment ("/showcase/abc" -> "/showcase"). */
-function parentOf(path: string): string {
+/**
+ * Sensible section root for a path. For a detail/sub page we drop the last
+ * segment ("/showcase/abc" -> "/showcase", "/dashboard/inbox/123" ->
+ * "/dashboard/inbox"). Always returns at least "/".
+ */
+function sectionRoot(path: string): string {
   const parts = path.split("/").filter(Boolean);
+  if (parts.length <= 1) return "/";
   parts.pop();
   return "/" + parts.join("/");
 }
 
+/** True when there's in-app history we can safely return to (same-origin). */
+function hasSafeHistory(): boolean {
+  if (typeof window === "undefined") return false;
+  // A direct visit / new tab has length 1; a same-origin referrer means we
+  // navigated here from within the app and router.back() is safe.
+  if (window.history.length <= 1) return false;
+  const ref = document.referrer;
+  if (!ref) return false;
+  try {
+    return new URL(ref).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Branded "← Back". Goes to the previous page when there is history, otherwise
- * falls back to the section root (or an explicit `fallbackHref`). Client-side so
- * it can read history length + the current path.
+ * Branded "← Back". Returns to the previous in-app page when we got here via an
+ * in-app navigation; otherwise falls back to the section root (or an explicit
+ * `fallbackHref`) so a deep-linked visitor always lands somewhere sensible.
  */
 export function BackLink({
   label = "Back",
@@ -29,10 +49,10 @@ export function BackLink({
   const pathname = usePathname();
 
   function onClick() {
-    if (typeof window !== "undefined" && window.history.length > 1) {
+    if (hasSafeHistory()) {
       router.back();
     } else {
-      router.push(fallbackHref ?? (parentOf(pathname) || "/"));
+      router.push(fallbackHref ?? sectionRoot(pathname));
     }
   }
 

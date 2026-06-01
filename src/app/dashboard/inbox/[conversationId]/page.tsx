@@ -22,26 +22,27 @@ export default async function ThreadPage({
   const { other, messages, meId } = data;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 border-b border-border pb-4">
+    <div className="space-y-5">
+      {/* Conversation header — a clean card identifying who you're talking to. */}
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3.5 shadow-[var(--shadow-sm)]">
         <AvatarCircle name={other.name} src={other.avatar_url} size={44} />
         <div className="min-w-0 flex-1">
           <Link
             href={`/u/${other.handle}`}
-            className="font-semibold text-ink hover:underline"
+            className="font-semibold text-ink hover:text-teal-800 hover:underline"
           >
             {other.name}
           </Link>
           <p className="text-xs text-muted-foreground">@{other.handle}</p>
         </div>
-        <Link href={`/u/${other.handle}`} className="btn btn-ghost btn-sm">
+        <Link href={`/u/${other.handle}`} className="btn btn-ghost btn-sm shrink-0">
           View profile <ArrowRight size={14} />
         </Link>
       </div>
 
-      <div className="space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-sm)]">
+      <div className="space-y-3 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-sm)] sm:p-5">
         {messages.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             Say hello — send the first note.
           </p>
         ) : (
@@ -54,11 +55,13 @@ export default async function ThreadPage({
               >
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-3.5 py-2 text-sm",
-                    mine ? "bg-teal-600 text-white" : "bg-secondary text-ink",
+                    "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm shadow-[var(--shadow-xs)]",
+                    mine
+                      ? "rounded-br-md bg-teal-600 text-white"
+                      : "rounded-bl-md bg-secondary text-ink",
                   )}
                 >
-                  <p className="whitespace-pre-line" dir="auto">
+                  <p className="whitespace-pre-line leading-relaxed" dir="auto">
                     {m.body}
                   </p>
                   <p

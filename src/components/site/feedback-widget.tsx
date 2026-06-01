@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { MessageSquarePlus, X, ThumbsUp, ThumbsDown, Lightbulb, CheckCircle2 } from "lucide-react";
+import { MessageSquarePlus, X, ThumbsUp, ThumbsDown, Lightbulb, CheckCircle2, Heart } from "lucide-react";
 import { createFeedback, type FeedbackState } from "@/lib/actions/feedback";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,27 @@ export function FeedbackWidget() {
     createFeedback,
     {},
   );
+
+  // Lock body scroll while the dialog is open so the page behind doesn't shift
+  // or scroll under the fixed overlay ("goes odd"). Restore on close/unmount.
+  useEffect(() => {
+    if (!open) return;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
+
+  // Close on Escape for keyboard users.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   // Hide on admin screens — they have their own queue.
   if (pathname.startsWith("/admin")) return null;
@@ -66,7 +87,10 @@ export function FeedbackWidget() {
             {state.ok ? (
               <div className="flex items-start gap-3 rounded-2xl border border-sage-mid bg-sage-tint p-4 text-sage-deep">
                 <CheckCircle2 size={20} className="mt-0.5 shrink-0" />
-                <p className="text-sm">Thanks — we read every note. 🙏</p>
+                <p className="inline-flex flex-wrap items-center gap-1.5 text-sm">
+                  Thanks — we read every note.
+                  <Heart size={14} className="shrink-0 fill-current" />
+                </p>
               </div>
             ) : (
               <form action={action} className="space-y-3">
