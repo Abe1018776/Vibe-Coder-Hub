@@ -1,17 +1,30 @@
 import Link from "next/link";
 import { Plus, Briefcase } from "lucide-react";
-import { listGigs } from "@/lib/gigs";
+import { listGigs, countGigs } from "@/lib/gigs";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { GigCard } from "@/components/brand/gig-card";
 import { EmptyState } from "@/components/brand/empty-state";
+import { Pagination } from "@/components/brand/pagination";
 
 export const metadata = {
   title: "Gigs",
   description: "Post a gig, get applicants, manage it all in one place.",
 };
 
-export default async function GigsPage() {
-  const gigs = await listGigs({ status: "open" });
+const PER_PAGE = 24;
+
+export default async function GigsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const [gigs, total] = await Promise.all([
+    listGigs({ status: "open", page, perPage: PER_PAGE }),
+    countGigs({ status: "open" }),
+  ]);
+  const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
     <Container className="py-10 md:py-14">
@@ -40,11 +53,19 @@ export default async function GigsPage() {
           actionLabel="Post a gig"
         />
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {gigs.map((g) => (
-            <GigCard key={g.id} gig={g} />
-          ))}
-        </div>
+        <>
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {gigs.map((g) => (
+              <GigCard key={g.id} gig={g} />
+            ))}
+          </div>
+          <Pagination
+            pathname="/gigs"
+            searchParams={sp}
+            page={page}
+            totalPages={totalPages}
+          />
+        </>
       )}
     </Container>
   );

@@ -31,15 +31,36 @@ export function gigBudgetLabel(gig: Gig): string | null {
 }
 
 export async function listGigs(
-  opts: { status?: Gig["status"]; type?: Gig["type"] } = {},
+  opts: {
+    status?: Gig["status"];
+    type?: Gig["type"];
+    page?: number;
+    perPage?: number;
+  } = {},
 ): Promise<GigWithPoster[]> {
   const supabase = await createClient();
   let query = supabase.from("gigs").select(GIG_WITH_POSTER);
   if (opts.status) query = query.eq("status", opts.status);
   if (opts.type) query = query.eq("type", opts.type);
   query = query.order("created_at", { ascending: false });
+  if (opts.page && opts.perPage) {
+    const from = (opts.page - 1) * opts.perPage;
+    query = query.range(from, from + opts.perPage - 1);
+  }
   const { data } = await query;
   return (data as GigWithPoster[] | null) ?? [];
+}
+
+/** Total gigs matching the filters (for pagination). */
+export async function countGigs(
+  opts: { status?: Gig["status"]; type?: Gig["type"] } = {},
+): Promise<number> {
+  const supabase = await createClient();
+  let query = supabase.from("gigs").select("id", { count: "exact", head: true });
+  if (opts.status) query = query.eq("status", opts.status);
+  if (opts.type) query = query.eq("type", opts.type);
+  const { count } = await query;
+  return count ?? 0;
 }
 
 export async function getGigBySlug(slug: string): Promise<GigWithPoster | null> {

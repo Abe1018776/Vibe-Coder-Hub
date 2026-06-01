@@ -14,6 +14,15 @@ import { cn } from "@/lib/utils";
 const inputClass =
   "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
 
+const MAGIC_SPARKS = [
+  { dx: -18, dy: -12 },
+  { dx: 18, dy: -14 },
+  { dx: 0, dy: -20 },
+  { dx: -20, dy: 6 },
+  { dx: 20, dy: 8 },
+  { dx: 0, dy: 16 },
+];
+
 function Field({
   label,
   children,
@@ -145,6 +154,7 @@ export function ProjectForm({
   const [url, setUrl] = useState(project?.url ?? "");
   const [cover, setCover] = useState<string | undefined>(undefined);
   const [fetching, setFetching] = useState(false);
+  const [magic, setMagic] = useState(0);
 
   const [tools, setTools] = useState<string[]>(project?.tools ?? []);
   const [tags, setTags] = useState<string[]>(project?.tags ?? []);
@@ -155,6 +165,7 @@ export function ProjectForm({
       return;
     }
     setFetching(true);
+    setMagic((m) => m + 1);
     try {
       const meta = await fetchUrlMetadata(url);
       if (meta.error) {
@@ -205,7 +216,10 @@ export function ProjectForm({
             type="button"
             onClick={autofill}
             disabled={fetching}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary disabled:opacity-60"
+            className={cn(
+              "autofill-btn relative inline-flex h-10 shrink-0 items-center gap-1.5 overflow-visible rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary disabled:opacity-80",
+              fetching && "is-working",
+            )}
           >
             {fetching ? (
               <Loader2 size={15} className="animate-spin" />
@@ -213,6 +227,17 @@ export function ProjectForm({
               <Wand2 size={15} />
             )}
             {fetching ? "Reading…" : "Autofill"}
+            {magic > 0 && (
+              <span key={magic} className="autofill-sparkles" aria-hidden>
+                {MAGIC_SPARKS.map((s, i) => (
+                  <span
+                    key={i}
+                    className="autofill-spark"
+                    style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as React.CSSProperties}
+                  />
+                ))}
+              </span>
+            )}
           </button>
         </div>
       </div>

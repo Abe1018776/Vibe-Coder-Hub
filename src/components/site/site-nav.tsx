@@ -42,29 +42,24 @@ export async function SiteNav() {
           <div className="hidden flex-1 lg:block">
             <NavLinks />
           </div>
-          <div className="ml-auto flex items-center gap-2 lg:gap-3">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2 lg:gap-3">
             {profile && <NotificationBell items={bellItems} unread={unread} />}
             <Link
               href="/showcase/submit"
-              className="btn btn-primary btn-sm hidden sm:inline-flex"
+              className="btn btn-primary btn-sm hidden lg:inline-flex"
             >
               Submit
             </Link>
             {profile ? (
-              <div className="hidden lg:block">
-                <UserMenu
-                  profile={{
-                    handle: profile.handle,
-                    name: profile.name,
-                    avatar_url: profile.avatar_url,
-                  }}
-                />
-              </div>
+              <UserMenu
+                profile={{
+                  handle: profile.handle,
+                  name: profile.name,
+                  avatar_url: profile.avatar_url,
+                }}
+              />
             ) : (
-              <Link
-                href="/login"
-                className="btn btn-ghost btn-sm hidden lg:inline-flex"
-              >
+              <Link href="/login" className="btn btn-ghost btn-sm">
                 Sign in
               </Link>
             )}
@@ -72,9 +67,7 @@ export async function SiteNav() {
         </Container>
       </NavShell>
 
-      <MobileBottomNav
-        profile={profile ? { handle: profile.handle, name: profile.name } : null}
-      />
+      <MobileBottomNav />
     </>
   );
 }

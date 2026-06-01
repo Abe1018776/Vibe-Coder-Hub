@@ -272,13 +272,34 @@
 .pc-foot strong { color: var(--ink); font-weight: 600; }
 
 /* ── Upvote ──────────────────────────────────────────────────────────────── */
-.upvote { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 46px; padding: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; line-height: 1; transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s; }
-.upvote svg { color: var(--muted); transition: color 0.15s, transform 0.15s; }
+.upvote { position: relative; isolation: isolate; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 46px; padding: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; line-height: 1; overflow: visible; transition: border-color 0.2s, background 0.2s, transform 0.1s; }
+.upvote svg { position: relative; color: var(--muted); transition: color 0.2s, transform 0.15s; }
+.upvote .upvote-num { position: relative; transition: color 0.2s; }
 .upvote:hover { border-color: var(--accent); background: var(--teal-50); }
 .upvote:hover svg { color: var(--accent); transform: translateY(-1px); }
-.upvote[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
-.upvote[aria-pressed="true"] svg { color: #fff; }
 .upvote:disabled { opacity: 0.7; }
+
+/* slow rising teal "bottle fill" — sits behind the icon + count */
+.upvote-fill { position: absolute; inset: 0; border-radius: 12px; background: var(--accent); transform: scaleY(0); transform-origin: bottom; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1; pointer-events: none; }
+.upvote[aria-pressed="true"] { border-color: var(--accent); }
+.upvote[aria-pressed="true"] .upvote-fill { transform: scaleY(1); }
+.upvote[aria-pressed="true"] svg { color: #fff; transition-delay: 0.45s; }
+.upvote[aria-pressed="true"] .upvote-num { color: #fff; transition-delay: 0.45s; animation: yv-upvote-pop 0.4s ease 0.5s both; }
+@keyframes yv-upvote-pop { 0% { transform: scale(1); } 45% { transform: scale(1.45); } 100% { transform: scale(1); } }
+
+/* sparkle burst once the fill reaches the top */
+.upvote-sparkles { position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 2; pointer-events: none; }
+.upvote-spark { position: absolute; left: -2.5px; top: -2.5px; width: 5px; height: 5px; border-radius: 999px; background: var(--gold-500); opacity: 0; animation: yv-spark 0.5s ease-out 0.5s both; }
+@keyframes yv-spark { 0% { opacity: 0; transform: translate(0, 0) scale(0.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); } }
+
+/* ── Autofill "magic" — gold pulse while reading + a sparkle puff on press ── */
+@keyframes yv-magic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold-500) 50%, transparent); }
+  60% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--gold-500) 0%, transparent); }
+}
+.autofill-btn.is-working { animation: yv-magic-pulse 1s ease-in-out infinite; border-color: var(--gold-300); color: var(--gold-700); }
+.autofill-sparkles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.autofill-spark { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 999px; background: var(--gold-500); opacity: 0; animation: yv-spark 0.6s ease-out both; }
 
 @media (max-width: 860px) {
   :root { --space-section: 72px; }
@@ -357,5 +378,10 @@
   .btn-sweep {
     transition: none;
   }
+  .upvote-fill { transition: none; }
+  .upvote-spark { animation: none; display: none; }
+  .upvote[aria-pressed="true"] .upvote-num { animation: none; }
+  .autofill-btn.is-working { animation: none; }
+  .autofill-spark { animation: none; display: none; }
   html { scroll-behavior: auto; }
 }

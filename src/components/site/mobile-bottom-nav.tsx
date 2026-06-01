@@ -14,13 +14,9 @@ import {
   Calendar,
   Compass,
   HelpCircle,
-  UserRound,
 } from "lucide-react";
 import { NAV_LINKS } from "@/lib/site";
-import { signOut } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
-
-type MenuProfile = { handle: string; name: string } | null;
 
 const TABS = [
   { href: "/showcase", label: "Showcase", Icon: LayoutGrid },
@@ -39,11 +35,11 @@ const MORE_ICONS: Record<string, typeof LayoutGrid> = {
 };
 
 /**
- * App-style bottom tab bar for phones: primary destinations + a raised Submit
- * action + a "More" sheet that carries the full nav and account actions.
- * Hidden from md up (desktop uses the top nav). The body reserves space for it.
+ * App-style bottom tab bar for phones + tablets: primary destinations + a raised
+ * Submit action + a "More" sheet carrying the full nav. Account/profile now lives
+ * in the top-right avatar menu (not here). Hidden from lg up (desktop top nav).
  */
-export function MobileBottomNav({ profile }: { profile: MenuProfile }) {
+export function MobileBottomNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isActive = (href: string) =>
@@ -130,43 +126,6 @@ export function MobileBottomNav({ profile }: { profile: MenuProfile }) {
                 );
               })}
             </div>
-
-            <div className="my-4 h-px bg-border" />
-
-            {profile ? (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href={`/u/${profile.handle}`}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] text-ink hover:bg-secondary"
-                >
-                  <UserRound size={18} className="opacity-80" /> Your profile
-                </Link>
-                <Link
-                  href="/settings/profile"
-                  onClick={() => setOpen(false)}
-                  className="rounded-2xl px-4 py-3 text-[15px] text-ink hover:bg-secondary"
-                >
-                  Edit profile
-                </Link>
-                <form action={signOut}>
-                  <button
-                    type="submit"
-                    className="w-full rounded-2xl px-4 py-3 text-left text-[15px] text-ink hover:bg-secondary"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="btn btn-primary btn-block"
-              >
-                Sign in
-              </Link>
-            )}
           </div>
         </div>
       )}

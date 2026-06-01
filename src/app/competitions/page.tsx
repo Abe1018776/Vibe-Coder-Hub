@@ -1,17 +1,30 @@
 import Link from "next/link";
 import { Plus, Trophy } from "lucide-react";
-import { listCompetitions } from "@/lib/competitions";
+import { listCompetitions, countCompetitions } from "@/lib/competitions";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { CompetitionCard } from "@/components/brand/competition-card";
 import { EmptyState } from "@/components/brand/empty-state";
+import { Pagination } from "@/components/brand/pagination";
 
 export const metadata = {
   title: "Competitions",
   description: "Post a bounty. Anyone submits. You pick the winner.",
 };
 
-export default async function CompetitionsPage() {
-  const competitions = await listCompetitions();
+const PER_PAGE = 24;
+
+export default async function CompetitionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const [competitions, total] = await Promise.all([
+    listCompetitions({ page, perPage: PER_PAGE }),
+    countCompetitions(),
+  ]);
+  const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
     <Container className="py-10 md:py-14">
@@ -40,11 +53,19 @@ export default async function CompetitionsPage() {
           actionLabel="Post a competition"
         />
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {competitions.map((c) => (
-            <CompetitionCard key={c.id} competition={c} />
-          ))}
-        </div>
+        <>
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {competitions.map((c) => (
+              <CompetitionCard key={c.id} competition={c} />
+            ))}
+          </div>
+          <Pagination
+            pathname="/competitions"
+            searchParams={sp}
+            page={page}
+            totalPages={totalPages}
+          />
+        </>
       )}
     </Container>
   );

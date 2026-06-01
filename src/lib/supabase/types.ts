@@ -205,6 +205,32 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          builder_id: string
+          created_at: string
+          follower_id: string
+        }
+        Insert: {
+          builder_id: string
+          created_at?: string
+          follower_id: string
+        }
+        Update: {
+          builder_id?: string
+          created_at?: string
+          follower_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_builder_id_fkey"
+            columns: ["builder_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gig_threads: {
         Row: {
           applicant_id: string
@@ -434,11 +460,14 @@ export type Database = {
           available_for_hire: boolean
           avatar_url: string | null
           bio: string | null
+          cover_url: string | null
           created_at: string
+          follower_count: number
           handle: string
           hourly_rate: number | null
           id: string
           is_admin: boolean
+          is_verified: boolean
           links: Json
           location: string | null
           name: string
@@ -452,11 +481,14 @@ export type Database = {
           available_for_hire?: boolean
           avatar_url?: string | null
           bio?: string | null
+          cover_url?: string | null
           created_at?: string
+          follower_count?: number
           handle: string
           hourly_rate?: number | null
           id: string
           is_admin?: boolean
+          is_verified?: boolean
           links?: Json
           location?: string | null
           name: string
@@ -470,11 +502,14 @@ export type Database = {
           available_for_hire?: boolean
           avatar_url?: string | null
           bio?: string | null
+          cover_url?: string | null
           created_at?: string
+          follower_count?: number
           handle?: string
           hourly_rate?: number | null
           id?: string
           is_admin?: boolean
+          is_verified?: boolean
           links?: Json
           location?: string | null
           name?: string
@@ -610,6 +645,32 @@ export type Database = {
             columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saves: {
+        Row: {
+          created_at: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saves_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

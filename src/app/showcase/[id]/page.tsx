@@ -6,15 +6,19 @@ import {
   getProjectById,
   getComments,
   getMyUpvotedProjectIds,
+  getMySavedProjectIds,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
 import { getAdminContext } from "@/lib/admin";
 import { Container } from "@/components/brand/layout";
 import { Sparkle } from "@/components/brand/sparkle";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
-import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
-import { PROJECT_COMMERCIAL } from "@/lib/site";
+import { Pill } from "@/components/brand/pill";
+import { DetailHero, type HeroTag } from "@/components/brand/detail-hero";
+import { PROJECT_COMMERCIAL, accentFor } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
+import { SaveButton } from "@/components/brand/save-button";
+import { ShareButton } from "@/components/brand/share-button";
 import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
@@ -44,16 +48,37 @@ export default async function ProjectDetailPage({
   const project = await getProjectById(id);
   if (!project) notFound();
 
-  const [comments, me, upvoted, admin] = await Promise.all([
+  const [comments, me, upvoted, saved, admin] = await Promise.all([
     getComments(id),
     getCurrentProfile(),
     getMyUpvotedProjectIds(),
+    getMySavedProjectIds(),
     getAdminContext(),
   ]);
   const isAuthed = !!me;
   const isOwner = me?.id === project.owner_id;
   const owner = project.owner;
   const deleteThis = deleteProject.bind(null, id);
+
+  const heroTags: HeroTag[] = [
+    ...project.tools.map((t) => ({
+      label: t,
+      href: `/showcase?tool=${encodeURIComponent(t)}`,
+    })),
+    ...project.tags.map((t) => ({
+      label: t,
+      href: `/showcase?tag=${encodeURIComponent(t)}`,
+    })),
+  ];
+  const badge = project.featured ? (
+    <span className="inline-flex items-center gap-1.5">
+      <Sparkle size={13} color="#fff" /> Featured
+    </span>
+  ) : project.url ? (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="h-2 w-2 rounded-full bg-white yv-live-dot" /> Live
+    </span>
+  ) : undefined;
 
   return (
     <Container className="max-w-3xl py-10">
@@ -64,35 +89,25 @@ export default async function ProjectDetailPage({
         <ArrowLeft size={15} /> Back to Showcase
       </Link>
 
-      <div className="relative mt-5 aspect-[16/8] overflow-hidden rounded-3xl border border-border bg-teal-50">
-        {project.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={project.image_url}
-            alt={project.name}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="grid h-full place-items-center">
-            <Sparkle
-              size={24}
-              color="var(--teal-400)"
-              style={{ position: "absolute", top: 16, right: 16, opacity: 0.7 }}
+      <div className="mt-5">
+        <DetailHero
+          accent={accentFor(project.name)}
+          title={project.name}
+          badge={badge}
+          tags={heroTags}
+          coverImage={project.image_url}
+          watermark={
+            project.image_url ? undefined : project.name.slice(0, 1).toUpperCase()
+          }
+          topRight={
+            <SaveButton
+              projectId={id}
+              initialSaved={saved.has(id)}
+              isAuthed={isAuthed}
+              redirectTo={`/showcase/${id}`}
             />
-            <span className="font-display text-6xl font-bold text-teal-700">
-              {project.name.slice(0, 1).toUpperCase()}
-            </span>
-          </div>
-        )}
-        {project.featured ? (
-          <span className="pc-flag">
-            <Sparkle size={12} color="var(--gold-900)" /> Featured
-          </span>
-        ) : project.url ? (
-          <span className="pc-flag is-live">
-            <span className="dot yv-live-dot" /> Live
-          </span>
-        ) : null}
+          }
+        />
       </div>
 
       {project.images.length > 0 && (
@@ -112,13 +127,7 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="mt-7 flex items-start justify-between gap-4">
-        <h1
-          className="font-display text-[clamp(1.8rem,4vw,2.75rem)] font-bold tracking-tight text-ink"
-          dir="auto"
-        >
-          {project.name}
-        </h1>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
         <UpvoteButton
           projectId={project.id}
           initialCount={project.upvote_count}
@@ -126,20 +135,12 @@ export default async function ProjectDetailPage({
           isAuthed={isAuthed}
           redirectTo={`/showcase/${id}`}
         />
-      </div>
-
-      {(project.tools.length > 0 || project.tags.length > 0) && (
-        <div className="mt-3.5 flex flex-wrap gap-1.5">
-          {project.tools.map((t) => (
-            <ToolPill key={t}>{t}</ToolPill>
-          ))}
-          {project.tags.map((t) => (
-            <TagPill key={t}>{t}</TagPill>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <ShareButton
+          path={`/showcase/${id}`}
+          title={project.name}
+          label="Share"
+          className="btn-sm"
+        />
         {project.url && (
           <a
             href={project.url}
@@ -168,9 +169,7 @@ export default async function ProjectDetailPage({
             <DeleteProjectButton action={deleteThis} />
           </>
         )}
-        {admin && (
-          <FeatureToggle projectId={id} featured={!!project.featured} />
-        )}
+        {admin && <FeatureToggle projectId={id} featured={!!project.featured} />}
         {isAuthed && !isOwner && (
           <div className="ml-auto flex items-center">
             <ReportMenu targetType="project" targetId={id} />

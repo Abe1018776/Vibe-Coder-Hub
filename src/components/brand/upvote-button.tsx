@@ -1,11 +1,20 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { toggleUpvote } from "@/lib/actions/upvotes";
 import { cn } from "@/lib/utils";
+
+/** Sparkle burst that fires once the teal "bottle fill" reaches the top. */
+const SPARKS = [
+  { dx: "-14px", dy: "-10px" },
+  { dx: "13px", dy: "-12px" },
+  { dx: "0px", dy: "-18px" },
+  { dx: "-9px", dy: "6px" },
+  { dx: "10px", dy: "4px" },
+];
 
 export function UpvoteButton({
   projectId,
@@ -26,6 +35,7 @@ export function UpvoteButton({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [burst, setBurst] = useState(0);
   const [state, applyOptimistic] = useOptimistic(
     { count: initialCount, upvoted: initialUpvoted },
     (s, next: boolean) => ({
@@ -42,6 +52,7 @@ export function UpvoteButton({
     const next = !state.upvoted;
     startTransition(async () => {
       applyOptimistic(next);
+      if (next) setBurst((b) => b + 1); // animate only when voting up
       const res = await toggleUpvote(projectId);
       if (!res.ok) {
         if (res.error === "auth")
@@ -61,8 +72,20 @@ export function UpvoteButton({
       aria-label={state.upvoted ? "Remove upvote" : "Upvote"}
       className={cn("upvote shrink-0", className)}
     >
+      <span className="upvote-fill" aria-hidden />
       <ChevronUp size={16} strokeWidth={2.4} />
-      <span className="tabular-nums">{state.count}</span>
+      <span className="upvote-num tabular-nums">{state.count}</span>
+      {burst > 0 && (
+        <span key={burst} className="upvote-sparkles" aria-hidden>
+          {SPARKS.map((s, i) => (
+            <span
+              key={i}
+              className="upvote-spark"
+              style={{ "--dx": s.dx, "--dy": s.dy } as React.CSSProperties}
+            />
+          ))}
+        </span>
+      )}
     </button>
   );
 }
