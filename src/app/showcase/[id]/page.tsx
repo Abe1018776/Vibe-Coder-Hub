@@ -24,6 +24,7 @@ import { ShareButton } from "@/components/brand/share-button";
 import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
+import { NoteButton } from "@/components/messaging/note-button";
 import { FeatureToggle } from "@/components/admin/feature-toggle";
 import { deleteProject } from "@/lib/actions/projects";
 import { cn } from "@/lib/utils";
@@ -306,6 +307,16 @@ export default async function ProjectDetailPage({
                 >
                   View <ArrowRight size={15} />
                 </Link>
+              </div>
+            )}
+            {isAuthed && !isOwner && !project.is_anonymous && (
+              <div className="mt-3 border-t border-border/60 pt-3">
+                <NoteButton
+                  otherId={project.owner_id}
+                  about={{ type: "project", id }}
+                  label="Reply privately"
+                  className="btn-ghost w-full justify-center"
+                />
               </div>
             )}
           </Panel>

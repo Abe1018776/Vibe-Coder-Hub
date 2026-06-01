@@ -91,6 +91,11 @@ export function describeNotification(n: NotificationRow): {
       return { text: d.message ?? "An admin removed your content.", href: "/notifications" };
     case "report_update":
       return { text: d.message ?? "Your report was reviewed.", href: "/notifications" };
+    case "private_reply":
+      return {
+        text: `${who} sent you a private note`,
+        href: n.entity_id ? `/dashboard/inbox/${n.entity_id}` : "/dashboard/inbox",
+      };
     default:
       return { text: "New notification", href: "/notifications" };
   }

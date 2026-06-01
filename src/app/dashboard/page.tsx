@@ -4,6 +4,8 @@ import { Rocket, Briefcase, Trophy, Calendar } from "lucide-react";
 import { getCurrentProfile } from "@/lib/current-user";
 import { getDashboardStats } from "@/lib/dashboard";
 import { getProjectsByOwner } from "@/lib/queries";
+import { getMyConversations, getUnreadReplyCount } from "@/lib/conversations";
+import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
 import { StatGrid } from "@/components/brand/stat-grid";
 import { ActionCard } from "@/components/brand/action-card";
@@ -14,11 +16,14 @@ export default async function DashboardOverview() {
   const profile = await getCurrentProfile();
   if (!profile) return null; // layout already redirects
 
-  const [stats, projects] = await Promise.all([
+  const [stats, projects, convos, unreadReplies] = await Promise.all([
     getDashboardStats(profile.id),
     getProjectsByOwner(profile.id),
+    getMyConversations(),
+    getUnreadReplyCount(),
   ]);
   const recent = projects.slice(0, 5);
+  const recentConvos = convos.slice(0, 4);
 
   return (
     <div className="space-y-8">
@@ -39,7 +44,7 @@ export default async function DashboardOverview() {
             { value: stats.events, label: "Events" },
             { value: stats.saved, label: "Saved" },
             { value: profile.follower_count, label: "Followers" },
-            { value: 0, label: "Replies" },
+            { value: unreadReplies, label: "Unread" },
           ]}
         />
       </Panel>
@@ -105,11 +110,37 @@ export default async function DashboardOverview() {
         </Panel>
 
         <Panel>
-          <PanelLabel>Private replies</PanelLabel>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Your inbox is coming soon — private notes from other builders will
-            land here.
-          </p>
+          <div className="flex items-center justify-between">
+            <PanelLabel>Private replies</PanelLabel>
+            <Link href="/dashboard/inbox" className="text-xs font-semibold text-teal-800 hover:underline">
+              Inbox
+            </Link>
+          </div>
+          {recentConvos.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              No notes yet — private notes from other builders land here.
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-1">
+              {recentConvos.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/dashboard/inbox/${c.id}`}
+                    className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary"
+                  >
+                    <AvatarCircle
+                      name={c.other.name}
+                      src={c.other.avatar_url}
+                      size={28}
+                    />
+                    <span className="truncate text-sm text-ink">
+                      {c.other.name}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
       </div>
     </div>

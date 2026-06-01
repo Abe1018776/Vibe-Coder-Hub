@@ -32,6 +32,8 @@ import { FollowButton } from "@/components/brand/follow-button";
 import { ToolsSkills } from "@/components/profile/tools-skills";
 import { EmptyState } from "@/components/brand/empty-state";
 import { ReportMenu } from "@/components/brand/report-menu";
+import { NoteButton } from "@/components/messaging/note-button";
+import { canMessage } from "@/lib/conversations";
 
 export async function generateMetadata({
   params,
@@ -110,6 +112,7 @@ export default async function ProfilePage({
 
   const isOwner = me?.id === profile.id;
   const isAuthed = !!me;
+  const noteCheck = !isOwner && isAuthed ? await canMessage(profile) : null;
   // Private accounts have no public profile page until they go public.
   if (!profile.is_public && !isOwner) notFound();
   const links = (profile.links ?? {}) as Record<string, string | undefined>;
@@ -198,6 +201,13 @@ export default async function ProfilePage({
                 </Link>
               ) : (
                 <>
+                  {noteCheck?.ok && (
+                    <NoteButton
+                      otherId={profile.id}
+                      label="Message"
+                      className="btn-primary"
+                    />
+                  )}
                   <FollowButton
                     builderId={profile.id}
                     initialFollowing={following}
