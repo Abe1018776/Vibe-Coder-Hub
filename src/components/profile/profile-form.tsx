@@ -3,6 +3,8 @@
 import { useActionState, useState } from "react";
 import { Plus } from "lucide-react";
 import { updateProfile, type ProfileFormState } from "@/lib/actions/profile";
+import { CancelButton } from "@/components/brand/cancel-button";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ImageInput } from "@/components/brand/image-input";
 import { KNOWN_TOOLS } from "@/lib/site";
 import type { Profile } from "@/lib/queries";
@@ -46,6 +48,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     updateProfile,
     {},
   );
+
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
   const links = (profile.links ?? {}) as Record<string, string | undefined>;
 
   const [tools, setTools] = useState<string[]>(profile.tools ?? []);
@@ -61,7 +66,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   const chipTools = [...new Set([...KNOWN_TOOLS, ...tools])];
 
   return (
-    <form action={action} className="space-y-6">
+    <form
+      action={action}
+      onChange={() => setDirty(true)}
+      className="space-y-6"
+    >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -253,13 +262,16 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         </div>
       </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn-sweep inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
-      >
-        {pending ? "Saving…" : "Save profile"}
-      </button>
+      <div className="flex items-center gap-3 pt-1">
+        <CancelButton dirty={dirty} fallbackHref={`/u/${profile.handle}`} />
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn-sweep inline-flex h-12 flex-1 items-center justify-center rounded-full px-4 text-[15px] font-semibold transition-transform active:scale-[0.99] disabled:opacity-70"
+        >
+          {pending ? "Saving…" : "Save profile"}
+        </button>
+      </div>
     </form>
   );
 }

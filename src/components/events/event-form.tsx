@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createEvent, type EventFormState } from "@/lib/actions/events";
+import { CancelButton } from "@/components/brand/cancel-button";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
@@ -35,8 +37,15 @@ export function EventForm() {
     {},
   );
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   return (
-    <form action={action} className="space-y-6">
+    <form
+      action={action}
+      onChange={() => setDirty(true)}
+      className="space-y-6"
+    >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -87,13 +96,16 @@ export function EventForm() {
         />
       </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn btn-primary btn-block h-12 text-[15px] disabled:opacity-70"
-      >
-        {pending ? "Adding…" : "Add event"}
-      </button>
+      <div className="flex items-center gap-3 pt-1">
+        <CancelButton dirty={dirty} fallbackHref="/events" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn btn-primary h-12 flex-1 text-[15px] disabled:opacity-70"
+        >
+          {pending ? "Adding…" : "Add event"}
+        </button>
+      </div>
     </form>
   );
 }
