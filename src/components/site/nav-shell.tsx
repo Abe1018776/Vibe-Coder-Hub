@@ -9,7 +9,13 @@ import { cn } from "@/lib/utils";
  * - Hides on scroll-down and reappears on scroll-up (app-style), always visible
  *   near the very top. Wraps the (server-rendered) nav contents.
  */
-export function NavShell({ children }: { children: React.ReactNode }) {
+export function NavShell({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
@@ -42,6 +48,7 @@ export function NavShell({ children }: { children: React.ReactNode }) {
         "bg-canvas/80 supports-[backdrop-filter]:bg-canvas/70",
         scrolled ? "border-border" : "border-transparent",
         hidden ? "-translate-y-full" : "translate-y-0",
+        className,
       )}
     >
       {children}
