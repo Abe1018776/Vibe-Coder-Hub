@@ -6,6 +6,7 @@ import {
   getProjectById,
   getComments,
   getMyUpvotedProjectIds,
+  getMySavedProjectIds,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
 import { getAdminContext } from "@/lib/admin";
@@ -15,6 +16,8 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill, ToolPill, TagPill } from "@/components/brand/pill";
 import { PROJECT_COMMERCIAL } from "@/lib/site";
 import { UpvoteButton } from "@/components/brand/upvote-button";
+import { SaveButton } from "@/components/brand/save-button";
+import { ShareButton } from "@/components/brand/share-button";
 import { AddCommentForm } from "@/components/showcase/add-comment-form";
 import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
@@ -44,10 +47,11 @@ export default async function ProjectDetailPage({
   const project = await getProjectById(id);
   if (!project) notFound();
 
-  const [comments, me, upvoted, admin] = await Promise.all([
+  const [comments, me, upvoted, saved, admin] = await Promise.all([
     getComments(id),
     getCurrentProfile(),
     getMyUpvotedProjectIds(),
+    getMySavedProjectIds(),
     getAdminContext(),
   ]);
   const isAuthed = !!me;
@@ -131,10 +135,14 @@ export default async function ProjectDetailPage({
       {(project.tools.length > 0 || project.tags.length > 0) && (
         <div className="mt-3.5 flex flex-wrap gap-1.5">
           {project.tools.map((t) => (
-            <ToolPill key={t}>{t}</ToolPill>
+            <ToolPill key={t} href={`/showcase?tool=${encodeURIComponent(t)}`}>
+              {t}
+            </ToolPill>
           ))}
           {project.tags.map((t) => (
-            <TagPill key={t}>{t}</TagPill>
+            <TagPill key={t} href={`/showcase?tag=${encodeURIComponent(t)}`}>
+              {t}
+            </TagPill>
           ))}
         </div>
       )}
@@ -160,6 +168,19 @@ export default async function ProjectDetailPage({
             <Play size={15} /> Watch demo
           </a>
         )}
+        <ShareButton
+          path={`/showcase/${id}`}
+          title={project.name}
+          label="Share"
+          className="btn-sm"
+        />
+        <SaveButton
+          projectId={id}
+          initialSaved={saved.has(id)}
+          isAuthed={isAuthed}
+          redirectTo={`/showcase/${id}`}
+          variant="inline"
+        />
         {isOwner && (
           <>
             <Link href={`/showcase/${id}/edit`} className="btn btn-ghost btn-sm">

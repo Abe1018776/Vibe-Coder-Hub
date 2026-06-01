@@ -243,6 +243,45 @@ export async function getMyUpvotedProjectIds(): Promise<Set<string>> {
   return new Set((data ?? []).map((r) => r.project_id));
 }
 
+/** Project ids the current user has saved (empty set when signed out). */
+export async function getMySavedProjectIds(): Promise<Set<string>> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return new Set();
+  const { data } = await supabase
+    .from("saves")
+    .select("project_id")
+    .eq("user_id", user.id);
+  return new Set((data ?? []).map((r) => r.project_id));
+}
+
+/** The current user's saved projects, most-recently-saved first. */
+export async function listSavedProjects(): Promise<ProjectWithOwner[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data: saves } = await supabase
+    .from("saves")
+    .select("project_id, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  const ids = (saves ?? []).map((s) => s.project_id);
+  if (ids.length === 0) return [];
+
+  const { data } = await supabase
+    .from("projects")
+    .select(PROJECT_WITH_OWNER)
+    .in("id", ids)
+    .eq("hidden", false);
+  const rows = (data as ProjectWithOwner[] | null) ?? [];
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+}
+
 /** Distinct tools/tags across all projects — for filter chips. */
 export async function getProjectFacets(): Promise<{
   tools: string[];

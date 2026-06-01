@@ -5,6 +5,7 @@ import {
   countProjects,
   getProjectFacets,
   getMyUpvotedProjectIds,
+  getMySavedProjectIds,
 } from "@/lib/queries";
 import { getAuthUser } from "@/lib/current-user";
 import { Container } from "@/components/brand/layout";
@@ -44,11 +45,12 @@ export default async function ShowcasePage({
     tool: tool || undefined,
     tag: tag || undefined,
   };
-  const [facets, total, projects, upvoted, user] = await Promise.all([
+  const [facets, total, projects, upvoted, saved, user] = await Promise.all([
     getProjectFacets(),
     countProjects(filterOpts),
     listProjects({ ...filterOpts, sort, page, perPage: PER_PAGE }),
     getMyUpvotedProjectIds(),
+    getMySavedProjectIds(),
     getAuthUser(),
   ]);
   const isAuthed = !!user;
@@ -110,6 +112,7 @@ export default async function ShowcasePage({
                 project={p}
                 isAuthed={isAuthed}
                 upvoted={upvoted.has(p.id)}
+                saved={saved.has(p.id)}
                 highlight={
                   sort === "top" && !filtering && page === 1 && i === 0 && !p.featured
                 }

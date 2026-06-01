@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { TagPill, Pill } from "./pill";
 import { UpvoteButton } from "./upvote-button";
+import { SaveButton } from "./save-button";
 import { Sparkle } from "./sparkle";
 import { PROJECT_COMMERCIAL, accentFor, type Accent } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -22,12 +23,14 @@ export function ProjectCard({
   project,
   isAuthed,
   upvoted,
+  saved = false,
   highlight = false,
   showBuilder = true,
 }: {
   project: ProjectWithOwner;
   isAuthed: boolean;
   upvoted: boolean;
+  saved?: boolean;
   highlight?: boolean;
   showBuilder?: boolean;
 }) {
@@ -40,26 +43,27 @@ export function ProjectCard({
   return (
     <div
       className={cn(
-        "project-card group",
+        "project-card group relative",
         featured ? "is-featured" : highlight && "is-top",
       )}
     >
+      <SaveButton
+        projectId={project.id}
+        initialSaved={saved}
+        isAuthed={isAuthed}
+        redirectTo={href}
+        className="absolute right-3 top-3 z-10"
+      />
+
       <Link href={href} className="block">
         <div className="pc-cover" style={{ background: cover.bg }}>
           {project.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={project.image_url} alt={project.name} className="pc-shot" />
           ) : (
-            <>
-              <Sparkle
-                size={20}
-                color={cover.fg}
-                style={{ position: "absolute", top: 14, right: 14, opacity: 0.7 }}
-              />
-              <span className="pc-initial" style={{ color: cover.fg }}>
-                {initial}
-              </span>
-            </>
+            <span className="pc-initial" style={{ color: cover.fg }}>
+              {initial}
+            </span>
           )}
 
           {featured ? (
@@ -94,7 +98,6 @@ export function ProjectCard({
             initialCount={project.upvote_count}
             initialUpvoted={upvoted}
             isAuthed={isAuthed}
-            topRanked={highlight}
             redirectTo={href}
           />
         </div>
@@ -116,7 +119,9 @@ export function ProjectCard({
         {project.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {project.tags.slice(0, 3).map((t) => (
-              <TagPill key={t}>{t}</TagPill>
+              <TagPill key={t} href={`/showcase?tag=${encodeURIComponent(t)}`}>
+                {t}
+              </TagPill>
             ))}
           </div>
         )}
