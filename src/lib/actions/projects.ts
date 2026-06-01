@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasAnyContact } from "@/lib/site";
+import { goPublic } from "@/lib/visibility";
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
 
@@ -128,6 +129,9 @@ export async function createProject(
     return { error: "Couldn't submit your project. Please try again." };
   }
 
+  // Posting under your name makes your profile public (anonymous posts don't).
+  if (!anon) await goPublic(supabase, user.id);
+
   revalidatePath("/showcase");
   redirect(`/showcase/${data.id}`);
 }
@@ -177,6 +181,8 @@ export async function updateProject(
     .eq("owner_id", user.id);
 
   if (error) return { error: "Couldn't save your changes. Please try again." };
+
+  if (!anon) await goPublic(supabase, user.id);
 
   revalidatePath(`/showcase/${projectId}`);
   revalidatePath("/showcase");

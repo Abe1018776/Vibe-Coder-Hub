@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { goPublic } from "@/lib/visibility";
 
 export type CommentFormState = { error?: string; ok?: boolean };
 
@@ -20,13 +21,17 @@ export async function addComment(
   if (!body) return { error: "Write something first." };
   if (body.length > 2000) return { error: "That comment is too long." };
 
+  const anon = formData.get("is_anonymous") != null;
   const { error } = await supabase.from("comments").insert({
     project_id: projectId,
     author_id: user.id,
     body,
-    is_anonymous: formData.get("is_anonymous") != null,
+    is_anonymous: anon,
   });
   if (error) return { error: "Couldn't post your comment. Please try again." };
+
+  // Commenting under your name makes your profile public (anonymous doesn't).
+  if (!anon) await goPublic(supabase, user.id);
 
   revalidatePath(`/showcase/${projectId}`);
   return { ok: true };
