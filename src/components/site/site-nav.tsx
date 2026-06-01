@@ -11,6 +11,7 @@ import { NavShell } from "./nav-shell";
 import { UserMenu } from "./user-menu";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { NotificationBell, type BellItem } from "./notification-bell";
+import { PostMenu } from "./post-menu";
 
 export async function SiteNav() {
   const profile = await getCurrentProfile();
@@ -44,12 +45,9 @@ export async function SiteNav() {
           </div>
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2 lg:gap-3">
             {profile && <NotificationBell items={bellItems} unread={unread} />}
-            <Link
-              href="/showcase/submit"
-              className="btn btn-primary btn-sm hidden lg:inline-flex"
-            >
-              Submit
-            </Link>
+            <div className="hidden lg:block">
+              <PostMenu />
+            </div>
             {profile ? (
               <UserMenu
                 profile={{

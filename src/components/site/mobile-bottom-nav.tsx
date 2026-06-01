@@ -7,7 +7,6 @@ import {
   LayoutGrid,
   Users,
   Briefcase,
-  Plus,
   Menu,
   X,
   Trophy,
@@ -16,6 +15,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { NAV_LINKS } from "@/lib/site";
+import { PostMenu } from "./post-menu";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -56,18 +56,7 @@ export function MobileBottomNav() {
           <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
         ))}
 
-        <Link
-          href="/showcase/submit"
-          aria-label="Submit a project"
-          className="flex flex-col items-center justify-center pt-1.5"
-        >
-          <span className="-mt-5 grid h-12 w-12 place-items-center rounded-full bg-teal-600 text-white shadow-[0_4px_14px_rgba(31,110,102,0.4)] ring-4 ring-canvas">
-            <Plus size={22} />
-          </span>
-          <span className="mt-0.5 text-[11px] font-medium text-muted-foreground">
-            Submit
-          </span>
-        </Link>
+        <PostMenu variant="fab" />
 
         {TABS.slice(2).map(({ href, label, Icon }) => (
           <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
