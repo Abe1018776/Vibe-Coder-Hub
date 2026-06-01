@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Trophy, ExternalLink, Play, ArrowLeft } from "lucide-react";
+import { Trophy, ExternalLink, Play } from "lucide-react";
 import {
   getCompetitionBySlug,
   getSubmissions,
@@ -50,13 +50,6 @@ export default async function CompetitionDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
-      <Link
-        href="/competitions"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-ink"
-      >
-        <ArrowLeft size={15} /> Back to Competitions
-      </Link>
-
       <div className="mt-5">
         <DetailHero
           accent="gold"
