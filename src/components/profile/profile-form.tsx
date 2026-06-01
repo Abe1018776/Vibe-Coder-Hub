@@ -241,6 +241,18 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-sage-mid after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
       </label>
 
+      <Field label="Private notes" hint="who can send you a private note">
+        <select
+          name="dm_privacy"
+          defaultValue={profile.dm_privacy}
+          className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+        >
+          <option value="everyone">Anyone can send me a note</option>
+          <option value="followers">Only people who follow me</option>
+          <option value="none">No one — turn private notes off</option>
+        </select>
+      </Field>
+
       <Field
         label="Contact (public)"
         hint="people use these to reach you — fill what you want shown"

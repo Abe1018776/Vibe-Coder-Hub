@@ -135,6 +135,26 @@ export default function DocsPage() {
           </p>
         </Section>
 
+        <Section id="notes" title="Private notes">
+          <p>
+            Want to reach a builder directly? Hit{" "}
+            <strong>Message</strong> on their profile, or{" "}
+            <strong>Reply privately</strong> on a project, to send a private note
+            — &ldquo;nice work,&rdquo; &ldquo;let&apos;s collaborate,&rdquo;
+            &ldquo;can I call you?&rdquo; It&apos;s a light back-and-forth, not a
+            busy chat app. Your notes live in your{" "}
+            <Link href="/dashboard/inbox" className="text-teal-700 hover:underline">
+              dashboard inbox
+            </Link>
+            , and you&apos;re notified when someone writes.
+          </p>
+          <p>
+            You&apos;re in control of who can reach you — leave it open to
+            everyone, limit it to people you&apos;re connected with, or turn
+            private notes off entirely.
+          </p>
+        </Section>
+
         <Section id="contact" title="Getting in touch & doing business">
           <p>
             There are no public phone numbers or emails unless you add them.
