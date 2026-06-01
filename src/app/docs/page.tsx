@@ -109,6 +109,32 @@ export default function DocsPage() {
           </p>
         </Section>
 
+        <Section id="dashboard" title="Your dashboard & getting around">
+          <p>
+            On a computer, your navigation lives in a{" "}
+            <strong>sidebar on the left</strong>; on a phone it&apos;s the bar
+            along the bottom. Click your <strong>profile photo</strong> any time
+            to open your <strong>dashboard</strong> — a private home base with an
+            overview of everything you&apos;ve done here (projects, upvotes,
+            gigs, competitions, events, saved items and followers), big buttons
+            to post something new, plus your posts, saved items, account, and
+            settings, all under one set of tabs.
+          </p>
+          <p>
+            Every inner page has a clear, branded{" "}
+            <strong>&larr; Back</strong>, and every form has a{" "}
+            <strong>Cancel</strong> button — if you&apos;ve started typing,
+            we&apos;ll check before discarding your draft so you never lose work
+            by accident.
+          </p>
+          <p>
+            Proud of something? Hit <strong>Share</strong> on any project (or
+            right after you post it) to send a link — it comes with a ready-made
+            note like &ldquo;Check out my project on YidVibe,&rdquo; which you
+            can edit before sending.
+          </p>
+        </Section>
+
         <Section id="contact" title="Getting in touch & doing business">
           <p>
             There are no public phone numbers or emails unless you add them.
