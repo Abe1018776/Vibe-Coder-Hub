@@ -278,6 +278,8 @@
 .upvote:hover { border-color: var(--accent); background: var(--teal-50); }
 .upvote:hover svg { color: var(--accent); transform: translateY(-1px); }
 .upvote:disabled { opacity: 0.7; }
+/* Full-width horizontal variant — matches the action buttons in the project rail. */
+.upvote-wide { width: 100%; flex-direction: row; gap: 8px; padding: 11px 0; font-size: 14px; }
 
 /* slow rising teal "bottle fill" — sits behind the icon + count */
 .upvote-fill { position: absolute; inset: 0; border-radius: 12px; background: var(--accent); transform: scaleY(0); transform-origin: bottom; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1; pointer-events: none; }
