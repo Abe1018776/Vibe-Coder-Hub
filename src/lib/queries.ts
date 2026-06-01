@@ -66,6 +66,8 @@ export async function listProjects(
     tag?: string;
     tool?: string;
     limit?: number;
+    page?: number;
+    perPage?: number;
   } = {},
 ): Promise<ProjectWithOwner[]> {
   const supabase = await createClient();
@@ -88,10 +90,34 @@ export async function listProjects(
       .order("upvote_count", { ascending: false })
       .order("created_at", { ascending: false });
   }
-  if (opts.limit) query = query.limit(opts.limit);
+  if (opts.page && opts.perPage) {
+    const from = (opts.page - 1) * opts.perPage;
+    query = query.range(from, from + opts.perPage - 1);
+  } else if (opts.limit) {
+    query = query.limit(opts.limit);
+  }
 
   const { data } = await query;
   return (data as ProjectWithOwner[] | null) ?? [];
+}
+
+/** Total projects matching the given filters (for pagination). */
+export async function countProjects(
+  opts: { q?: string; tag?: string; tool?: string } = {},
+): Promise<number> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("hidden", false);
+  if (opts.q) {
+    const s = sanitize(opts.q);
+    if (s) query = query.or(`name.ilike.%${s}%,description.ilike.%${s}%`);
+  }
+  if (opts.tag) query = query.contains("tags", [opts.tag]);
+  if (opts.tool) query = query.contains("tools", [opts.tool]);
+  const { count } = await query;
+  return count ?? 0;
 }
 
 export async function listBuilders(
@@ -102,6 +128,8 @@ export async function listBuilders(
     availableOnly?: boolean;
     sort?: "new" | "name";
     limit?: number;
+    page?: number;
+    perPage?: number;
   } = {},
 ): Promise<BuilderListItem[]> {
   const supabase = await createClient();
@@ -124,10 +152,35 @@ export async function listBuilders(
     opts.sort === "name"
       ? query.order("name", { ascending: true })
       : query.order("created_at", { ascending: false });
-  if (opts.limit) query = query.limit(opts.limit);
+  if (opts.page && opts.perPage) {
+    const from = (opts.page - 1) * opts.perPage;
+    query = query.range(from, from + opts.perPage - 1);
+  } else if (opts.limit) {
+    query = query.limit(opts.limit);
+  }
 
   const { data } = await query;
   return (data as BuilderListItem[] | null) ?? [];
+}
+
+/** Total builders matching the given filters (for pagination). */
+export async function countBuilders(
+  opts: { q?: string; tool?: string; skill?: string; availableOnly?: boolean } = {},
+): Promise<number> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true });
+  if (opts.q) {
+    const s = sanitize(opts.q);
+    if (s)
+      query = query.or(`name.ilike.%${s}%,handle.ilike.%${s}%,bio.ilike.%${s}%`);
+  }
+  if (opts.tool) query = query.contains("tools", [opts.tool]);
+  if (opts.skill) query = query.contains("skills", [opts.skill]);
+  if (opts.availableOnly) query = query.eq("available_for_hire", true);
+  const { count } = await query;
+  return count ?? 0;
 }
 
 export function builderProjectCount(b: BuilderListItem): number {

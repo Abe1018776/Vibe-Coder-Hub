@@ -44,7 +44,7 @@ export default function RootLayout({
       lang="en"
       className={`${nunito.variable} ${comfortaa.variable} ${jetbrains.variable}`}
     >
-      <body className="flex min-h-dvh flex-col bg-canvas pb-16 text-ink lg:pb-0">
+      <body className="flex min-h-dvh flex-col overflow-x-clip bg-canvas pb-16 text-ink lg:pb-0">
         <SiteNav />
         <main className="flex-1">{children}</main>
         <SiteFooter />

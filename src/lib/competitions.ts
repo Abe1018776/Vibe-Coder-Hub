@@ -39,15 +39,31 @@ export function submissionCount(c: CompetitionListItem): number {
   return c.submission_count?.[0]?.count ?? 0;
 }
 
-export async function listCompetitions(): Promise<CompetitionListItem[]> {
+export async function listCompetitions(
+  opts: { page?: number; perPage?: number } = {},
+): Promise<CompetitionListItem[]> {
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("competitions")
     .select(
       `${COMP_WITH_CREATOR}, submission_count:competition_submissions!competition_submissions_competition_id_fkey(count)`,
     )
     .order("created_at", { ascending: false });
+  if (opts.page && opts.perPage) {
+    const from = (opts.page - 1) * opts.perPage;
+    query = query.range(from, from + opts.perPage - 1);
+  }
+  const { data } = await query;
   return (data as CompetitionListItem[] | null) ?? [];
+}
+
+/** Total competitions (for pagination). */
+export async function countCompetitions(): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("competitions")
+    .select("id", { count: "exact", head: true });
+  return count ?? 0;
 }
 
 export async function getCompetitionBySlug(

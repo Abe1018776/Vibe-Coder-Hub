@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Search, Plus, Rocket } from "lucide-react";
+import { Plus, Rocket } from "lucide-react";
 import {
   listProjects,
+  countProjects,
   getProjectFacets,
   getMyUpvotedProjectIds,
 } from "@/lib/queries";
@@ -9,14 +10,15 @@ import { getAuthUser } from "@/lib/current-user";
 import { Container } from "@/components/brand/layout";
 import { ProjectCard } from "@/components/brand/project-card";
 import { EmptyState } from "@/components/brand/empty-state";
+import { FilterBar } from "@/components/brand/filter-bar";
+import { Pagination } from "@/components/brand/pagination";
 
 export const metadata = {
   title: "Showcase",
   description: "Discover what the community is building.",
 };
 
-const selectClass =
-  "h-11 rounded-xl border border-border bg-canvas px-3 text-sm font-medium text-ink outline-none transition-colors hover:border-border-hover focus:border-teal-600 focus:bg-surface";
+const PER_PAGE = 24;
 
 export default async function ShowcasePage({
   searchParams,
@@ -26,6 +28,7 @@ export default async function ShowcasePage({
     tool?: string;
     tag?: string;
     sort?: string;
+    page?: string;
   }>;
 }) {
   const sp = await searchParams;
@@ -33,20 +36,23 @@ export default async function ShowcasePage({
   const tool = sp.tool ?? "";
   const tag = sp.tag ?? "";
   const sort: "top" | "new" = sp.sort === "new" ? "new" : "top";
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const filtering = Boolean(q || tool || tag);
 
-  const [facets, projects, upvoted, user] = await Promise.all([
+  const filterOpts = {
+    q: q || undefined,
+    tool: tool || undefined,
+    tag: tag || undefined,
+  };
+  const [facets, total, projects, upvoted, user] = await Promise.all([
     getProjectFacets(),
-    listProjects({
-      q: q || undefined,
-      tool: tool || undefined,
-      tag: tag || undefined,
-      sort,
-    }),
+    countProjects(filterOpts),
+    listProjects({ ...filterOpts, sort, page, perPage: PER_PAGE }),
     getMyUpvotedProjectIds(),
     getAuthUser(),
   ]);
   const isAuthed = !!user;
+  const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
     <Container className="py-10 md:py-14">
@@ -64,59 +70,23 @@ export default async function ShowcasePage({
         </Link>
       </div>
 
-      <form
-        method="get"
-        className="mt-7 flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 shadow-[var(--shadow-sm)] lg:flex-row lg:items-center"
-      >
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
-            name="q"
-            defaultValue={q}
-            dir="auto"
-            placeholder="Search projects, tools, tags…"
-            className="h-11 w-full rounded-xl border border-transparent bg-canvas pl-10 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:bg-surface"
-          />
-        </div>
-        <select name="tool" defaultValue={tool} className={selectClass} aria-label="Tool">
-          <option value="">All tools</option>
-          {facets.tools.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <select name="tag" defaultValue={tag} className={selectClass} aria-label="Tag">
-          <option value="">All tags</option>
-          {facets.tags.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <select name="sort" defaultValue={sort} className={selectClass} aria-label="Sort">
-          <option value="top">Top</option>
-          <option value="new">New</option>
-        </select>
-        <button type="submit" className="btn btn-primary btn-sm h-11">
-          Search
-        </button>
-      </form>
-
-      {filtering && (
-        <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
-          <span>
-            <strong className="text-ink">{projects.length}</strong>{" "}
-            {projects.length === 1 ? "project" : "projects"}
-          </span>
-          <Link href="/showcase" className="font-medium text-teal-800 hover:underline">
-            Clear
-          </Link>
-        </div>
-      )}
+      <FilterBar
+        basePath="/showcase"
+        searchValue={q}
+        placeholder="Search projects, tools, tags…"
+        selects={[
+          { name: "tool", allLabel: "All tools", value: tool, options: facets.tools },
+          { name: "tag", allLabel: "All tags", value: tag, options: facets.tags },
+        ]}
+        sort={{
+          name: "sort",
+          value: sort,
+          options: [
+            { value: "top", label: "Top" },
+            { value: "new", label: "New" },
+          ],
+        }}
+      />
 
       {projects.length === 0 ? (
         <EmptyState
@@ -132,17 +102,27 @@ export default async function ShowcasePage({
           actionLabel={filtering ? "Clear filters" : "Submit a project"}
         />
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p, i) => (
-            <ProjectCard
-              key={p.id}
-              project={p}
-              isAuthed={isAuthed}
-              upvoted={upvoted.has(p.id)}
-              highlight={sort === "top" && !filtering && i === 0 && !p.featured}
-            />
-          ))}
-        </div>
+        <>
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((p, i) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                isAuthed={isAuthed}
+                upvoted={upvoted.has(p.id)}
+                highlight={
+                  sort === "top" && !filtering && page === 1 && i === 0 && !p.featured
+                }
+              />
+            ))}
+          </div>
+          <Pagination
+            pathname="/showcase"
+            searchParams={sp}
+            page={page}
+            totalPages={totalPages}
+          />
+        </>
       )}
     </Container>
   );
