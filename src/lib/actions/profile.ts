@@ -23,6 +23,7 @@ const schema = z.object({
   location: z.string().trim().max(80).optional(),
   hourly_rate: z.number().nonnegative().max(100000).nullable(),
   avatar_url: z.string().trim().url().optional().or(z.literal("")),
+  cover_url: z.string().trim().url().optional().or(z.literal("")),
 });
 
 function csv(value: FormDataEntryValue | null): string[] {
@@ -56,6 +57,7 @@ export async function updateProfile(
     location: String(formData.get("location") ?? "") || undefined,
     hourly_rate: rawRate === "" ? null : Number(rawRate),
     avatar_url: String(formData.get("avatar_url") ?? ""),
+    cover_url: String(formData.get("cover_url") ?? ""),
   });
 
   if (!parsed.success) {
@@ -101,6 +103,7 @@ export async function updateProfile(
       location: v.location ?? null,
       hourly_rate: v.hourly_rate,
       avatar_url: v.avatar_url ? v.avatar_url : null,
+      cover_url: v.cover_url ? v.cover_url : null,
       available_for_hire: formData.get("available_for_hire") != null,
       tools,
       skills,

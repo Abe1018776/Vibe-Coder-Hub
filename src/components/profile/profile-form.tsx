@@ -78,6 +78,15 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         />
       </Field>
 
+      <Field label="Cover image" hint="your profile banner — optional">
+        <ImageInput
+          name="cover_url"
+          bucket="avatars"
+          shape="rect"
+          defaultValue={profile.cover_url}
+        />
+      </Field>
+
       <Field label="Display name" required error={state.fieldErrors?.name}>
         <input
           name="name"

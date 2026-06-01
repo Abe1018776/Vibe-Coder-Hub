@@ -34,6 +34,41 @@ export async function getProfileByHandle(
   return data;
 }
 
+/** Is the current user following this builder? (false when signed out). */
+export async function isFollowing(builderId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase
+    .from("follows")
+    .select("builder_id")
+    .eq("follower_id", user.id)
+    .eq("builder_id", builderId)
+    .maybeSingle();
+  return !!data;
+}
+
+/** Public profile stats: visible (non-anonymous, non-hidden) project count and
+ *  the sum of their upvotes. */
+export async function getProfileStats(
+  profileId: string,
+): Promise<{ projects: number; upvotes: number }> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("projects")
+    .select("upvote_count")
+    .eq("owner_id", profileId)
+    .eq("hidden", false)
+    .eq("is_anonymous", false);
+  const rows = data ?? [];
+  return {
+    projects: rows.length,
+    upvotes: rows.reduce((s, r) => s + (r.upvote_count ?? 0), 0),
+  };
+}
+
 export async function getProjectsByOwner(ownerId: string): Promise<Project[]> {
   const supabase = await createClient();
   const { data } = await supabase
