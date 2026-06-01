@@ -467,7 +467,10 @@ export type Database = {
           hourly_rate: number | null
           id: string
           is_admin: boolean
+          is_builder: boolean
+          is_public: boolean
           is_verified: boolean
+          went_public_at: string | null
           links: Json
           location: string | null
           name: string
@@ -488,7 +491,10 @@ export type Database = {
           hourly_rate?: number | null
           id: string
           is_admin?: boolean
+          is_builder?: boolean
+          is_public?: boolean
           is_verified?: boolean
+          went_public_at?: string | null
           links?: Json
           location?: string | null
           name: string
@@ -509,7 +515,10 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           is_admin?: boolean
+          is_builder?: boolean
+          is_public?: boolean
           is_verified?: boolean
+          went_public_at?: string | null
           links?: Json
           location?: string | null
           name?: string

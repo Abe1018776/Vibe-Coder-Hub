@@ -199,6 +199,24 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
         <span>
           <span className="block text-sm font-medium text-ink">
+            I&apos;m a builder / freelancer
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            List me on the Builders page so people can find me.
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          name="is_builder"
+          defaultChecked={profile.is_builder}
+          className="peer sr-only"
+        />
+        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+      </label>
+
+      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+        <span>
+          <span className="block text-sm font-medium text-ink">
             Available for hire
           </span>
           <span className="block text-xs text-muted-foreground">
