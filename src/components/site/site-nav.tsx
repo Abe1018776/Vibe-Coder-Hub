@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/current-user";
+import { getAdminContext } from "@/lib/admin";
 import {
   getNotificationSummary,
   describeNotification,
@@ -15,6 +16,8 @@ import { PostMenu } from "./post-menu";
 
 export async function SiteNav() {
   const profile = await getCurrentProfile();
+
+  const admin = profile ? await getAdminContext() : null;
 
   let bellItems: BellItem[] = [];
   let unread = 0;
@@ -55,6 +58,7 @@ export async function SiteNav() {
                   name: profile.name,
                   avatar_url: profile.avatar_url,
                 }}
+                isAdmin={!!admin}
               />
             ) : (
               <Link href="/login" className="btn btn-ghost btn-sm">

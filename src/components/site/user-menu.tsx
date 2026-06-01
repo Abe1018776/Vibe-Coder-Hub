@@ -7,7 +7,13 @@ import { signOut } from "@/lib/actions/auth";
 
 type MenuProfile = { handle: string; name: string; avatar_url: string | null };
 
-export function UserMenu({ profile }: { profile: MenuProfile }) {
+export function UserMenu({
+  profile,
+  isAdmin = false,
+}: {
+  profile: MenuProfile;
+  isAdmin?: boolean;
+}) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -31,6 +37,12 @@ export function UserMenu({ profile }: { profile: MenuProfile }) {
           <Item href="/settings/notifications">Notification settings</Item>
           <Item href="/showcase/submit">Submit a project</Item>
           <Item href="/gigs/post">Post a gig</Item>
+          {isAdmin && (
+            <>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              <Item href="/admin">Admin</Item>
+            </>
+          )}
           <DropdownMenu.Separator className="my-1 h-px bg-border" />
           <form action={signOut}>
             <DropdownMenu.Item asChild>
