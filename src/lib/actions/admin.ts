@@ -52,6 +52,22 @@ export async function setProjectFeatured(projectId: string, featured: boolean) {
   revalidatePath(`/showcase/${projectId}`);
 }
 
+/** Admin-only: approve or reject a submitted competition. */
+export async function setCompetitionReviewStatus(
+  competitionId: string,
+  status: "approved" | "rejected",
+) {
+  await requireAdminUnlocked();
+  const supabase = await createClient();
+  await supabase
+    .from("competitions")
+    .update({ review_status: status })
+    .eq("id", competitionId);
+  revalidatePath("/admin/competitions");
+  revalidatePath("/admin");
+  revalidatePath("/competitions");
+}
+
 export type ReportAction = "hide" | "delete" | "dismiss";
 
 /** Act on a report. Admin RLS policies let these writes bypass owner-only checks. */

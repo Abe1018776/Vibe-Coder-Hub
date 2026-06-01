@@ -48,6 +48,7 @@ export async function listCompetitions(
     .select(
       `${COMP_WITH_CREATOR}, submission_count:competition_submissions!competition_submissions_competition_id_fkey(count)`,
     )
+    .eq("review_status", "approved")
     .order("created_at", { ascending: false });
   if (opts.page && opts.perPage) {
     const from = (opts.page - 1) * opts.perPage;
@@ -62,7 +63,8 @@ export async function countCompetitions(): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase
     .from("competitions")
-    .select("id", { count: "exact", head: true });
+    .select("id", { count: "exact", head: true })
+    .eq("review_status", "approved");
   return count ?? 0;
 }
 

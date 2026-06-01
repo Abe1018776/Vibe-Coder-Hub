@@ -1,26 +1,23 @@
-import { requireAdmin } from "@/lib/admin";
 import { Container, Eyebrow } from "@/components/brand/layout";
-import { EventForm } from "@/components/events/event-form";
+import { GetListedForm } from "@/components/directory/get-listed-form";
 
-export const metadata = { title: "Add an event" };
+export const metadata = { title: "Get listed" };
 
-export default async function PostEventPage() {
-  // Events are admin-only; the public submits a request instead (/events/request).
-  await requireAdmin();
-
+export default function GetListedPage() {
   return (
     <Container className="max-w-2xl py-12 md:py-16">
       <div className="text-center">
-        <Eyebrow style={{ color: "var(--sage-deep)" }}>Bring people together</Eyebrow>
+        <Eyebrow>Join the directory</Eyebrow>
         <h1 className="mt-3 font-display text-[clamp(2rem,5vw,2.75rem)] font-bold tracking-tight text-ink">
-          Add an event
+          Get listed — it&apos;s free
         </h1>
         <p className="mx-auto mt-3 max-w-md text-[17px] text-muted-foreground">
-          Share a workshop or meetup with the community.
+          Tell us who you are and what you do. No account needed — we review every
+          submission and add the good ones to the directory.
         </p>
       </div>
       <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
-        <EventForm />
+        <GetListedForm />
       </div>
     </Container>
   );

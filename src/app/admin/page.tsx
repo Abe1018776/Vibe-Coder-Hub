@@ -1,15 +1,39 @@
 import Link from "next/link";
-import { Flag } from "lucide-react";
+import { Flag, Trophy, Calendar, Compass, MessageSquare } from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboard() {
   await requireAdminUnlocked();
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("reports")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "open");
+  const [
+    { count },
+    { count: pendingComps },
+    { count: pendingEvents },
+    { count: pendingListings },
+    { count: openFeedback },
+  ] = await Promise.all([
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
+    supabase
+      .from("competitions")
+      .select("id", { count: "exact", head: true })
+      .eq("review_status", "pending"),
+    supabase
+      .from("event_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
+      .from("directory_listings")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
+      .from("feedback")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
+  ]);
 
   return (
     <div>
@@ -29,6 +53,61 @@ export default async function AdminDashboard() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {count ?? 0} open {count === 1 ? "report" : "reports"} to review.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/competitions"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Trophy size={18} className="text-gold-mid" />
+            <span className="font-medium">Competition review</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingComps ?? 0} pending{" "}
+            {pendingComps === 1 ? "competition" : "competitions"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/events"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Calendar size={18} className="text-sage-mid" />
+            <span className="font-medium">Event requests</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingEvents ?? 0} pending{" "}
+            {pendingEvents === 1 ? "request" : "requests"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/directory"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Compass size={18} className="text-teal-600" />
+            <span className="font-medium">Directory review</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingListings ?? 0} pending{" "}
+            {pendingListings === 1 ? "listing" : "listings"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/feedback"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <MessageSquare size={18} className="text-blue-mid" />
+            <span className="font-medium">Feedback</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {openFeedback ?? 0} open {openFeedback === 1 ? "note" : "notes"}.
           </p>
         </Link>
       </div>

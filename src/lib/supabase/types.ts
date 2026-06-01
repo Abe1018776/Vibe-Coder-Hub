@@ -113,6 +113,7 @@ export type Database = {
           id: string
           loom_url: string | null
           prize_amount: number
+          review_status: string
           slug: string
           status: Database["public"]["Enums"]["competition_status"]
           tags: string[]
@@ -127,6 +128,7 @@ export type Database = {
           id?: string
           loom_url?: string | null
           prize_amount: number
+          review_status?: string
           slug: string
           status?: Database["public"]["Enums"]["competition_status"]
           tags?: string[]
@@ -141,6 +143,7 @@ export type Database = {
           id?: string
           loom_url?: string | null
           prize_amount?: number
+          review_status?: string
           slug?: string
           status?: Database["public"]["Enums"]["competition_status"]
           tags?: string[]
@@ -204,6 +207,111 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      directory_listings: {
+        Row: {
+          category: string
+          contact: Json
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          status: string
+          submitted_by: string | null
+          wants: string | null
+          what_you_do: string
+        }
+        Insert: {
+          category: string
+          contact?: Json
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          status?: string
+          submitted_by?: string | null
+          wants?: string | null
+          what_you_do: string
+        }
+        Update: {
+          category?: string
+          contact?: Json
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          status?: string
+          submitted_by?: string | null
+          wants?: string | null
+          what_you_do?: string
+        }
+        Relationships: []
+      }
+      event_requests: {
+        Row: {
+          contact: string
+          created_at: string
+          details: string
+          id: string
+          requester_id: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          contact: string
+          created_at?: string
+          details: string
+          id?: string
+          requester_id?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          contact?: string
+          created_at?: string
+          details?: string
+          id?: string
+          requester_id?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          page_url: string | null
+          sentiment: string | null
+          status: string
+          submitter_contact: string | null
+          submitter_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          page_url?: string | null
+          sentiment?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          page_url?: string | null
+          sentiment?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_id?: string | null
+        }
+        Relationships: []
       }
       follows: {
         Row: {
