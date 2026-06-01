@@ -25,6 +25,7 @@ import { InterestButton } from "@/components/showcase/interest-button";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { DeleteProjectButton } from "@/components/showcase/delete-project-button";
 import { NoteButton } from "@/components/messaging/note-button";
+import { PostedShareCard } from "@/components/brand/posted-share-card";
 import { FeatureToggle } from "@/components/admin/feature-toggle";
 import { deleteProject } from "@/lib/actions/projects";
 import { cn } from "@/lib/utils";
@@ -72,10 +73,13 @@ function ChipLink({
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ posted?: string }>;
 }) {
   const { id } = await params;
+  const justPosted = (await searchParams)?.posted === "1";
   const project = await getProjectById(id);
   if (!project) notFound();
 
@@ -156,6 +160,16 @@ export default async function ProjectDetailPage({
           redirectTo={`/showcase/${id}`}
         />
       </header>
+
+      {justPosted && isOwner && (
+        <div className="mt-5">
+          <PostedShareCard
+            path={`/showcase/${id}`}
+            title={project.name}
+            caption={`Check out my project "${project.name}" on YidVibe →`}
+          />
+        </div>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1.7fr_1fr] lg:items-start">
         {/* LEFT */}
