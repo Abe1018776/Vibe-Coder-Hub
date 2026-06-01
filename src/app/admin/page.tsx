@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flag, Trophy, Calendar, Compass } from "lucide-react";
+import { Flag, Trophy, Calendar, Compass, MessageSquare } from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,6 +11,7 @@ export default async function AdminDashboard() {
     { count: pendingComps },
     { count: pendingEvents },
     { count: pendingListings },
+    { count: openFeedback },
   ] = await Promise.all([
     supabase
       .from("reports")
@@ -28,6 +29,10 @@ export default async function AdminDashboard() {
       .from("directory_listings")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase
+      .from("feedback")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
   ]);
 
   return (
@@ -90,6 +95,19 @@ export default async function AdminDashboard() {
           <p className="mt-2 text-sm text-muted-foreground">
             {pendingListings ?? 0} pending{" "}
             {pendingListings === 1 ? "listing" : "listings"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/feedback"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <MessageSquare size={18} className="text-blue-mid" />
+            <span className="font-medium">Feedback</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {openFeedback ?? 0} open {openFeedback === 1 ? "note" : "notes"}.
           </p>
         </Link>
       </div>

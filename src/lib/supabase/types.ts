@@ -277,6 +277,42 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          page_url: string | null
+          sentiment: string | null
+          status: string
+          submitter_contact: string | null
+          submitter_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          page_url?: string | null
+          sentiment?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          page_url?: string | null
+          sentiment?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_id?: string | null
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           builder_id: string
