@@ -208,6 +208,93 @@ export type Database = {
           },
         ]
       }
+      conversation_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          about_id: string | null
+          about_type: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          participant_a: string
+          participant_b: string
+        }
+        Insert: {
+          about_id?: string | null
+          about_type?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_a: string
+          participant_b: string
+        }
+        Update: {
+          about_id?: string | null
+          about_type?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          participant_a?: string
+          participant_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_participant_a_fkey"
+            columns: ["participant_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_b_fkey"
+            columns: ["participant_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       directory_listings: {
         Row: {
           category: string
@@ -570,6 +657,7 @@ export type Database = {
           bio: string | null
           cover_url: string | null
           created_at: string
+          dm_privacy: Database["public"]["Enums"]["dm_privacy"]
           follower_count: number
           handle: string
           hourly_rate: number | null
@@ -594,6 +682,7 @@ export type Database = {
           bio?: string | null
           cover_url?: string | null
           created_at?: string
+          dm_privacy?: Database["public"]["Enums"]["dm_privacy"]
           follower_count?: number
           handle: string
           hourly_rate?: number | null
@@ -618,6 +707,7 @@ export type Database = {
           bio?: string | null
           cover_url?: string | null
           created_at?: string
+          dm_privacy?: Database["public"]["Enums"]["dm_privacy"]
           follower_count?: number
           handle?: string
           hourly_rate?: number | null
@@ -847,6 +937,7 @@ export type Database = {
     }
     Enums: {
       competition_status: "open" | "judging" | "closed"
+      dm_privacy: "everyone" | "followers" | "none"
       gig_status: "open" | "in_progress" | "closed"
       gig_type: "task" | "hourly" | "build"
     }
@@ -977,6 +1068,7 @@ export const Constants = {
   public: {
     Enums: {
       competition_status: ["open", "judging", "closed"],
+      dm_privacy: ["everyone", "followers", "none"],
       gig_status: ["open", "in_progress", "closed"],
       gig_type: ["task", "hourly", "build"],
     },
