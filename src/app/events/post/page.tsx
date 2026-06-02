@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/admin";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { EventForm } from "@/components/events/event-form";
+import { FormHelpLink } from "@/components/brand/form-help-link";
 
 export const metadata = { title: "Add an event" };
 
@@ -18,6 +19,9 @@ export default async function PostEventPage() {
         <p className="mx-auto mt-3 max-w-md text-[17px] text-muted-foreground">
           Share a workshop or meetup with the community.
         </p>
+        <div className="mt-3">
+          <FormHelpLink>See how events work →</FormHelpLink>
+        </div>
       </div>
       <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
         <EventForm />

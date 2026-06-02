@@ -3,6 +3,7 @@ import { getAuthUser } from "@/lib/current-user";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { ProjectForm } from "@/components/showcase/project-form";
 import { createProject } from "@/lib/actions/projects";
+import { FormHelpLink } from "@/components/brand/form-help-link";
 
 export const metadata = { title: "Submit a project" };
 
@@ -21,6 +22,9 @@ export default async function SubmitProjectPage() {
           Show the community what you built — it appears on the Showcase and your
           profile automatically.
         </p>
+        <div className="mt-3">
+          <FormHelpLink>New here? See how posting a project works →</FormHelpLink>
+        </div>
       </div>
       <div className="mt-9">
         <ProjectForm action={createProject} submitLabel="Submit project" />

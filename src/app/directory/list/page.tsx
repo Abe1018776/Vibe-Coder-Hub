@@ -1,5 +1,6 @@
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { GetListedForm } from "@/components/directory/get-listed-form";
+import { FormHelpLink } from "@/components/brand/form-help-link";
 
 export const metadata = { title: "Get listed" };
 
@@ -15,6 +16,9 @@ export default function GetListedPage() {
           Tell us who you are and what you do. No account needed — we review every
           submission and add the good ones to the directory.
         </p>
+        <div className="mt-3">
+          <FormHelpLink>See how the directory works →</FormHelpLink>
+        </div>
       </div>
       <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
         <GetListedForm />

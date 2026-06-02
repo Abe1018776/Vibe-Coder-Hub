@@ -1,5 +1,6 @@
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { EventRequestForm } from "@/components/events/event-request-form";
+import { FormHelpLink } from "@/components/brand/form-help-link";
 
 export const metadata = { title: "Request to post an event" };
 
@@ -15,6 +16,9 @@ export default function EventRequestPage() {
           Tell us about your workshop or meetup. We review every request and post
           the good ones — you&apos;ll hear back by email.
         </p>
+        <div className="mt-3">
+          <FormHelpLink>See how events work →</FormHelpLink>
+        </div>
       </div>
       <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
         <EventRequestForm />

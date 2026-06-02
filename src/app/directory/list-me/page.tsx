@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/current-user";
 import { getMyDirectoryListing } from "@/lib/queries";
 import { DIRECTORY_CATEGORIES } from "@/lib/site";
 import { SelfListingForm } from "@/components/directory/self-listing-form";
+import { FormHelpLink } from "@/components/brand/form-help-link";
 
 export const metadata = { title: "Get listed in the Directory" };
 
@@ -23,6 +24,9 @@ export default async function ListMePage() {
         title="Add me to the Directory"
         subtitle="We pulled in what we already know from your profile — just fill the gaps."
       />
+      <div className="mt-3">
+        <FormHelpLink>See how the directory works →</FormHelpLink>
+      </div>
       <div className="mt-6">
         <SelfListingForm
           categories={DIRECTORY_CATEGORIES}
