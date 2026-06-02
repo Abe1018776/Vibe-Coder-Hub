@@ -671,6 +671,7 @@ export type Database = {
           location: string | null
           name: string
           notification_prefs: Json
+          show_real_name: boolean
           skills: string[]
           tags: string[]
           tools: string[]
@@ -696,6 +697,7 @@ export type Database = {
           location?: string | null
           name: string
           notification_prefs?: Json
+          show_real_name?: boolean
           skills?: string[]
           tags?: string[]
           tools?: string[]
@@ -721,6 +723,7 @@ export type Database = {
           location?: string | null
           name?: string
           notification_prefs?: Json
+          show_real_name?: boolean
           skills?: string[]
           tags?: string[]
           tools?: string[]

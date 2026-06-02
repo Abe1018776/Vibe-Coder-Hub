@@ -114,7 +114,7 @@ export default async function ShowcasePage({
                 upvoted={upvoted.has(p.id)}
                 saved={saved.has(p.id)}
                 highlight={
-                  sort === "top" && !filtering && page === 1 && i === 0 && !p.featured
+                  sort === "top" && !filtering && page === 1 && i === 0
                 }
               />
             ))}
