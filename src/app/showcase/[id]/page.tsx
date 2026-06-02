@@ -113,8 +113,7 @@ export default async function ProjectDetailPage({
     </span>
   ) : null;
 
-  const hasCommercial =
-    project.seeking_funding || project.for_sale || project.open_to_partners;
+  const hasCommercial = project.for_sale || project.open_to_partners;
 
   return (
     <Container className="max-w-6xl py-8">

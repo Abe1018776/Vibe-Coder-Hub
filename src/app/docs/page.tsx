@@ -21,7 +21,7 @@ import { Container, Eyebrow } from "@/components/brand/layout";
 export const metadata = {
   title: "How YidVibe works",
   description:
-    "A complete guide to YidVibe — how to sign in, post your work, get hired, find funding, compete, connect privately, and stay in control of your privacy. For the community, by the community.",
+    "A complete guide to YidVibe — how to sign in, post your work, get hired, find work, compete, and connect privately. Free to use, for the community, by the community.",
 };
 
 function Section({
@@ -117,8 +117,8 @@ export default function DocsPage() {
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
         YidVibe is where the people building software and AI tools in our
-        community show their work, get hired, find funding and buyers, compete,
-        and connect — for the community, by the community. This guide walks
+        community show their work, get hired, find buyers, compete, and
+        connect — all completely free, for the community, by the community. This guide walks
         through every part of the site, so you know exactly how it all works and
         why.
       </p>
@@ -258,9 +258,6 @@ export default function DocsPage() {
             you&apos;re looking for, and a badge appears on the project:
           </p>
           <ul className="ml-5 list-disc space-y-1.5">
-            <li>
-              <strong>Seeking funding</strong> — you&apos;re open to investors.
-            </li>
             <li>
               <strong>For sale</strong> — the project itself is up for grabs.
             </li>
@@ -486,7 +483,7 @@ export default function DocsPage() {
               notification settings
             </Link>{" "}
             you can toggle each type on or off: comments, upvotes, commercial
-            interest (funding, buying, or partnering), gig applications, new
+            interest (buying or partnering), gig applications, new
             messages in a gig thread, and competition wins.
           </p>
         </Section>
@@ -503,7 +500,7 @@ export default function DocsPage() {
             Because some actions are about doing business, we make sure people can
             actually reach you first. Before you can{" "}
             <strong>post a gig</strong> or mark a project as{" "}
-            <em>seeking funding</em>, <em>for sale</em>, or{" "}
+            <em>for sale</em> or{" "}
             <em>open to partners</em>, you&apos;ll be asked to add at least one
             public contact method.
           </p>

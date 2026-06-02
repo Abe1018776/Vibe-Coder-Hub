@@ -86,7 +86,7 @@ export const NOTIFICATION_TYPES: {
 }[] = [
   { key: "comment", label: "Comments", description: "Someone comments on your project." },
   { key: "upvote", label: "Upvotes", description: "Someone upvotes your project." },
-  { key: "interest", label: "Commercial interest", description: "Someone is interested in funding, buying, or partnering." },
+  { key: "interest", label: "Commercial interest", description: "Someone is interested in buying or partnering." },
   { key: "gig_application", label: "Gig applications", description: "Someone applies to a gig you posted." },
   { key: "message", label: "Messages", description: "A new message in one of your gig threads." },
   { key: "competition_winner", label: "Competition wins", description: "You're picked as a competition winner." },
@@ -98,7 +98,6 @@ export const PROJECT_COMMERCIAL: {
   label: string;
   accent: Accent;
 }[] = [
-  { key: "seeking_funding", label: "Seeking funding", accent: "gold" },
   { key: "for_sale", label: "For sale", accent: "blue" },
   { key: "open_to_partners", label: "Open to partners", accent: "teal" },
 ];

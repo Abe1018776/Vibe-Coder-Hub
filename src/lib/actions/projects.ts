@@ -18,7 +18,7 @@ function commercialFrom(formData: FormData, anon: boolean) {
   };
 }
 
-/** Commercial projects must give buyers/investors a way to reach the builder. */
+/** Commercial projects must give interested people a way to reach the builder. */
 async function contactErrorIfCommercial(
   supabase: SupabaseServer,
   userId: string,
@@ -31,7 +31,7 @@ async function contactErrorIfCommercial(
     .eq("id", userId)
     .maybeSingle();
   if (!hasAnyContact(data?.links as Record<string, string | undefined> | null)) {
-    return "Add a public contact method to your profile first (Settings → Contact) so people can reach you about funding, sale, or partnership.";
+    return "Add a public contact method to your profile first (Settings → Contact) so people can reach you about a sale or partnership.";
   }
   return null;
 }

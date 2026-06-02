@@ -104,9 +104,7 @@ export function ProjectCard({
 
         <p className="pc-desc">{project.description}</p>
 
-        {(project.seeking_funding ||
-          project.for_sale ||
-          project.open_to_partners) && (
+        {(project.for_sale || project.open_to_partners) && (
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {PROJECT_COMMERCIAL.filter((c) => project[c.key]).map((c) => (
               <Pill key={c.key} accent={c.accent}>

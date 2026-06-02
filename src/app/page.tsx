@@ -45,8 +45,8 @@ const AUDIENCES = [
   },
   {
     tag: "I'm looking",
-    title: "Find, hire & invest",
-    body: "Browse what the community is building. Reach the people behind it to hire, fund, buy, or partner — no tech background needed.",
+    title: "Find & hire",
+    body: "Browse what the community is building. Reach the people behind it to hire, buy, or partner — no tech background needed.",
     cta: "Browse builders",
     href: "/builders",
     tint: "tint-gold",
@@ -159,7 +159,8 @@ export default async function Home() {
 
           <p className="mt-6 max-w-[46ch] text-[clamp(1.05rem,2.2vw,1.3rem)] leading-relaxed text-muted-foreground">
             Apps, tools and ideas — made by the people in our community, for the
-            people in our community. Find them, back them, or build your own.
+            people in our community. Find them, support them, or build your own
+            — it&apos;s all free.
           </p>
 
           {/* Working search → /showcase?q= */}
