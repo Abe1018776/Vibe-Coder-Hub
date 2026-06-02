@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   requireAdmin,
   requireAdminUnlocked,
@@ -160,4 +161,50 @@ export async function resolveReport(reportId: string, action: ReportAction) {
 
   revalidatePath("/admin/reports");
   revalidatePath("/admin");
+}
+
+type UserFlag = "is_verified" | "is_featured" | "is_admin";
+
+/** Admin-only: toggle a profile flag (verified / featured / admin). */
+export async function setUserFlag(
+  profileId: string,
+  field: UserFlag,
+  value: boolean,
+) {
+  await requireAdminUnlocked();
+  if (!["is_verified", "is_featured", "is_admin"].includes(field)) return;
+  const supabase = await createClient();
+  // `is_featured` isn't in the generated types yet — narrow cast keeps it honest.
+  await (supabase.from("profiles") as any).update({ [field]: value }).eq("id", profileId);
+  revalidatePath("/admin/users");
+  revalidatePath("/builders");
+  revalidatePath("/");
+}
+
+/** Admin-only: hide or show a profile (is_public). */
+export async function setUserPublic(profileId: string, isPublic: boolean) {
+  await requireAdminUnlocked();
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ is_public: isPublic }).eq("id", profileId);
+  revalidatePath("/admin/users");
+}
+
+/** Admin-only: send a Supabase email invite. Gated on the service-role key. */
+export async function inviteUser(
+  _prev: { ok?: boolean; error?: string },
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdminUnlocked();
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Enter an email." };
+  const admin = createAdminClient();
+  if (!admin)
+    return {
+      error:
+        "Account invites aren't enabled yet — add SUPABASE_SERVICE_ROLE_KEY in Vercel (see docs/ADMIN_SERVICE_ROLE.md).",
+    };
+  const { error } = await admin.auth.admin.inviteUserByEmail(email);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/users");
+  return { ok: true };
 }
