@@ -228,61 +228,63 @@ export default async function ProjectDetailPage({
 
         {/* RIGHT rail */}
         <div className="space-y-4 lg:sticky lg:top-16">
-          <Panel className="space-y-2">
-            <UpvoteButton
-              projectId={project.id}
-              initialCount={project.upvote_count}
-              initialUpvoted={upvoted.has(project.id)}
-              isAuthed={isAuthed}
-              redirectTo={`/showcase/${id}`}
-              className="upvote-wide"
-            />
-            <div className="flex flex-col gap-2">
-              {project.url && (
-                <a
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary btn-sm w-full justify-center"
-                >
-                  <ExternalLink size={15} /> Visit live
-                </a>
-              )}
-              <ShareButton
-                path={`/showcase/${id}`}
-                title={project.name}
-                label="Share project"
-                className="btn-sm w-full justify-center"
+          <Panel>
+            <div className="flex items-stretch gap-3">
+              <UpvoteButton
+                projectId={project.id}
+                initialCount={project.upvote_count}
+                initialUpvoted={upvoted.has(project.id)}
+                isAuthed={isAuthed}
+                redirectTo={`/showcase/${id}`}
+                className="upvote-lg"
               />
-              {project.video_url && (
-                <a
-                  href={project.video_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost btn-sm w-full justify-center"
-                >
-                  <Play size={15} /> Watch demo
-                </a>
-              )}
-              {isOwner && (
-                <>
-                  <Link
-                    href={`/showcase/${id}/edit`}
+              <div className="flex flex-1 flex-col justify-center gap-2">
+                {project.url && (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary btn-sm w-full justify-center"
+                  >
+                    <ExternalLink size={15} /> Visit live
+                  </a>
+                )}
+                <ShareButton
+                  path={`/showcase/${id}`}
+                  title={project.name}
+                  label="Share project"
+                  className="btn-sm w-full justify-center"
+                />
+                {project.video_url && (
+                  <a
+                    href={project.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="btn btn-ghost btn-sm w-full justify-center"
                   >
-                    <Pencil size={15} /> Edit
-                  </Link>
-                  <DeleteProjectButton action={deleteThis} />
-                </>
-              )}
-              {adminUnlocked && (
-                <FeatureToggle projectId={id} featured={!!project.featured} />
-              )}
-              {isAuthed && !isOwner && (
-                <div className="flex justify-center pt-0.5">
-                  <ReportMenu targetType="project" targetId={id} />
-                </div>
-              )}
+                    <Play size={15} /> Watch demo
+                  </a>
+                )}
+                {isOwner && (
+                  <>
+                    <Link
+                      href={`/showcase/${id}/edit`}
+                      className="btn btn-ghost btn-sm w-full justify-center"
+                    >
+                      <Pencil size={15} /> Edit
+                    </Link>
+                    <DeleteProjectButton action={deleteThis} />
+                  </>
+                )}
+                {adminUnlocked && (
+                  <FeatureToggle projectId={id} featured={!!project.featured} />
+                )}
+                {isAuthed && !isOwner && (
+                  <div className="flex justify-center pt-0.5">
+                    <ReportMenu targetType="project" targetId={id} />
+                  </div>
+                )}
+              </div>
             </div>
           </Panel>
 

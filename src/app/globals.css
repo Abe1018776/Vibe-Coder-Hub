@@ -272,27 +272,45 @@
 .pc-foot strong { color: var(--ink); font-weight: 600; }
 
 /* ── Upvote ──────────────────────────────────────────────────────────────── */
-.upvote { position: relative; isolation: isolate; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-width: 46px; padding: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; line-height: 1; overflow: visible; transition: border-color 0.2s, background 0.2s, transform 0.1s; }
-.upvote svg { position: relative; color: var(--muted); transition: color 0.2s, transform 0.15s; }
-.upvote .upvote-num { position: relative; transition: color 0.2s; }
-.upvote:hover { border-color: var(--accent); background: var(--teal-50); }
-.upvote:hover svg { color: var(--accent); transform: translateY(-1px); }
-.upvote:disabled { opacity: 0.7; }
-/* Full-width horizontal variant — matches the action buttons in the project rail. */
-.upvote-wide { width: 100%; flex-direction: row; gap: 8px; padding: 11px 0; font-size: 14px; }
+/* Rounded-square upvote. Square fill that reaches the corners; snappy + gold sparks. */
+.upvote {
+  position: relative; isolation: isolate;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  width: 52px; height: 52px;
+  border-radius: 16px; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--ink);
+  font-family: var(--font-display); font-weight: 700; font-size: 15px; line-height: 1;
+  overflow: visible; cursor: pointer;
+  transition: background 0s linear 0.25s, border-color 0.12s, transform 0.1s;
+}
+.upvote svg { position: relative; color: var(--muted); transition: color 0.12s, transform 0.18s; }
+.upvote .upvote-num { position: relative; transition: color 0.12s; }
+.upvote:hover { border-color: var(--accent); }
+.upvote:disabled { opacity: 0.7; cursor: default; }
 
-/* slow rising teal "bottle fill" — sits behind the icon + count */
-.upvote-fill { position: absolute; inset: 0; border-radius: 12px; background: var(--accent); transform: scaleY(0); transform-origin: bottom; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1; pointer-events: none; }
-.upvote[aria-pressed="true"] { border-color: var(--accent); }
+/* Fill: matches inner radius, rises bottom→top in 250ms. */
+.upvote-fill {
+  position: absolute; inset: 0; border-radius: 14.5px; background: var(--accent); z-index: -1;
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.25s cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+/* Voted: border + bg go teal (kills white corner slivers); fill completes; text white; count pops. */
+.upvote[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
 .upvote[aria-pressed="true"] .upvote-fill { transform: scaleY(1); }
-.upvote[aria-pressed="true"] svg { color: #fff; transition-delay: 0.45s; }
-.upvote[aria-pressed="true"] .upvote-num { color: #fff; transition-delay: 0.45s; animation: yv-upvote-pop 0.4s ease 0.5s both; }
-@keyframes yv-upvote-pop { 0% { transform: scale(1); } 45% { transform: scale(1.45); } 100% { transform: scale(1); } }
+.upvote[aria-pressed="true"] svg { color: #fff; transform: translateY(-1px); }
+.upvote[aria-pressed="true"] .upvote-num { color: #fff; animation: yv-upvote-pop 0.32s ease 0.04s; }
 
-/* sparkle burst once the fill reaches the top */
+/* Large square for the detail page: stretches to its container's height. */
+.upvote-lg { width: 72px; height: auto; align-self: stretch; font-size: 20px; gap: 4px; }
+
 .upvote-sparkles { position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 2; pointer-events: none; }
-.upvote-spark { position: absolute; left: -2.5px; top: -2.5px; width: 5px; height: 5px; border-radius: 999px; background: var(--gold-500); opacity: 0; animation: yv-spark 0.5s ease-out 0.5s both; }
+.upvote-spark {
+  position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 999px;
+  background: var(--gold-500); opacity: 0;
+  animation: yv-spark 0.5s ease-out 0.05s both; /* near-immediate, was 0.5s delay */
+}
 @keyframes yv-spark { 0% { opacity: 0; transform: translate(0, 0) scale(0.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); } }
+@keyframes yv-upvote-pop { 0% { transform: scale(1); } 45% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
 /* ── Autofill "magic" — gold pulse while reading + a sparkle puff on press ── */
 @keyframes yv-magic-pulse {

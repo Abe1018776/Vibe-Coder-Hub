@@ -9,11 +9,11 @@ import { cn } from "@/lib/utils";
 
 /** Sparkle burst that fires once the teal "bottle fill" reaches the top. */
 const SPARKS = [
-  { dx: "-14px", dy: "-10px" },
-  { dx: "13px", dy: "-12px" },
-  { dx: "0px", dy: "-18px" },
-  { dx: "-9px", dy: "6px" },
-  { dx: "10px", dy: "4px" },
+  { dx: "-20px", dy: "-16px" },
+  { dx: "20px", dy: "-18px" },
+  { dx: "0px", dy: "-26px" },
+  { dx: "-14px", dy: "10px" },
+  { dx: "16px", dy: "9px" },
 ];
 
 export function UpvoteButton({
