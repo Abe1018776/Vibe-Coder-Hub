@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
+import { Calendar, CalendarDays } from "lucide-react";
 import { listAllEvents } from "@/lib/events";
-import { Container, Eyebrow } from "@/components/brand/layout";
+import { Container } from "@/components/brand/layout";
+import { PageHeader } from "@/components/brand/page-header";
 import { EmptyState } from "@/components/brand/empty-state";
 import { EventsBoard } from "@/components/events/events-board";
 
@@ -15,15 +16,13 @@ export default async function EventsPage() {
 
   return (
     <Container className="max-w-4xl py-10 md:py-14">
-      <div>
-        <Eyebrow style={{ color: "var(--sage-deep)" }}>Meet in person</Eyebrow>
-        <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
-          Events
-        </h1>
-        <p className="mt-2 text-[17px] text-muted-foreground">
-          Browse community workshops and meetups by date, place, or keyword.
-        </p>
-      </div>
+      <PageHeader
+        accent="sage"
+        eyebrow="Gather"
+        icon={<Calendar size={22} />}
+        title="Events"
+        subtitle="Browse community workshops and meetups by date, place, or keyword."
+      />
 
       {events.length === 0 ? (
         <EmptyState

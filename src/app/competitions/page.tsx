@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Plus, Trophy } from "lucide-react";
 import { listCompetitions } from "@/lib/competitions";
-import { Container, Eyebrow } from "@/components/brand/layout";
+import { Container } from "@/components/brand/layout";
+import { PageHeader } from "@/components/brand/page-header";
 import { CompetitionCard } from "@/components/brand/competition-card";
 import { EmptyState } from "@/components/brand/empty-state";
 import {
@@ -33,20 +34,18 @@ export default async function CompetitionsPage() {
 
   return (
     <Container className="py-10 md:py-14">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Eyebrow style={{ color: "var(--gold-700)" }}>Build &amp; win</Eyebrow>
-          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
-            Competitions
-          </h1>
-          <p className="mt-2 text-[17px] text-muted-foreground">
-            Post a bounty. Anyone submits. You pick the winner.
-          </p>
-        </div>
-        <Link href="/competitions/post" className="btn btn-gold shrink-0">
-          <Plus size={16} /> Post a competition
-        </Link>
-      </div>
+      <PageHeader
+        accent="clay"
+        eyebrow="Compete"
+        icon={<Trophy size={22} />}
+        title="Competitions"
+        subtitle="Post a bounty. Anyone submits. You pick the winner."
+        action={
+          <Link href="/competitions/post" className="btn btn-gold shrink-0">
+            <Plus size={16} /> Post a competition
+          </Link>
+        }
+      />
 
       {competitions.length === 0 ? (
         <EmptyState

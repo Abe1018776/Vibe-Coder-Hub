@@ -9,6 +9,7 @@ import {
 } from "@/lib/queries";
 import { getAuthUser } from "@/lib/current-user";
 import { Container } from "@/components/brand/layout";
+import { PageHeader } from "@/components/brand/page-header";
 import { ProjectCard } from "@/components/brand/project-card";
 import { EmptyState } from "@/components/brand/empty-state";
 import { FilterBar } from "@/components/brand/filter-bar";
@@ -58,19 +59,18 @@ export default async function ShowcasePage({
 
   return (
     <Container className="py-10 md:py-14">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
-            Showcase
-          </h1>
-          <p className="mt-2 text-[17px] text-muted-foreground">
-            Discover what the community is building.
-          </p>
-        </div>
-        <Link href="/showcase/submit" className="btn btn-primary shrink-0">
-          <Plus size={17} /> Submit a project
-        </Link>
-      </div>
+      <PageHeader
+        accent="teal"
+        eyebrow="Explore"
+        icon={<Rocket size={22} />}
+        title="Showcase"
+        subtitle="Discover what the community is building."
+        action={
+          <Link href="/showcase/submit" className="btn btn-primary shrink-0">
+            <Plus size={17} /> Submit a project
+          </Link>
+        }
+      />
 
       <FilterBar
         basePath="/showcase"

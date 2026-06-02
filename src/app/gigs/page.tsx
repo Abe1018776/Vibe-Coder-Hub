@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Plus, Briefcase } from "lucide-react";
 import { listGigs } from "@/lib/gigs";
-import { Container, Eyebrow } from "@/components/brand/layout";
+import { Container } from "@/components/brand/layout";
+import { PageHeader } from "@/components/brand/page-header";
 import { GigCard } from "@/components/brand/gig-card";
 import { EmptyState } from "@/components/brand/empty-state";
 import { GigsBoard, type GigFilterItem } from "@/components/gigs/gigs-board";
@@ -30,20 +31,18 @@ export default async function GigsPage() {
 
   return (
     <Container className="py-10 md:py-14">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Eyebrow style={{ color: "var(--orange-deep)" }}>Work &amp; hire</Eyebrow>
-          <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
-            Gigs
-          </h1>
-          <p className="mt-2 text-[17px] text-muted-foreground">
-            Post a gig, get applicants, manage it all in one place.
-          </p>
-        </div>
-        <Link href="/gigs/post" className="btn btn-orange shrink-0">
-          <Plus size={16} /> Post a gig
-        </Link>
-      </div>
+      <PageHeader
+        accent="gold"
+        eyebrow="Work"
+        icon={<Briefcase size={22} />}
+        title="Gigs"
+        subtitle="Post a gig, get applicants, manage it all in one place."
+        action={
+          <Link href="/gigs/post" className="btn btn-orange shrink-0">
+            <Plus size={16} /> Post a gig
+          </Link>
+        }
+      />
 
       {gigs.length === 0 ? (
         <EmptyState
