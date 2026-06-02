@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Medal } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { Pill } from "./pill";
 import { GIG_TYPE_LABEL, gigBudgetLabel, type GigWithPoster } from "@/lib/gigs";
 import { displayName } from "@/lib/display";
 
-export function GigCard({ gig }: { gig: GigWithPoster }) {
+export function GigCard({
+  gig,
+  topRank = false,
+}: {
+  gig: GigWithPoster;
+  topRank?: boolean;
+}) {
   const budget = gigBudgetLabel(gig);
   return (
     <Link
@@ -13,7 +19,14 @@ export function GigCard({ gig }: { gig: GigWithPoster }) {
       className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-md)]"
     >
       <div className="flex items-center justify-between gap-2">
-        <Pill accent="orange">{GIG_TYPE_LABEL[gig.type]}</Pill>
+        <div className="flex items-center gap-2">
+          <Pill accent="orange">{GIG_TYPE_LABEL[gig.type]}</Pill>
+          {topRank && (
+            <span className="yv-medal-chip">
+              <Medal size={12} /> #1
+            </span>
+          )}
+        </div>
         {gig.status !== "open" && (
           <Pill accent="neutral">
             {gig.status === "in_progress" ? "In progress" : "Closed"}

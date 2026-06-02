@@ -41,7 +41,7 @@ export default async function BuildersPage({
   const [facets, total, builders] = await Promise.all([
     getBuilderFacets(),
     countBuilders(filterOpts),
-    listBuilders({ ...filterOpts, sort: "new", page, perPage: PER_PAGE }),
+    listBuilders({ ...filterOpts, sort: "followers", page, perPage: PER_PAGE }),
   ]);
   const totalPages = Math.ceil(total / PER_PAGE);
 
@@ -82,8 +82,16 @@ export default async function BuildersPage({
       ) : (
         <>
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {builders.map((b) => (
-              <BuilderCard key={b.id} builder={b} />
+            {builders.map((b, i) => (
+              <BuilderCard
+                key={b.id}
+                builder={b}
+                rank={
+                  !filtering && page === 1 && i < 3
+                    ? ((i + 1) as 1 | 2 | 3)
+                    : undefined
+                }
+              />
             ))}
           </div>
           <Pagination

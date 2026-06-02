@@ -419,3 +419,9 @@
   .autofill-spark { animation: none; display: none; }
   html { scroll-behavior: auto; }
 }
+
+/* Rank medals + ring (builders, top project/gig) */
+.yv-ring-gold { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--gold-500); }
+.yv-medal { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; border: 2px solid #fff; color: #fff; font-size: 11px; font-weight: 800; line-height: 1; }
+.yv-medal-1 { background: var(--gold-500); } .yv-medal-2 { background: #9aa3ab; } .yv-medal-3 { background: #c08457; }
+.yv-medal-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--gold-500); color: #fff; font-size: 10.5px; font-weight: 800; padding: 4px 9px; border-radius: 999px; }

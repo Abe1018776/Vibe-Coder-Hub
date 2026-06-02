@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Medal } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { TagPill, Pill } from "./pill";
 import { UpvoteButton } from "./upvote-button";
@@ -27,6 +27,7 @@ export function ProjectCard({
   saved = false,
   highlight = false,
   showBuilder = true,
+  topRank = false,
 }: {
   project: ProjectWithOwner;
   isAuthed: boolean;
@@ -34,17 +35,20 @@ export function ProjectCard({
   saved?: boolean;
   highlight?: boolean;
   showBuilder?: boolean;
+  topRank?: boolean;
 }) {
   const owner = project.owner;
   const href = `/showcase/${project.id}`;
   const featured = !!project.featured;
   const cover = COVER[accentFor(project.name)];
   const initial = project.name.slice(0, 1).toUpperCase();
+  // A featured/live flag already lives at top-left; stack the medal under it.
+  const hasFlag = featured || !!project.url;
 
   return (
     <div
       className={cn(
-        "project-card group relative",
+        "project-card group relative h-full",
         featured ? "is-featured" : highlight && "is-top",
       )}
     >
@@ -76,6 +80,15 @@ export function ProjectCard({
               <span className="dot yv-live-dot" /> Live
             </span>
           ) : null}
+
+          {topRank && (
+            <span
+              className="pc-flag yv-medal-chip"
+              style={hasFlag ? { top: 44, left: 12 } : { top: 12, left: 12 }}
+            >
+              <Medal size={12} /> #1 most upvoted
+            </span>
+          )}
 
           {project.tools.length > 0 && (
             <div className="pc-tools">

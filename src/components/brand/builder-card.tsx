@@ -5,7 +5,13 @@ import { ToolPill, Pill } from "./pill";
 import { builderProjectCount, type BuilderListItem } from "@/lib/queries";
 import { displayName } from "@/lib/display";
 
-export function BuilderCard({ builder }: { builder: BuilderListItem }) {
+export function BuilderCard({
+  builder,
+  rank,
+}: {
+  builder: BuilderListItem;
+  rank?: 1 | 2 | 3;
+}) {
   const count = builderProjectCount(builder);
   const name = displayName(builder);
 
@@ -15,12 +21,25 @@ export function BuilderCard({ builder }: { builder: BuilderListItem }) {
       className="group flex flex-col rounded-2xl border border-border bg-surface p-5 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-md)]"
     >
       <div className="flex items-center gap-3">
-        <AvatarCircle
-          name={name}
-          src={builder.avatar_url}
-          size={48}
-          accent="blue"
-        />
+        {rank ? (
+          <span className="relative inline-flex shrink-0">
+            <AvatarCircle
+              name={name}
+              src={builder.avatar_url}
+              size={48}
+              accent="blue"
+              className={rank === 1 ? "yv-ring-gold" : undefined}
+            />
+            <span className={`yv-medal yv-medal-${rank}`}>{rank}</span>
+          </span>
+        ) : (
+          <AvatarCircle
+            name={name}
+            src={builder.avatar_url}
+            size={48}
+            accent="blue"
+          />
+        )}
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="truncate font-display font-bold text-ink">

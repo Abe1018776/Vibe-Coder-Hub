@@ -27,7 +27,14 @@ export default async function GigsPage() {
     hourly_rate: g.hourly_rate,
     tags: g.tags ?? [],
   }));
-  const cards = Object.fromEntries(gigs.map((g) => [g.id, <GigCard key={g.id} gig={g} />]));
+  // Only the single newest open gig wears the #1 medal in the default listing.
+  const topGigId = gigs[0]?.id;
+  const cards = Object.fromEntries(
+    gigs.map((g) => [
+      g.id,
+      <GigCard key={g.id} gig={g} topRank={g.id === topGigId} />,
+    ]),
+  );
 
   return (
     <Container className="py-10 md:py-14">

@@ -56,6 +56,9 @@ export default async function ShowcasePage({
   ]);
   const isAuthed = !!user;
   const totalPages = Math.ceil(total / PER_PAGE);
+  // The most-upvoted project is the first item of the default "top" listing.
+  const topId =
+    sort === "top" && !filtering && page === 1 ? projects[0]?.id : undefined;
 
   return (
     <Container className="py-10 md:py-14">
@@ -104,7 +107,7 @@ export default async function ShowcasePage({
         />
       ) : (
         <>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p, i) => (
               <ProjectCard
                 key={p.id}
@@ -112,6 +115,7 @@ export default async function ShowcasePage({
                 isAuthed={isAuthed}
                 upvoted={upvoted.has(p.id)}
                 saved={saved.has(p.id)}
+                topRank={p.id === topId}
                 highlight={
                   sort === "top" && !filtering && page === 1 && i === 0
                 }

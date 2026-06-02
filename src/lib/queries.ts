@@ -161,7 +161,7 @@ export async function listBuilders(
     tool?: string;
     skill?: string;
     availableOnly?: boolean;
-    sort?: "new" | "name";
+    sort?: "new" | "name" | "followers";
     limit?: number;
     page?: number;
     perPage?: number;
@@ -186,10 +186,15 @@ export async function listBuilders(
   if (opts.skill) query = query.contains("skills", [opts.skill]);
   if (opts.availableOnly) query = query.eq("available_for_hire", true);
 
-  query =
-    opts.sort === "name"
-      ? query.order("name", { ascending: true })
-      : query.order("created_at", { ascending: false });
+  if (opts.sort === "name") {
+    query = query.order("name", { ascending: true });
+  } else if (opts.sort === "followers") {
+    query = query
+      .order("follower_count", { ascending: false })
+      .order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
   if (opts.page && opts.perPage) {
     const from = (opts.page - 1) * opts.perPage;
     query = query.range(from, from + opts.perPage - 1);
