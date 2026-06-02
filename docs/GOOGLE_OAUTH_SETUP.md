@@ -3,6 +3,47 @@
 The app's sign-in code is complete. Google sign-in only needs OAuth credentials,
 which **you** create in Google Cloud and paste into Supabase. No code changes.
 
+---
+
+## ⭐ Make sign-in look trustworthy (fix the "to continue to lqfq…supabase.co" / scam look)
+
+That scary URL appears because the Google OAuth app has **no branding set**, so Google
+falls back to showing the raw Supabase callback domain. Setting the app name + logo makes
+Google show **"YidVibe"** with your logo instead. This is dashboard-only — paste these exact
+values:
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → your project →
+   **APIs & Services → OAuth consent screen** (newer console: **Branding**).
+2. Fill in **exactly**:
+   - **App name:** `YidVibe`
+   - **User support email:** `elimelechmoster@gmail.com`
+   - **App logo:** upload **`public/brand/google-oauth-logo.png`** (a square 256×256 PNG I
+     generated for this — grab it from the repo folder, or after a deploy from
+     `https://yidvibe.vercel.app/brand/google-oauth-logo.png`).
+   - **Application home page:** `https://yidvibe.vercel.app` (→ `https://yidvibe.com` later)
+   - **Developer contact email:** `elimelechmoster@gmail.com`
+   - **Authorized domains:** leave empty for now on the `vercel.app` URL (you can't verify a
+     domain you don't own); add `yidvibe.com` here once its DNS is live.
+3. **Publishing status → PUBLISH APP** (move from "Testing" → "In production"). With only the
+   basic scopes (email, profile, openid) this needs **no** verification review — the **app
+   name shows immediately**. *(The logo may show an "unverified app" state until Google's
+   optional brand verification; the name alone already removes the scam feel.)*
+
+**Result:** the account chooser reads **"Choose an account to continue to YidVibe"** with your
+logo, instead of the raw supabase.co URL.
+
+> Want the literal URL to read `auth.yidvibe.com`? That's the paid route: Supabase **Custom
+> Auth Domain** add-on (~$10/mo) + `yidvibe.com` connected via DNS, then re-point the Google
+> redirect URI to it. Optional polish on top of the free branding above.
+
+Also confirm, while you're in the dashboards (so prod OAuth works):
+- **Google → Credentials → your OAuth client → Authorized JavaScript origins:** add
+  `https://yidvibe.vercel.app`. (Authorized redirect URI stays the supabase.co callback below.)
+- **Supabase → Authentication → URL Configuration → Site URL:** `https://yidvibe.vercel.app`;
+  **Redirect URLs:** add `https://yidvibe.vercel.app/**`.
+
+---
+
 Supabase project: **lqfqkivbxeexmrxuxefi**
 Supabase OAuth callback URL (you'll need this below):
 
