@@ -4,25 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Home,
+  Compass,
+  Inbox,
+  User,
+  X,
   LayoutGrid,
   Users,
   Briefcase,
-  Menu,
-  X,
   Trophy,
   Calendar,
-  Compass,
   HelpCircle,
 } from "lucide-react";
 import { NAV_LINKS } from "@/lib/site";
 import { PostMenu } from "./post-menu";
 import { cn } from "@/lib/utils";
-
-const TABS = [
-  { href: "/showcase", label: "Showcase", Icon: LayoutGrid },
-  { href: "/directory", label: "Directory", Icon: Users },
-  { href: "/gigs", label: "Gigs", Icon: Briefcase },
-];
 
 const MORE_ICONS: Record<string, typeof LayoutGrid> = {
   "/showcase": LayoutGrid,
@@ -35,9 +31,8 @@ const MORE_ICONS: Record<string, typeof LayoutGrid> = {
 };
 
 /**
- * App-style bottom tab bar for phones + tablets: primary destinations + a raised
- * Submit action + a "More" sheet carrying the full nav. Account/profile now lives
- * in the top-right avatar menu (not here). Hidden from lg up (desktop top nav).
+ * App-style bottom tab bar for phones + tablets (`lg:hidden`):
+ * Home · Explore (boards sheet) · ＋ post · Inbox · You (dashboard).
  */
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -52,25 +47,31 @@ export function MobileBottomNav() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Primary"
       >
-        {TABS.slice(0, 2).map(({ href, label, Icon }) => (
-          <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
-        ))}
-
-        <PostMenu variant="fab" />
-
-        {TABS.slice(2).map(({ href, label, Icon }) => (
-          <Tab key={href} href={href} label={label} Icon={Icon} active={isActive(href)} />
-        ))}
-
+        <Tab href="/" label="Home" Icon={Home} active={pathname === "/"} />
         <button
           type="button"
           onClick={() => setOpen(true)}
           className="flex flex-col items-center justify-center gap-0.5 py-2 text-muted-foreground"
-          aria-label="More"
+          aria-label="Explore"
         >
-          <Menu size={20} />
-          <span className="text-[11px] font-medium">More</span>
+          <Compass size={20} />
+          <span className="text-[11px] font-medium">Explore</span>
         </button>
+
+        <PostMenu variant="fab" />
+
+        <Tab
+          href="/dashboard/inbox"
+          label="Inbox"
+          Icon={Inbox}
+          active={isActive("/dashboard/inbox")}
+        />
+        <Tab
+          href="/dashboard"
+          label="You"
+          Icon={User}
+          active={pathname === "/dashboard"}
+        />
       </nav>
 
       {open && (
@@ -83,7 +84,7 @@ export function MobileBottomNav() {
           <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-border bg-surface p-5 pb-8 shadow-float">
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-border" />
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-display text-lg font-semibold text-ink">Menu</span>
+              <span className="font-display text-lg font-semibold text-ink">Explore</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -93,7 +94,6 @@ export function MobileBottomNav() {
                 <X size={18} />
               </button>
             </div>
-
             <div className="grid grid-cols-2 gap-2">
               {NAV_LINKS.map((l) => {
                 const Icon = MORE_ICONS[l.href] ?? Compass;
@@ -130,7 +130,7 @@ function Tab({
 }: {
   href: string;
   label: string;
-  Icon: typeof LayoutGrid;
+  Icon: typeof Home;
   active: boolean;
 }) {
   return (
