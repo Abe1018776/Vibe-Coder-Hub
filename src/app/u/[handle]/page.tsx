@@ -13,6 +13,7 @@ import {
   MessageCircle,
   Instagram,
   CalendarDays,
+  Compass,
 } from "lucide-react";
 import { contactHref, accentFor, type Accent } from "@/lib/site";
 import {
@@ -21,6 +22,7 @@ import {
   getMyUpvotedProjectIds,
   getProfileStats,
   isFollowing,
+  getMyDirectoryListing,
   type ProjectWithOwner,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
@@ -121,6 +123,7 @@ export default async function ProfilePage({
 
   const isOwner = me?.id === profile.id;
   const isAuthed = !!me;
+  const myListing = isOwner ? await getMyDirectoryListing() : null;
   const noteCheck = !isOwner && isAuthed ? await canMessage(profile) : null;
   // Private accounts have no public profile page until they go public.
   if (!profile.is_public && !isOwner) notFound();
@@ -193,7 +196,12 @@ export default async function ProfilePage({
             </div>
             <div className="flex items-center gap-2 pb-1">
               {isOwner ? (
-                <Link href="/dashboard/profile" className="btn btn-gold btn-sm"><Pencil size={15} /> Edit profile</Link>
+                <>
+                  <Link href="/dashboard/profile" className="btn btn-gold btn-sm"><Pencil size={15} /> Edit profile</Link>
+                  {!myListing && (
+                    <Link href="/directory/list-me" className="btn btn-ghost btn-sm"><Compass size={15} /> List me in Directory</Link>
+                  )}
+                </>
               ) : (
                 <>
                   <FollowButton

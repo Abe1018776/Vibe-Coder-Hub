@@ -8,10 +8,11 @@ import {
   ArrowUpRight,
   FolderOpen,
   Inbox as InboxIcon,
+  Compass,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/current-user";
 import { getDashboardStats } from "@/lib/dashboard";
-import { getProjectsByOwner } from "@/lib/queries";
+import { getProjectsByOwner, getMyDirectoryListing } from "@/lib/queries";
 import { getMyConversations, getUnreadReplyCount } from "@/lib/conversations";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
@@ -27,12 +28,14 @@ export default async function DashboardOverview() {
   const profile = await getCurrentProfile();
   if (!profile) return null; // layout already redirects
 
-  const [stats, projects, convos, unreadReplies] = await Promise.all([
-    getDashboardStats(profile.id),
-    getProjectsByOwner(profile.id),
-    getMyConversations(),
-    getUnreadReplyCount(),
-  ]);
+  const [stats, projects, convos, unreadReplies, myDirectoryListing] =
+    await Promise.all([
+      getDashboardStats(profile.id),
+      getProjectsByOwner(profile.id),
+      getMyConversations(),
+      getUnreadReplyCount(),
+      getMyDirectoryListing(),
+    ]);
   const recent = projects.slice(0, 5);
   const recentConvos = convos.slice(0, 4);
   const admin = await getAdminContext();
@@ -65,6 +68,27 @@ export default async function DashboardOverview() {
           ]}
         />
       </section>
+
+      {/* Directory nudge — only when the user isn't listed yet */}
+      {!myDirectoryListing && (
+        <Panel className="flex flex-wrap items-center gap-3">
+          <span
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+            style={{ background: "var(--blue-bg)", color: "var(--blue-deep)" }}
+          >
+            <Compass size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-ink">Get listed in the Directory</p>
+            <p className="text-sm text-muted-foreground">
+              Let people find and hire you.
+            </p>
+          </div>
+          <Link href="/directory/list-me" className="btn btn-primary btn-sm shrink-0">
+            Add me
+          </Link>
+        </Panel>
+      )}
 
       {/* Primary actions */}
       <section>

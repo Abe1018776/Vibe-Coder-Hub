@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Plus, Compass } from "lucide-react";
+import { Compass } from "lucide-react";
+import { getAuthUser } from "@/lib/current-user";
 import { listDirectoryListings, countDirectoryListings } from "@/lib/directory";
 import { DIRECTORY_CATEGORIES } from "@/lib/site";
 import { Container } from "@/components/brand/layout";
@@ -28,9 +29,10 @@ export default async function DirectoryPage({
   const filtering = Boolean(q || category);
 
   const filterOpts = { q: q || undefined, category: category || undefined };
-  const [total, listings] = await Promise.all([
+  const [total, listings, user] = await Promise.all([
     countDirectoryListings(filterOpts),
     listDirectoryListings({ ...filterOpts, page, perPage: PER_PAGE }),
+    getAuthUser(),
   ]);
   const totalPages = Math.ceil(total / PER_PAGE);
 
@@ -43,11 +45,33 @@ export default async function DirectoryPage({
         title="Directory"
         subtitle="A free listing of builders, makers, agencies and services in the community."
         action={
-          <Link href="/directory/list" className="btn btn-primary shrink-0">
-            <Plus size={16} /> Get listed — free
-          </Link>
+          user ? (
+            <Link href="/directory/list-me" className="btn btn-primary shrink-0">
+              <Compass size={16} /> Add me
+            </Link>
+          ) : (
+            <Link
+              href="/login?next=/directory/list-me"
+              className="btn btn-primary shrink-0"
+            >
+              Sign up to get listed
+            </Link>
+          )
         }
       />
+
+      {!user && (
+        <p className="mt-3 text-sm text-muted-foreground">
+          Prefer not to sign up?{" "}
+          <Link
+            href="/directory/list"
+            className="font-semibold text-teal-800 hover:underline"
+          >
+            Submit the form
+          </Link>{" "}
+          and we&apos;ll review it.
+        </p>
+      )}
 
       <FilterBar
         basePath="/directory"
