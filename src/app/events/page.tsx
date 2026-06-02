@@ -1,39 +1,27 @@
 import Link from "next/link";
-import { CalendarDays, MapPin, ArrowUpRight } from "lucide-react";
-import { listUpcomingEvents } from "@/lib/events";
+import { CalendarDays } from "lucide-react";
+import { listAllEvents } from "@/lib/events";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { EmptyState } from "@/components/brand/empty-state";
+import { EventsBoard } from "@/components/events/events-board";
 
 export const metadata = {
   title: "Events",
   description: "Community workshops and meetups for builders.",
 };
 
-function DateBlock({ iso }: { iso: string | null }) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return (
-    <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-chip bg-sage-tint text-sage-deep">
-      <span className="text-[11px] font-medium uppercase">
-        {d.toLocaleDateString(undefined, { month: "short" })}
-      </span>
-      <span className="font-display text-xl leading-none">{d.getDate()}</span>
-    </div>
-  );
-}
-
 export default async function EventsPage() {
-  const events = await listUpcomingEvents();
+  const events = await listAllEvents();
 
   return (
-    <Container className="max-w-2xl py-10 md:py-14">
+    <Container className="max-w-4xl py-10 md:py-14">
       <div>
         <Eyebrow style={{ color: "var(--sage-deep)" }}>Meet in person</Eyebrow>
         <h1 className="mt-3 font-display text-[clamp(2.2rem,5vw,3.25rem)] font-bold tracking-tight text-ink">
           Events
         </h1>
         <p className="mt-2 text-[17px] text-muted-foreground">
-          Community workshops and meetups for builders.
+          Browse community workshops and meetups by date, place, or keyword.
         </p>
       </div>
 
@@ -41,59 +29,13 @@ export default async function EventsPage() {
         <EmptyState
           className="mt-8"
           icon={<CalendarDays size={22} />}
-          title="No upcoming events"
+          title="No events yet"
           description="Hosting a workshop or meetup? Add it so the community can join."
           actionHref="/events/request"
           actionLabel="Request an event"
         />
       ) : (
-        <ul className="mt-8 space-y-3">
-          {events.map((e) => (
-            <li
-              key={e.id}
-              className="flex items-start gap-4 rounded-2xl border border-border bg-surface p-4 transition-all hover:border-border-hover hover:shadow-[var(--shadow-sm)]"
-            >
-              <DateBlock iso={e.starts_at} />
-              <div className="min-w-0 flex-1">
-                <h3 className="font-display text-lg font-bold text-ink" dir="auto">
-                  {e.title}
-                </h3>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {e.starts_at &&
-                    new Date(e.starts_at).toLocaleString(undefined, {
-                      weekday: "short",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  {e.location ? (
-                    <span className="inline-flex items-center gap-1">
-                      {" · "}
-                      <MapPin size={13} /> {e.location}
-                    </span>
-                  ) : null}
-                </p>
-                {e.description && (
-                  <p
-                    className="mt-2 line-clamp-2 text-sm text-muted-foreground"
-                    dir="auto"
-                  >
-                    {e.description}
-                  </p>
-                )}
-              </div>
-              {e.url && (
-                <a
-                  href={e.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost btn-sm shrink-0"
-                >
-                  RSVP <ArrowUpRight size={14} />
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
+        <EventsBoard events={events} />
       )}
 
       <div className="mt-10 rounded-2xl border border-border bg-surface p-5 text-center">
