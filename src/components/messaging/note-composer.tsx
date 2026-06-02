@@ -4,39 +4,64 @@ import { useActionState, useEffect, useRef } from "react";
 import { Send } from "lucide-react";
 import { sendMessage, type MessageState } from "@/lib/actions/conversations";
 
-/** Composer for a private-reply thread. */
+/** Composer for a private-reply thread — sticky-feeling, auto-growing input. */
 export function NoteComposer({ conversationId }: { conversationId: string }) {
   const action = sendMessage.bind(null, conversationId);
   const [state, formAction, pending] = useActionState<MessageState, FormData>(
     action,
     {},
   );
-  const ref = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!pending && !state.error) ref.current?.reset();
+    if (!pending && !state.error) {
+      formRef.current?.reset();
+      if (taRef.current) taRef.current.style.height = "auto";
+    }
   }, [pending, state]);
 
+  /** Grow the textarea with its content up to a comfortable max. */
+  function autoGrow(el: HTMLTextAreaElement) {
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }
+
+  /** Enter sends; Shift+Enter inserts a newline (familiar chat behaviour). */
+  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!pending) formRef.current?.requestSubmit();
+    }
+  }
+
   return (
-    <form ref={ref} action={formAction} className="space-y-1.5">
-      <div className="flex items-end gap-2">
+    <form ref={formRef} action={formAction} className="space-y-1.5">
+      <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface p-1.5 pl-3 transition-colors focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/15">
         <textarea
+          ref={taRef}
           name="body"
           rows={1}
           maxLength={4000}
-          placeholder="Write a note…"
-          className="min-h-[44px] w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+          dir="auto"
+          placeholder="Write a message…"
+          onInput={(e) => autoGrow(e.currentTarget)}
+          onKeyDown={onKeyDown}
+          className="max-h-40 min-h-[28px] w-full resize-none self-center bg-transparent py-1.5 text-[14.5px] leading-relaxed text-ink outline-none placeholder:text-muted-foreground"
         />
         <button
           type="submit"
           disabled={pending}
-          className="btn btn-primary btn-sm shrink-0 disabled:opacity-70"
-          aria-label="Send"
+          className="btn btn-primary btn-sm shrink-0 !px-3 disabled:opacity-60"
+          aria-label="Send message"
         >
-          <Send size={15} /> Send
+          <Send size={16} />
+          <span className="hidden sm:inline">Send</span>
         </button>
       </div>
-      {state.error && <p className="text-xs text-clay-deep">{state.error}</p>}
+      {state.error && (
+        <p className="px-1 text-xs text-destructive">{state.error}</p>
+      )}
     </form>
   );
 }

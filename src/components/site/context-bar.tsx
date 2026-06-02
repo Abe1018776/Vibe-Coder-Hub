@@ -41,7 +41,9 @@ function fallbackFor(pathname: string): string | undefined {
  */
 export function ContextBar() {
   const pathname = usePathname();
-  if (NO_BACK.has(pathname)) return null;
+  // The dashboard navigates via its own tabs (and the chat thread carries its
+  // own "Back to inbox"), so the global Back must never appear under /dashboard.
+  if (NO_BACK.has(pathname) || pathname.startsWith("/dashboard")) return null;
 
   return (
     <div className="border-b border-border/60 bg-canvas/80 backdrop-blur lg:sticky lg:top-0 lg:z-30">
