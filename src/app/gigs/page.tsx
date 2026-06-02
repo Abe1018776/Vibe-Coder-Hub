@@ -1,30 +1,32 @@
 import Link from "next/link";
 import { Plus, Briefcase } from "lucide-react";
-import { listGigs, countGigs } from "@/lib/gigs";
+import { listGigs } from "@/lib/gigs";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { GigCard } from "@/components/brand/gig-card";
 import { EmptyState } from "@/components/brand/empty-state";
-import { Pagination } from "@/components/brand/pagination";
+import { GigsBoard, type GigFilterItem } from "@/components/gigs/gigs-board";
 
 export const metadata = {
   title: "Gigs",
   description: "Post a gig, get applicants, manage it all in one place.",
 };
 
-const PER_PAGE = 24;
+export default async function GigsPage() {
+  const gigs = await listGigs({ status: "open" });
 
-export default async function GigsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const sp = await searchParams;
-  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const [gigs, total] = await Promise.all([
-    listGigs({ status: "open", page, perPage: PER_PAGE }),
-    countGigs({ status: "open" }),
-  ]);
-  const totalPages = Math.ceil(total / PER_PAGE);
+  // Filter on plain fields client-side; cards stay server-rendered (the card
+  // imports the server-only gigs lib, so we hand it down as ready nodes).
+  const items: GigFilterItem[] = gigs.map((g) => ({
+    id: g.id,
+    title: g.title,
+    description: g.description,
+    type: g.type,
+    budget_min: g.budget_min,
+    budget_max: g.budget_max,
+    hourly_rate: g.hourly_rate,
+    tags: g.tags ?? [],
+  }));
+  const cards = Object.fromEntries(gigs.map((g) => [g.id, <GigCard key={g.id} gig={g} />]));
 
   return (
     <Container className="py-10 md:py-14">
@@ -53,19 +55,7 @@ export default async function GigsPage({
           actionLabel="Post a gig"
         />
       ) : (
-        <>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {gigs.map((g) => (
-              <GigCard key={g.id} gig={g} />
-            ))}
-          </div>
-          <Pagination
-            pathname="/gigs"
-            searchParams={sp}
-            page={page}
-            totalPages={totalPages}
-          />
-        </>
+        <GigsBoard items={items} cards={cards} />
       )}
     </Container>
   );
