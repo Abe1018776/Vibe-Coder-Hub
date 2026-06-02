@@ -365,3 +365,20 @@ export async function getBuilderFacets(): Promise<{
     skills: [...skills].sort(),
   };
 }
+
+/** The current user's own directory listing, if any. */
+export async function getMyDirectoryListing() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data } = await supabase
+    .from("directory_listings")
+    .select("id, status, category")
+    .eq("submitted_by", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
+}
