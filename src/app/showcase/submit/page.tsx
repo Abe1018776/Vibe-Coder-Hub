@@ -22,7 +22,7 @@ export default async function SubmitProjectPage() {
           profile automatically.
         </p>
       </div>
-      <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
+      <div className="mt-9">
         <ProjectForm action={createProject} submitLabel="Submit project" />
       </div>
     </Container>
