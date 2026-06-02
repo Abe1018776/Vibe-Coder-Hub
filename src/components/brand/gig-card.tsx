@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Medal } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
+import { OfficialAuthor } from "./official-author";
 import { Pill } from "./pill";
 import { GIG_TYPE_LABEL, gigBudgetLabel, type GigWithPoster } from "@/lib/gigs";
 import { displayName } from "@/lib/display";
@@ -13,6 +14,7 @@ export function GigCard({
   topRank?: boolean;
 }) {
   const budget = gigBudgetLabel(gig);
+  const official = (gig as { posted_as_official?: boolean }).posted_as_official === true;
   return (
     <Link
       href={`/gigs/${gig.slug}`}
@@ -41,18 +43,22 @@ export function GigCard({
       </p>
       {budget && <p className="mt-3 text-sm font-medium text-ink">{budget}</p>}
       <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
-        {gig.poster && (
-          <>
-            <AvatarCircle
-              name={displayName(gig.poster)}
-              src={gig.poster.avatar_url}
-              size={24}
-              accent="orange"
-            />
-            <span className="truncate text-sm text-muted-foreground">
-              {displayName(gig.poster)}
-            </span>
-          </>
+        {official ? (
+          <OfficialAuthor />
+        ) : (
+          gig.poster && (
+            <>
+              <AvatarCircle
+                name={displayName(gig.poster)}
+                src={gig.poster.avatar_url}
+                size={24}
+                accent="orange"
+              />
+              <span className="truncate text-sm text-muted-foreground">
+                {displayName(gig.poster)}
+              </span>
+            </>
+          )
         )}
         <ArrowRight
           size={15}

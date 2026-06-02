@@ -11,6 +11,7 @@ import { getCurrentProfile } from "@/lib/current-user";
 import { getAdminContext } from "@/lib/admin";
 import { pickWinner } from "@/lib/actions/competitions";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
+import { OfficialAuthor } from "@/components/brand/official-author";
 import { Pill } from "@/components/brand/pill";
 import { SectionCrumb } from "@/components/brand/section-crumb";
 import { DetailHero } from "@/components/brand/detail-hero";
@@ -45,6 +46,8 @@ export default async function CompetitionDetailPage({
   ]);
   const dl = deadlineLabel(comp.deadline);
   const isCreator = me?.id === comp.creator_id;
+  const official =
+    (comp as { posted_as_official?: boolean }).posted_as_official === true;
   // Pending competitions are visible only to their creator and admins.
   if (comp.review_status !== "approved" && !isCreator && !admin) notFound();
   const winnerId = comp.winner_submission_id;
@@ -98,26 +101,37 @@ export default async function CompetitionDetailPage({
         </a>
       )}
 
-      {comp.creator && (
+      {official ? (
         <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
-          <AvatarCircle
-            name={displayName(comp.creator)}
-            src={comp.creator.avatar_url}
-            size={40}
-            accent="clay"
-          />
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Hosted by
             </p>
-            <Link
-              href={`/u/${comp.creator.handle}`}
-              className="font-medium text-ink hover:underline"
-            >
-              {displayName(comp.creator)}
-            </Link>
+            <OfficialAuthor size="md" className="mt-0.5" />
           </div>
         </div>
+      ) : (
+        comp.creator && (
+          <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
+            <AvatarCircle
+              name={displayName(comp.creator)}
+              src={comp.creator.avatar_url}
+              size={40}
+              accent="clay"
+            />
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Hosted by
+              </p>
+              <Link
+                href={`/u/${comp.creator.handle}`}
+                className="font-medium text-ink hover:underline"
+              >
+                {displayName(comp.creator)}
+              </Link>
+            </div>
+          </div>
+        )
       )}
 
       <section className="mt-8">

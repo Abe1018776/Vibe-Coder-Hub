@@ -3,8 +3,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { nanoid } from "nanoid";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { slugify } from "@/lib/utils";
 import {
   requireAdmin,
   requireAdminUnlocked,
@@ -67,6 +69,179 @@ export async function setCompetitionReviewStatus(
   revalidatePath("/admin/competitions");
   revalidatePath("/admin");
   revalidatePath("/competitions");
+}
+
+// ── Content management: delete + hide ─────────────────────────────────────
+// Admin "for all" RLS policies let these writes bypass owner-only checks.
+
+export async function deleteGig(id: string) {
+  await requireAdminUnlocked();
+  const s = await createClient();
+  await s.from("gigs").delete().eq("id", id);
+  revalidatePath("/admin/content");
+  revalidatePath("/gigs");
+}
+
+export async function deleteCompetition(id: string) {
+  await requireAdminUnlocked();
+  const s = await createClient();
+  await s.from("competitions").delete().eq("id", id);
+  revalidatePath("/admin/content");
+  revalidatePath("/competitions");
+}
+
+export async function deleteEvent(id: string) {
+  await requireAdminUnlocked();
+  const s = await createClient();
+  await s.from("events").delete().eq("id", id);
+  revalidatePath("/admin/content");
+  revalidatePath("/events");
+}
+
+/** Admin-only hard delete of a project (the owner-scoped one lives in
+ *  actions/projects.ts; this one bypasses the owner check via admin RLS). */
+export async function adminDeleteProject(id: string) {
+  await requireAdminUnlocked();
+  const s = await createClient();
+  await s.from("projects").delete().eq("id", id);
+  revalidatePath("/admin/content");
+  revalidatePath("/showcase");
+  revalidatePath("/");
+}
+
+export async function setProjectHidden(id: string, hidden: boolean) {
+  await requireAdminUnlocked();
+  const s = await createClient();
+  await s.from("projects").update({ hidden }).eq("id", id);
+  revalidatePath("/admin/content");
+  revalidatePath("/showcase");
+  revalidatePath("/");
+}
+
+// ── Admin posting (post as Official YidVibe or on behalf of a user) ────────
+
+export type AdminPostState = { ok?: boolean; error?: string; slug?: string };
+
+/**
+ * Post a gig / competition / event from the admin composer. The content is
+ * published immediately (competitions are pre-approved, events are real rows).
+ * `post_as` is either "official" (owner = the acting admin, flagged official)
+ * or a user id (owner = that user). `posted_as_official` isn't in the generated
+ * types yet (migration pending), so inserts are cast with `as any`.
+ */
+export async function adminPostContent(
+  _prev: AdminPostState,
+  formData: FormData,
+): Promise<AdminPostState> {
+  const ctx = await requireAdminUnlocked();
+  const supabase = await createClient();
+
+  const type = String(formData.get("type") ?? "");
+  const postAs = String(formData.get("post_as") ?? "official");
+  const official = postAs === "official";
+  const ownerId = official ? ctx.userId : postAs;
+  if (!ownerId) return { error: "Pick who this is posted as." };
+
+  const str = (k: string) => String(formData.get(k) ?? "").trim();
+  const csv = (k: string) =>
+    str(k)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  const numOrNull = (k: string) => {
+    const v = str(k);
+    if (v === "") return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  if (type === "gig") {
+    const title = str("title");
+    const description = str("description");
+    const gigType = str("gig_type");
+    if (!title) return { error: "Title is required." };
+    if (!description) return { error: "Description is required." };
+    if (!["task", "hourly", "build"].includes(gigType))
+      return { error: "Pick a gig type." };
+    const slug = `${slugify(title) || "gig"}-${nanoid(6)}`;
+    const { error } = await supabase.from("gigs").insert({
+      poster_id: ownerId,
+      type: gigType,
+      title,
+      description,
+      budget_min: gigType === "hourly" ? null : numOrNull("budget_min"),
+      budget_max: gigType === "hourly" ? null : numOrNull("budget_max"),
+      hourly_rate: gigType === "hourly" ? numOrNull("hourly_rate") : null,
+      tags: csv("tags"),
+      slug,
+      posted_as_official: official,
+      status: "open",
+    } as any);
+    if (error) return { error: "Couldn't post the gig. Please try again." };
+    revalidatePath("/gigs");
+    revalidatePath("/admin/content");
+    return { ok: true, slug: `/gigs/${slug}` };
+  }
+
+  if (type === "competition") {
+    const title = str("title");
+    const description = str("description");
+    const deadline = str("deadline");
+    const prize = Number(str("prize_amount"));
+    if (!title) return { error: "Title is required." };
+    if (!description) return { error: "Brief is required." };
+    if (!Number.isFinite(prize) || prize <= 0)
+      return { error: "Enter a prize amount." };
+    const deadlineDate = new Date(deadline);
+    if (!deadline || Number.isNaN(deadlineDate.getTime()))
+      return { error: "Enter a valid deadline." };
+    const slug = `${slugify(title) || "competition"}-${nanoid(6)}`;
+    const { error } = await supabase.from("competitions").insert({
+      creator_id: ownerId,
+      title,
+      description,
+      prize_amount: prize,
+      deadline: deadlineDate.toISOString(),
+      tags: csv("tags"),
+      slug,
+      review_status: "approved",
+      posted_as_official: official,
+    } as any);
+    if (error)
+      return { error: "Couldn't post the competition. Please try again." };
+    revalidatePath("/competitions");
+    revalidatePath("/admin/content");
+    return { ok: true, slug: `/competitions/${slug}` };
+  }
+
+  if (type === "event") {
+    const title = str("title");
+    if (!title) return { error: "Title is required." };
+    const startsAt = str("starts_at");
+    let startsIso: string | null = null;
+    if (startsAt) {
+      const d = new Date(startsAt);
+      if (Number.isNaN(d.getTime()))
+        return { error: "Enter a valid date and time." };
+      startsIso = d.toISOString();
+    }
+    const url = str("url");
+    const { error } = await supabase.from("events").insert({
+      creator_id: ownerId,
+      title,
+      description: str("description") || null,
+      location: str("location") || null,
+      starts_at: startsIso,
+      url: url || null,
+      posted_as_official: official,
+    } as any);
+    if (error) return { error: "Couldn't post the event. Please try again." };
+    revalidatePath("/events");
+    revalidatePath("/admin/content");
+    return { ok: true, slug: "/events" };
+  }
+
+  return { error: "Pick a content type." };
 }
 
 /** Admin-only: add (or unhide) a browse-by tag. `tags` isn't in the generated

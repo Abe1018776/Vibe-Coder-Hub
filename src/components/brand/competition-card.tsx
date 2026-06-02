@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
+import { OfficialAuthor } from "./official-author";
 import { Pill } from "./pill";
 import {
   deadlineLabel,
@@ -17,6 +18,8 @@ export function CompetitionCard({
   const dl = deadlineLabel(competition.deadline);
   const entries = submissionCount(competition);
   const hasWinner = !!competition.winner_submission_id;
+  const official =
+    (competition as { posted_as_official?: boolean }).posted_as_official === true;
 
   return (
     <Link
@@ -41,18 +44,22 @@ export function CompetitionCard({
         {competition.description}
       </p>
       <div className="mt-4 flex items-center gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-        {competition.creator && (
-          <>
-            <AvatarCircle
-              name={displayName(competition.creator)}
-              src={competition.creator.avatar_url}
-              size={20}
-              accent="clay"
-            />
-            <span className="truncate">
-              {displayName(competition.creator)}
-            </span>
-          </>
+        {official ? (
+          <OfficialAuthor />
+        ) : (
+          competition.creator && (
+            <>
+              <AvatarCircle
+                name={displayName(competition.creator)}
+                src={competition.creator.avatar_url}
+                size={20}
+                accent="clay"
+              />
+              <span className="truncate">
+                {displayName(competition.creator)}
+              </span>
+            </>
+          )
         )}
         <span className="ml-auto shrink-0">
           {entries} {entries === 1 ? "entry" : "entries"}

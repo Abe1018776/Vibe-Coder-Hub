@@ -11,6 +11,7 @@ import {
 } from "@/lib/gigs";
 import { getCurrentProfile } from "@/lib/current-user";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
+import { OfficialAuthor } from "@/components/brand/official-author";
 import { SectionCrumb } from "@/components/brand/section-crumb";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { applyToGig, setGigStatus } from "@/lib/actions/gigs";
@@ -46,6 +47,8 @@ export default async function GigDetailPage({
   const me = await getCurrentProfile();
   const isPoster = me?.id === gig.poster_id;
   const budget = gigBudgetLabel(gig);
+  const official =
+    (gig as { posted_as_official?: boolean }).posted_as_official === true;
 
   const threads = isPoster ? await getThreadsForGig(gig.id) : [];
   const myThread =
@@ -93,26 +96,37 @@ export default async function GigDetailPage({
         </a>
       )}
 
-      {gig.poster && (
+      {official ? (
         <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
-          <AvatarCircle
-            name={displayName(gig.poster)}
-            src={gig.poster.avatar_url}
-            size={40}
-            accent="orange"
-          />
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Posted by
             </p>
-            <Link
-              href={`/u/${gig.poster.handle}`}
-              className="font-medium text-ink hover:underline"
-            >
-              {displayName(gig.poster)}
-            </Link>
+            <OfficialAuthor size="md" className="mt-0.5" />
           </div>
         </div>
+      ) : (
+        gig.poster && (
+          <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
+            <AvatarCircle
+              name={displayName(gig.poster)}
+              src={gig.poster.avatar_url}
+              size={40}
+              accent="orange"
+            />
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Posted by
+              </p>
+              <Link
+                href={`/u/${gig.poster.handle}`}
+                className="font-medium text-ink hover:underline"
+              >
+                {displayName(gig.poster)}
+              </Link>
+            </div>
+          </div>
+        )
       )}
 
       <div className="mt-8">
