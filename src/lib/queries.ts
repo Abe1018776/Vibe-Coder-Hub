@@ -187,13 +187,18 @@ export async function listBuilders(
   if (opts.availableOnly) query = query.eq("available_for_hire", true);
 
   if (opts.sort === "name") {
-    query = query.order("name", { ascending: true });
+    query = query
+      .order("is_featured", { ascending: false })
+      .order("name", { ascending: true });
   } else if (opts.sort === "followers") {
     query = query
+      .order("is_featured", { ascending: false })
       .order("follower_count", { ascending: false })
       .order("created_at", { ascending: false });
   } else {
-    query = query.order("created_at", { ascending: false });
+    query = query
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
   }
   if (opts.page && opts.perPage) {
     const from = (opts.page - 1) * opts.perPage;
@@ -216,10 +221,35 @@ export async function listTopBuilders(
     .select("*, project_count:projects!projects_owner_id_fkey(count)")
     .eq("is_builder", true)
     .eq("is_public", true)
+    .order("is_featured", { ascending: false })
     .order("follower_count", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
   return (data as BuilderListItem[] | null) ?? [];
+}
+
+/** Admin-only: list all users (with email + project count) via the RPC. */
+export async function adminListUsers(search?: string, filter?: string) {
+  const supabase = await createClient();
+  const { data } = await (supabase as any).rpc("admin_list_users", {
+    search: search ?? null,
+    filter: filter ?? "all",
+  });
+  return (data ?? []) as Array<{
+    id: string;
+    handle: string;
+    name: string;
+    avatar_url: string | null;
+    email: string;
+    follower_count: number;
+    is_admin: boolean;
+    is_verified: boolean;
+    is_featured: boolean;
+    is_builder: boolean;
+    is_public: boolean;
+    created_at: string;
+    project_count: number;
+  }>;
 }
 
 /** Total builders matching the given filters (for pagination). */
