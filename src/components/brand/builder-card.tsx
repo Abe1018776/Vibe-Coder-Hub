@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BadgeCheck, Star } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { ToolPill, Pill } from "./pill";
 import { builderProjectCount, type BuilderListItem } from "@/lib/queries";
@@ -14,6 +14,8 @@ export function BuilderCard({
 }) {
   const count = builderProjectCount(builder);
   const name = displayName(builder);
+  // is_featured ships in the row at runtime but may be missing from generated types.
+  const isFeatured = !!(builder as { is_featured?: boolean }).is_featured;
 
   return (
     <Link
@@ -45,6 +47,16 @@ export function BuilderCard({
             <p className="truncate font-display font-bold text-ink">
               {name}
             </p>
+            {builder.is_verified && (
+              <span title="Verified" className="shrink-0">
+                <BadgeCheck size={15} className="text-gold-700" />
+              </span>
+            )}
+            {isFeatured && (
+              <span title="Featured" className="shrink-0">
+                <Star size={15} className="fill-current text-teal-700" />
+              </span>
+            )}
             {builder.available_for_hire && <Pill accent="sage">Available</Pill>}
           </div>
           <p className="truncate text-sm text-muted-foreground">

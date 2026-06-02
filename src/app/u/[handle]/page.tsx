@@ -14,6 +14,7 @@ import {
   Instagram,
   CalendarDays,
   Compass,
+  Star,
 } from "lucide-react";
 import { contactHref, accentFor, type Accent } from "@/lib/site";
 import {
@@ -182,6 +183,11 @@ export default async function ProfilePage({
                 </h1>
                 {profile.is_verified && (
                   <span title="Verified"><Sparkle size={20} color="var(--gold-500)" /></span>
+                )}
+                {(profile as { is_featured?: boolean }).is_featured && (
+                  <span title="Featured" className="shrink-0">
+                    <Star size={18} className="fill-current text-teal-700" />
+                  </span>
                 )}
               </div>
               <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">

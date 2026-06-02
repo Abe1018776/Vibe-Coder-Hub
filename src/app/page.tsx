@@ -7,6 +7,8 @@ import {
   Compass,
   Users,
   ChevronUp,
+  BadgeCheck,
+  Star,
 } from "lucide-react";
 import { Container, Section, Eyebrow } from "@/components/brand/layout";
 import { Reveal } from "@/components/brand/reveal";
@@ -323,8 +325,22 @@ export default async function Home() {
                         </span>
                       )}
                     </span>
-                    <span className="mt-3 font-bold text-ink group-hover:text-teal-700">
+                    <span className="mt-3 inline-flex items-center justify-center gap-1.5 font-bold text-ink group-hover:text-teal-700">
                       {b.name}
+                      {b.is_verified && (
+                        <BadgeCheck
+                          size={15}
+                          className="shrink-0 text-gold-700"
+                          aria-label="Verified"
+                        />
+                      )}
+                      {(b as { is_featured?: boolean }).is_featured && (
+                        <Star
+                          size={15}
+                          className="shrink-0 fill-current text-teal-700"
+                          aria-label="Featured"
+                        />
+                      )}
                     </span>
                     <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
                       <Users size={12} /> {b.follower_count} followers
