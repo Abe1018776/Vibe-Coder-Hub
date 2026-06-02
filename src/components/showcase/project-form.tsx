@@ -347,7 +347,6 @@ export function ProjectForm({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {(
             [
-              ["seeking_funding", "Funding / investors", project?.seeking_funding],
               ["for_sale", "A buyer (for sale)", project?.for_sale],
               ["open_to_partners", "Partners / co-founders", project?.open_to_partners],
             ] as const

@@ -97,7 +97,7 @@ export function GetListedForm() {
           maxLength={600}
           dir="auto"
           className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
-          placeholder="Clients, collaborators, investment, work…"
+          placeholder="Clients, collaborators, work…"
         />
       </Field>
 
