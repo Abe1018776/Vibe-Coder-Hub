@@ -1,12 +1,39 @@
-import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata, Viewport } from "next";
+import { Comfortaa, Nunito_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { ReactQueryProvider } from "@/components/ReactQueryProvider";
+import { SiteNav } from "@/components/site/site-nav";
+import { SiteFooter } from "@/components/site/site-footer";
+import { ContextBar } from "@/components/site/context-bar";
+import { FeedbackWidget } from "@/components/site/feedback-widget";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 import "./globals.css";
 
+// Brand type: Comfortaa (rounded display) + Nunito Sans (body). JetBrains for tool chips.
+const nunito = Nunito_Sans({
+  subsets: ["latin"],
+  variable: "--font-nunito",
+  display: "swap",
+});
+const comfortaa = Comfortaa({
+  subsets: ["latin"],
+  variable: "--font-comfortaa",
+  display: "swap",
+});
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Vibe Coder Hub",
-  description: "Marketplace for AI-native builders",
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+  description: SITE_TAGLINE,
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1f6e66",
 };
 
 export default function RootLayout({
@@ -15,21 +42,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-          />
-        </head>
-        <body>
-          <ReactQueryProvider>{children}</ReactQueryProvider>
-          <Toaster richColors position="top-right" />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html
+      lang="en"
+      className={`${nunito.variable} ${comfortaa.variable} ${jetbrains.variable}`}
+    >
+      <body className="flex min-h-dvh flex-col overflow-x-clip bg-canvas pb-16 text-ink lg:pb-0 lg:pl-64">
+        <SiteNav />
+        <ContextBar />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+        <Toaster richColors position="top-center" />
+        <FeedbackWidget />
+      </body>
+    </html>
   );
 }

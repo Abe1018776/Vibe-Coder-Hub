@@ -1,22 +1,19 @@
 import Link from "next/link";
-import PublicHeader from "@/components/PublicHeader";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background">
-      <PublicHeader />
-      <div className="max-w-md mx-auto px-4 py-24 text-center">
-        <div className="text-6xl font-bold text-primary/20 mb-4">404</div>
-        <h1 className="text-xl font-bold mb-2">Page not found</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          This page doesn&apos;t exist on Vibe Coder Hub.
-        </p>
-        <Link href="/">
-          <span className="text-sm text-primary underline cursor-pointer">
-            Back to home
-          </span>
-        </Link>
-      </div>
+    <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
+      <p className="font-display text-6xl text-teal-600">404</p>
+      <h1 className="mt-3 font-display text-2xl text-ink">Page not found</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        That page doesn&apos;t exist or has moved.
+      </p>
+      <Link
+        href="/"
+        className="mt-6 inline-flex h-10 items-center rounded-[10px] bg-teal-600 px-5 text-sm font-medium text-white transition-transform active:scale-[0.98]"
+      >
+        Back home
+      </Link>
     </div>
   );
 }

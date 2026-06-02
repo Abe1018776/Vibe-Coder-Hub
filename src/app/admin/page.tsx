@@ -1,213 +1,182 @@
+import Link from "next/link";
 import {
-  db,
-  gigsTable,
-  freelancersTable,
-  availabilitySlotsTable,
-  showcaseProjectsTable,
-  gigMessagesTable,
-  gigConversationsTable,
-  competitionsTable,
-} from "@/lib/db";
-import { eq, sql, desc } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
-import { Briefcase, Users, Calendar, Star, MessageSquare, TrendingUp, Pencil, Trophy } from "lucide-react";
-import { formatRelativeTime } from "@/lib/utils";
+  Flag,
+  Trophy,
+  Calendar,
+  Compass,
+  MessageSquare,
+  Tag,
+  Users,
+  FolderKanban,
+  type LucideIcon,
+} from "lucide-react";
+import { requireAdminUnlocked } from "@/lib/admin";
+import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
+function StatTile({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: LucideIcon;
+  value: number;
+  label: string;
+}) {
+  return (
+    <div className="rounded-card border border-border bg-surface p-4">
+      <Icon size={16} className="text-muted-foreground" />
+      <div className="mt-2 font-display text-2xl font-bold leading-none text-ink">
+        {value}
+      </div>
+      <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
 
-export default async function DashboardPage() {
-  const { userId } = await auth();
-
+export default async function AdminDashboard() {
+  await requireAdminUnlocked();
+  const supabase = await createClient();
   const [
-    gigCounts,
-    [{ totalFreelancers }],
-    [{ openSlots }],
-    [{ totalShowcase }],
-    [{ totalReplies }],
-    recentGigs,
-    [{ totalCompetitions }],
-    [{ openCompetitions }],
+    { count: usersCount },
+    { count: projectsCount },
+    { count },
+    { count: pendingComps },
+    { count: pendingEvents },
+    { count: pendingListings },
+    { count: openFeedback },
   ] = await Promise.all([
-    db
-      .select({
-        type: gigsTable.type,
-        status: gigsTable.status,
-        count: sql<number>`count(*)::int`,
-      })
-      .from(gigsTable)
-      .where(eq(gigsTable.createdBy, userId!))
-      .groupBy(gigsTable.type, gigsTable.status),
-    db
-      .select({ totalFreelancers: sql<number>`count(*)::int` })
-      .from(freelancersTable),
-    db
-      .select({ openSlots: sql<number>`count(*)::int` })
-      .from(availabilitySlotsTable)
-      .where(eq(availabilitySlotsTable.isBooked, false)),
-    db
-      .select({ totalShowcase: sql<number>`count(*)::int` })
-      .from(showcaseProjectsTable),
-    db
-      .select({ totalReplies: sql<number>`count(*)::int` })
-      .from(gigMessagesTable)
-      .innerJoin(
-        gigConversationsTable,
-        eq(gigConversationsTable.id, gigMessagesTable.conversationId),
-      )
-      .innerJoin(gigsTable, eq(gigsTable.id, gigConversationsTable.gigId))
-      .where(eq(gigsTable.createdBy, userId!)),
-    db
-      .select()
-      .from(gigsTable)
-      .where(eq(gigsTable.createdBy, userId!))
-      .orderBy(desc(gigsTable.createdAt))
-      .limit(8),
-    db
-      .select({ totalCompetitions: sql<number>`count(*)::int` })
-      .from(competitionsTable)
-      .where(eq(competitionsTable.createdBy, userId!)),
-    db
-      .select({ openCompetitions: sql<number>`count(*)::int` })
-      .from(competitionsTable)
-      .where(sql`${competitionsTable.createdBy} = ${userId!} AND ${competitionsTable.status} = 'open'`),
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    supabase.from("projects").select("id", { count: "exact", head: true }),
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
+    supabase
+      .from("competitions")
+      .select("id", { count: "exact", head: true })
+      .eq("review_status", "pending"),
+    supabase
+      .from("event_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
+      .from("directory_listings")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
+      .from("feedback")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
   ]);
 
-  const totalGigs = gigCounts.reduce((s, r) => s + r.count, 0);
-  const openGigs = gigCounts
-    .filter((r) => r.status === "open")
-    .reduce((s, r) => s + r.count, 0);
-  const gigsByType = gigCounts.reduce<Record<string, number>>((acc, r) => {
-    acc[r.type] = (acc[r.type] ?? 0) + r.count;
-    return acc;
-  }, {});
+  const stats = [
+    { icon: Users, value: usersCount ?? 0, label: "Users" },
+    { icon: FolderKanban, value: projectsCount ?? 0, label: "Projects" },
+    { icon: Flag, value: count ?? 0, label: "Open reports" },
+    { icon: Trophy, value: pendingComps ?? 0, label: "Pending competitions" },
+    { icon: Calendar, value: pendingEvents ?? 0, label: "Pending events" },
+    { icon: Compass, value: pendingListings ?? 0, label: "Pending listings" },
+    { icon: MessageSquare, value: openFeedback ?? 0, label: "Open feedback" },
+  ];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Your internal Vibe Coder ops hub
-        </p>
+    <div>
+      <h1 className="font-display text-2xl text-ink">Overview</h1>
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        Community at a glance, plus the moderation queues that need a look.
+      </p>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {stats.map((s) => (
+          <StatTile key={s.label} icon={s.icon} value={s.value} label={s.label} />
+        ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Stat label="Competitions" value={totalCompetitions} Icon={Trophy} color="bg-amber-500" href="/admin/competitions" />
-        <Stat label="Open Bounties" value={openCompetitions} Icon={TrendingUp} color="bg-green-600" href="/admin/competitions" />
-        <Stat label="Total Gigs" value={totalGigs} Icon={Briefcase} color="bg-primary" href="/admin/gigs" />
-        <Stat label="Open Gigs" value={openGigs} Icon={TrendingUp} color="bg-green-700" href="/admin/gigs" />
-        <Stat label="Freelancers" value={totalFreelancers} Icon={Users} color="bg-blue-600" href="/admin/freelancers" />
-        <Stat label="Open Slots" value={openSlots} Icon={Calendar} color="bg-purple-600" href="/admin/availability" />
-        <Stat label="Replies" value={totalReplies} Icon={MessageSquare} color="bg-amber-700" />
-        <Stat label="Showcase" value={totalShowcase} Icon={Star} color="bg-rose-600" href="/showcase" />
-      </div>
-
-      <div className="border border-border rounded-md p-4 bg-card mb-6">
-        <h2 className="text-sm font-semibold mb-3">Gig type breakdown</h2>
-        <div className="flex gap-6">
-          {(["task", "hourly", "build"] as const).map((type) => (
-            <div key={type}>
-              <div className="text-lg font-bold">{gigsByType[type] ?? 0}</div>
-              <div className="text-xs text-muted-foreground capitalize">{type}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="border border-border rounded-md bg-card">
-        <div className="px-4 py-3 border-b border-border">
-          <h2 className="text-sm font-semibold">Recent gigs</h2>
-        </div>
-        {recentGigs.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No gigs yet
+      <h2 className="mt-10 font-display text-lg text-ink">Moderation queues</h2>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Link
+          href="/admin/reports"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Flag size={18} className="text-clay-mid" />
+            <span className="font-medium">Reports</span>
           </div>
-        ) : (
-          <ul className="divide-y divide-border">
-            {recentGigs.map((g) => (
-              <li key={g.id} className="px-4 py-3 flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{g.title}</div>
-                  <div className="text-xs text-muted-foreground capitalize mt-0.5">
-                    {g.type} · {g.status.replace("_", " ")}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-                  <a href={`/admin/gigs/${g.id}/edit`} className="text-xs text-muted-foreground hover:text-primary">
-                    <Pencil size={13} />
-                  </a>
-                  <div className="text-xs text-muted-foreground">
-                    {formatRelativeTime(g.createdAt)}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {count ?? 0} open {count === 1 ? "report" : "reports"} to review.
+          </p>
+        </Link>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-        <QuickLink href="/admin/competitions/new" label="New Competition" Icon={Trophy} />
-        <QuickLink href="/admin/gigs/new" label="Post Gig" Icon={Briefcase} />
-        <QuickLink href="/admin/freelancers/new" label="Add Freelancer" Icon={Users} />
-        <QuickLink href="/admin/directory/new" label="Add to Directory" Icon={Briefcase} />
+        <Link
+          href="/admin/competitions"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Trophy size={18} className="text-gold-mid" />
+            <span className="font-medium">Competition review</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingComps ?? 0} pending{" "}
+            {pendingComps === 1 ? "competition" : "competitions"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/events"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Calendar size={18} className="text-sage-mid" />
+            <span className="font-medium">Event requests</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingEvents ?? 0} pending{" "}
+            {pendingEvents === 1 ? "request" : "requests"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/directory"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Compass size={18} className="text-teal-600" />
+            <span className="font-medium">Directory review</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {pendingListings ?? 0} pending{" "}
+            {pendingListings === 1 ? "listing" : "listings"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/feedback"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <MessageSquare size={18} className="text-blue-mid" />
+            <span className="font-medium">Feedback</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {openFeedback ?? 0} open {openFeedback === 1 ? "note" : "notes"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/tags"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Tag size={18} className="text-teal-600" />
+            <span className="font-medium">Browse-by tags</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage the tags shown in the landing-page browse marquee.
+          </p>
+        </Link>
       </div>
     </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  Icon,
-  color,
-  href,
-}: {
-  label: string;
-  value: number;
-  Icon: React.ElementType;
-  color: string;
-  href?: string;
-}) {
-  const inner = (
-    <>
-      <div className={`p-2.5 rounded-md ${color}`}>
-        <Icon size={18} className="text-white" />
-      </div>
-      <div>
-        <div className="text-2xl font-bold">{value}</div>
-        <div className="text-xs text-muted-foreground">{label}</div>
-      </div>
-    </>
-  );
-  return (
-    <div className="border border-border rounded-md p-4 bg-card flex items-center gap-4">
-      {href ? (
-        <a href={href} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
-          {inner}
-        </a>
-      ) : (
-        inner
-      )}
-    </div>
-  );
-}
-
-function QuickLink({
-  href,
-  label,
-  Icon,
-}: {
-  href: string;
-  label: string;
-  Icon: React.ElementType;
-}) {
-  return (
-    <a
-      href={href}
-      className="border border-border rounded-md p-3 bg-card flex items-center gap-2 hover:bg-muted/30 transition-colors"
-    >
-      <Icon size={16} className="text-muted-foreground" />
-      <span className="text-sm font-medium">{label}</span>
-    </a>
   );
 }

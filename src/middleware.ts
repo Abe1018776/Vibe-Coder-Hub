@@ -1,23 +1,18 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-const isAdmin = createRouteMatcher([
-  "/admin(.*)",
-  "/api/gigs(.*)",
-  "/api/conversations(.*)",
-  "/api/availability(.*)",
-  "/api/tags(.*)",
-  "/api/freelancers(.*)",
-]);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isAdmin(req)) {
-    await auth.protect();
-  }
-});
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
+}
 
 export const config = {
   matcher: [
-    "/((?!_next|.*\\..*).*)",
-    "/(api|trpc)(.*)",
+    /*
+     * Match all request paths except:
+     * - _next/static, _next/image (build assets)
+     * - favicon and common image/static files
+     * Auth session refresh runs on everything else.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

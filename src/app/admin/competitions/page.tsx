@@ -1,113 +1,83 @@
 import Link from "next/link";
-import { db, competitionsTable, competitionSubmissionsTable } from "@/lib/db";
-import { desc, eq, sql } from "drizzle-orm";
-import { Plus, Trophy, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { requireAdminUnlocked } from "@/lib/admin";
+import { createClient } from "@/lib/supabase/server";
+import { setCompetitionReviewStatus } from "@/lib/actions/admin";
 import { formatRelativeTime } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
 
-export const dynamic = "force-dynamic";
+export const metadata = { title: "Competition review" };
 
-const STATUS_COLORS: Record<string, string> = {
-  open: "bg-green-100 text-green-800",
-  judging: "bg-amber-100 text-amber-800",
-  closed: "bg-gray-200 text-gray-800",
+type PendingComp = {
+  id: string;
+  title: string;
+  slug: string;
+  prize_amount: number;
+  description: string;
+  created_at: string;
 };
 
-export default async function CompetitionsPage() {
-  const { userId } = await auth();
-  const rows = await db
-    .select({
-      comp: competitionsTable,
-      subCount: sql<number>`(
-        SELECT count(*)::int FROM ${competitionSubmissionsTable}
-        WHERE ${competitionSubmissionsTable.competitionId} = ${competitionsTable.id}
-      )`.as("sub_count"),
-    })
-    .from(competitionsTable)
-    .where(eq(competitionsTable.createdBy, userId!))
-    .orderBy(desc(competitionsTable.createdAt));
+export default async function AdminCompetitionsPage() {
+  await requireAdminUnlocked();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("competitions")
+    .select("id, title, slug, prize_amount, description, created_at")
+    .eq("review_status", "pending")
+    .order("created_at", { ascending: false });
+  const pending = (data ?? []) as PendingComp[];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Trophy size={18} className="text-amber-500" />
-            Competitions
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {rows.length} competition{rows.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <Link href="/admin/competitions/new">
-          <Button size="sm">
-            <Plus size={14} /> New competition
-          </Button>
-        </Link>
-      </div>
+    <div>
+      <h1 className="font-display text-2xl text-ink">Competition review</h1>
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        {pending.length} awaiting approval.
+      </p>
 
-      <div className="border border-border rounded-md bg-card overflow-hidden">
-        {rows.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            No competitions yet.{" "}
-            <Link href="/admin/competitions/new">
-              <span className="text-primary underline cursor-pointer">
-                Post your first bounty.
-              </span>
-            </Link>
-          </div>
-        ) : (
-          rows.map(({ comp, subCount }) => (
-            <Link key={comp.id} href={`/admin/competitions/${comp.id}`}>
-              <div className="border-b border-border last:border-0 px-5 py-4 hover:bg-muted/30 transition-colors cursor-pointer">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded font-medium ${STATUS_COLORS[comp.status]}`}
-                      >
-                        {comp.status}
-                      </span>
-                      <span className="text-xs font-bold text-amber-700">
-                        ${comp.prizeAmount.toLocaleString()}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        deadline {new Date(comp.deadline).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="text-sm font-semibold truncate">{comp.title}</div>
-                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {comp.description}
-                    </div>
-                    {comp.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {comp.tags.map((t) => (
-                          <span
-                            key={t}
-                            className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+      {pending.length === 0 ? (
+        <p className="mt-6 text-sm text-muted-foreground">Nothing to review.</p>
+      ) : (
+        <ul className="mt-6 space-y-3">
+          {pending.map((c) => {
+            const approve = setCompetitionReviewStatus.bind(null, c.id, "approved");
+            const reject = setCompetitionReviewStatus.bind(null, c.id, "rejected");
+            return (
+              <li
+                key={c.id}
+                className="rounded-card border border-border bg-surface p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/competitions/${c.slug}`}
+                      className="font-display font-bold text-ink hover:underline"
+                    >
+                      {c.title}
+                    </Link>
+                    <p className="text-sm text-muted-foreground">
+                      ${c.prize_amount?.toLocaleString()} ·{" "}
+                      {formatRelativeTime(c.created_at)}
+                    </p>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
-                      <Users size={12} />
-                      {subCount}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {formatRelativeTime(comp.createdAt)}
-                    </div>
+                  <div className="flex shrink-0 gap-2">
+                    <form action={approve}>
+                      <button type="submit" className="btn btn-primary btn-sm">
+                        Approve
+                      </button>
+                    </form>
+                    <form action={reject}>
+                      <button type="submit" className="btn btn-ghost btn-sm">
+                        Reject
+                      </button>
+                    </form>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
+                <p className="mt-2 line-clamp-2 text-sm text-ink/80" dir="auto">
+                  {c.description}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
