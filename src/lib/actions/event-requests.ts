@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdminUnlocked } from "@/lib/admin";
 
-export type EventRequestState = { ok?: boolean; error?: string };
+export type EventRequestState = {
+  ok?: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+};
 
 /** Anyone can request that an event be posted; admins review it. */
 export async function requestEvent(
@@ -19,8 +23,13 @@ export async function requestEvent(
   const title = String(formData.get("title") ?? "").trim();
   const details = String(formData.get("details") ?? "").trim();
   const contact = String(formData.get("contact") ?? "").trim();
-  if (!title || !details || !contact) {
-    return { error: "Please fill in the title, details, and a contact." };
+
+  const fieldErrors: Record<string, string> = {};
+  if (!title) fieldErrors.title = "Event title is required.";
+  if (!details) fieldErrors.details = "Add some details about the event.";
+  if (!contact) fieldErrors.contact = "Add an email or phone so we can reach you.";
+  if (Object.keys(fieldErrors).length > 0) {
+    return { error: "Please fix the highlighted fields below.", fieldErrors };
   }
 
   const { error } = await supabase.from("event_requests").insert({

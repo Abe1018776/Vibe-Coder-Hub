@@ -6,6 +6,7 @@ import {
   createDirectoryListing,
   type DirectoryListingState,
 } from "@/lib/actions/directory";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import { DIRECTORY_CATEGORIES } from "@/lib/site";
 
 const inputClass =
@@ -14,10 +15,12 @@ const inputClass =
 function Field({
   label,
   hint,
+  error,
   children,
 }: {
   label: string;
   hint?: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -31,6 +34,7 @@ function Field({
         )}
       </label>
       {children}
+      {error && <p className="mt-1 text-xs text-clay-deep">{error}</p>}
     </div>
   );
 }
@@ -40,6 +44,7 @@ export function GetListedForm() {
     DirectoryListingState,
     FormData
   >(createDirectoryListing, {});
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   if (state.ok) {
     return (
@@ -54,7 +59,7 @@ export function GetListedForm() {
   }
 
   return (
-    <form action={action} className="space-y-4">
+    <form ref={formRef} action={action} noValidate className="space-y-4">
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -62,10 +67,10 @@ export function GetListedForm() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Name / business">
+        <Field label="Name / business" error={state.fieldErrors?.name}>
           <input name="name" maxLength={120} dir="auto" className={inputClass} placeholder="Your name or company" />
         </Field>
-        <Field label="Category">
+        <Field label="Category" error={state.fieldErrors?.category}>
           <select name="category" defaultValue="" className={inputClass} aria-label="Category">
             <option value="" disabled>
               Choose one…
@@ -79,7 +84,7 @@ export function GetListedForm() {
         </Field>
       </div>
 
-      <Field label="What you do">
+      <Field label="What you do" error={state.fieldErrors?.what_you_do}>
         <textarea
           name="what_you_do"
           rows={3}
@@ -101,7 +106,11 @@ export function GetListedForm() {
         />
       </Field>
 
-      <Field label="Contact" hint="at least one — how people reach you">
+      <Field
+        label="Contact"
+        hint="at least one — how people reach you"
+        error={state.fieldErrors?.contact_email}
+      >
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <input name="contact_email" type="email" className={inputClass} placeholder="Email" />
           <input name="contact_phone" className={inputClass} placeholder="Phone" />

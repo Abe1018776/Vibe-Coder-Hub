@@ -8,6 +8,7 @@ import { GalleryInput } from "@/components/brand/gallery-input";
 import { CancelButton } from "@/components/brand/cancel-button";
 import { FormSection } from "@/components/brand/form-section";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import { fetchUrlMetadata } from "@/lib/actions/url-metadata";
 import { KNOWN_TOOLS, KNOWN_TAGS } from "@/lib/site";
 import type { ProjectFormState } from "@/lib/actions/projects";
@@ -151,6 +152,7 @@ export function ProjectForm({
     ProjectFormState,
     FormData
   >(action, {});
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   const [name, setName] = useState(project?.name ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
@@ -196,8 +198,10 @@ export function ProjectForm({
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       onChange={() => setDirty(true)}
+      noValidate
       className="space-y-5"
     >
       {state.error && (

@@ -93,7 +93,7 @@ export function FeedbackWidget() {
                 </p>
               </div>
             ) : (
-              <form action={action} className="space-y-3">
+              <form action={action} noValidate className="space-y-3">
                 {state.error && (
                   <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
                     {state.error}

@@ -87,8 +87,11 @@ export async function signInWithPassword(
   const next = String(formData.get("next") || "/");
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  if (!email || !password) {
-    return { error: "Enter your email and password." };
+  const fieldErrors: Record<string, string> = {};
+  if (!email) fieldErrors.email = "Enter your email.";
+  if (!password) fieldErrors.password = "Enter your password.";
+  if (Object.keys(fieldErrors).length > 0) {
+    return { error: "Please fix the highlighted fields.", fieldErrors };
   }
 
   const supabase = await createClient();

@@ -8,6 +8,7 @@ import {
   type AuthFormState,
 } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import { LogoMark } from "@/components/brand/sparkle";
 
 const inputClass =
@@ -68,6 +69,8 @@ export function AuthForms({
     AuthFormState,
     FormData
   >(signUpWithPassword, {});
+  const signInRef = useScrollToFirstError(signInState.fieldErrors);
+  const signUpRef = useScrollToFirstError(signUpState.fieldErrors);
 
   return (
     <div className="w-full rounded-3xl border border-border bg-surface p-7 shadow-[var(--shadow-md)]">
@@ -98,24 +101,38 @@ export function AuthForms({
       </div>
 
       {mode === "signin" ? (
-        <form action={signInAction} className="space-y-3">
+        <form ref={signInRef} action={signInAction} noValidate className="space-y-3">
           <input type="hidden" name="next" value={next} />
-          <input
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className={inputClass}
-            placeholder="Email"
-          />
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            className={inputClass}
-            placeholder="Password"
-          />
+          <div>
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              className={inputClass}
+              placeholder="Email"
+            />
+            {signInState.fieldErrors?.email && (
+              <p className="mt-1 text-xs text-clay-deep">
+                {signInState.fieldErrors.email}
+              </p>
+            )}
+          </div>
+          <div>
+            <input
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              className={inputClass}
+              placeholder="Password"
+            />
+            {signInState.fieldErrors?.password && (
+              <p className="mt-1 text-xs text-clay-deep">
+                {signInState.fieldErrors.password}
+              </p>
+            )}
+          </div>
           <button
             type="submit"
             disabled={signingIn}
@@ -126,7 +143,7 @@ export function AuthForms({
           <Note state={signInState} />
         </form>
       ) : (
-        <form action={signUpAction} className="space-y-3">
+        <form ref={signUpRef} action={signUpAction} noValidate className="space-y-3">
           <input type="hidden" name="next" value={next} />
           <div>
             <input

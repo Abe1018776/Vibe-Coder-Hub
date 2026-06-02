@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createEvent, type EventFormState } from "@/lib/actions/events";
 import { CancelButton } from "@/components/brand/cancel-button";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
@@ -36,14 +37,17 @@ export function EventForm() {
     createEvent,
     {},
   );
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   const [dirty, setDirty] = useState(false);
   useUnsavedChanges(dirty);
 
   return (
     <form
+      ref={formRef}
       action={action}
       onChange={() => setDirty(true)}
+      noValidate
       className="space-y-6"
     >
       {state.error && (
