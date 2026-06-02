@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ImageInput } from "@/components/brand/image-input";
 import { GalleryInput } from "@/components/brand/gallery-input";
 import { CancelButton } from "@/components/brand/cancel-button";
+import { FormSection } from "@/components/brand/form-section";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { fetchUrlMetadata } from "@/lib/actions/url-metadata";
 import { KNOWN_TOOLS, KNOWN_TAGS } from "@/lib/site";
@@ -197,7 +198,7 @@ export function ProjectForm({
     <form
       action={formAction}
       onChange={() => setDirty(true)}
-      className="space-y-6"
+      className="space-y-5"
     >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
@@ -205,146 +206,165 @@ export function ProjectForm({
         </div>
       )}
 
-      <div className="rounded-card border border-border bg-secondary/40 p-3">
-        <label className="mb-1.5 block text-sm font-medium text-ink">
-          Project link
-          <span className="ml-2 font-normal text-xs text-muted-foreground">
-            paste it and we&apos;ll fill in the rest
-          </span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            name="url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className={inputClass}
-            placeholder="https://your-app.com"
-          />
-          <button
-            type="button"
-            onClick={autofill}
-            disabled={fetching}
-            className={cn(
-              "autofill-btn relative inline-flex h-10 shrink-0 items-center gap-1.5 overflow-visible rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary disabled:opacity-80",
-              fetching && "is-working",
-            )}
-          >
-            {fetching ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : (
-              <Wand2 size={15} />
-            )}
-            {fetching ? "Reading…" : "Autofill"}
-            {magic > 0 && (
-              <span key={magic} className="autofill-sparkles" aria-hidden>
-                {MAGIC_SPARKS.map((s, i) => (
-                  <span
-                    key={i}
-                    className="autofill-spark"
-                    style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as React.CSSProperties}
-                  />
-                ))}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <Field label="Cover image" hint="upload or paste a URL">
-        <ImageInput
-          name="image_url"
-          bucket="project-media"
-          shape="rect"
-          defaultValue={project?.image_url}
-          seedUrl={cover}
-        />
-      </Field>
-
-      <Field label="More screenshots" hint="optional · up to 5">
-        <GalleryInput name="images" defaultValue={project?.images ?? []} />
-      </Field>
-
-      <p className="rounded-lg bg-teal-50 px-3 py-2 text-xs text-teal-800">
-        Add a <strong>cover image</strong> or a <strong>live link</strong> (or
-        both) so people can actually see your project.
-      </p>
-
-      <Field label="Name" required>
-        <input
-          name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          maxLength={100}
-          dir="auto"
-          className={inputClass}
-          placeholder="What's it called?"
-        />
-        {state.fieldErrors?.name && (
-          <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.name}</p>
-        )}
-      </Field>
-
-      <Field label="Description" required>
-        <textarea
-          name="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          maxLength={2000}
-          rows={4}
-          dir="auto"
-          className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
-          placeholder="What does it do? Who's it for?"
-        />
-        {state.fieldErrors?.description && (
-          <p className="mt-1 text-xs text-clay-deep">
-            {state.fieldErrors.description}
-          </p>
-        )}
-      </Field>
-
-      <Field label="Video / demo URL">
-        <input
-          name="video_url"
-          type="url"
-          defaultValue={project?.video_url ?? ""}
-          className={inputClass}
-          placeholder="https://loom.com/…"
-        />
-        {state.fieldErrors?.video_url && (
-          <p className="mt-1 text-xs text-clay-deep">
-            {state.fieldErrors.video_url}
-          </p>
-        )}
-      </Field>
-
-      <Field label="Tools used" hint="how it was built">
-        <ChipField
-          name="tools"
-          suggestions={KNOWN_TOOLS}
-          values={tools}
-          setValues={setTools}
-          activeClass="border-blue-mid bg-blue-tint text-blue-deep"
-          placeholder="Add another tool"
-        />
-      </Field>
-
-      <Field label="Tags" hint="what it's about">
-        <ChipField
-          name="tags"
-          suggestions={KNOWN_TAGS}
-          values={tags}
-          setValues={setTags}
-          activeClass="border-teal-400 bg-teal-50 text-teal-800"
-          placeholder="Add another tag"
-        />
-      </Field>
-
-      <Field
-        label="Looking for…"
-        hint="optional · shows badges + needs a public contact method"
+      <FormSection
+        step={1}
+        title="The basics"
+        description="Paste your link and let us fill in the rest — then tidy up the details."
       >
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="rounded-card border border-border bg-secondary/40 p-3">
+          <label className="mb-1.5 block text-sm font-medium text-ink">
+            Project link
+            <span className="ml-2 font-normal text-xs text-muted-foreground">
+              paste it and we&apos;ll fill in the rest
+            </span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              name="url"
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className={inputClass}
+              placeholder="https://your-app.com"
+            />
+            <button
+              type="button"
+              onClick={autofill}
+              disabled={fetching}
+              className={cn(
+                "autofill-btn relative inline-flex h-10 shrink-0 items-center gap-1.5 overflow-visible rounded-[10px] border border-border bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-secondary disabled:opacity-80",
+                fetching && "is-working",
+              )}
+            >
+              {fetching ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Wand2 size={15} />
+              )}
+              {fetching ? "Reading…" : "Autofill"}
+              {magic > 0 && (
+                <span key={magic} className="autofill-sparkles" aria-hidden>
+                  {MAGIC_SPARKS.map((s, i) => (
+                    <span
+                      key={i}
+                      className="autofill-spark"
+                      style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as React.CSSProperties}
+                    />
+                  ))}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <Field label="Name" required>
+          <input
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={100}
+            dir="auto"
+            className={inputClass}
+            placeholder="What's it called?"
+          />
+          {state.fieldErrors?.name && (
+            <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.name}</p>
+          )}
+        </Field>
+
+        <Field label="Description" required>
+          <textarea
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={2000}
+            rows={4}
+            dir="auto"
+            className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+            placeholder="What does it do? Who's it for?"
+          />
+          {state.fieldErrors?.description && (
+            <p className="mt-1 text-xs text-clay-deep">
+              {state.fieldErrors.description}
+            </p>
+          )}
+        </Field>
+      </FormSection>
+
+      <FormSection
+        step={2}
+        title="Media"
+        description="Give people something to look at — a cover, screenshots, or a demo."
+      >
+        <Field label="Cover image" hint="upload or paste a URL">
+          <ImageInput
+            name="image_url"
+            bucket="project-media"
+            shape="rect"
+            defaultValue={project?.image_url}
+            seedUrl={cover}
+          />
+        </Field>
+
+        <Field label="More screenshots" hint="optional · up to 5">
+          <GalleryInput name="images" defaultValue={project?.images ?? []} />
+        </Field>
+
+        <Field label="Video / demo URL">
+          <input
+            name="video_url"
+            type="url"
+            defaultValue={project?.video_url ?? ""}
+            className={inputClass}
+            placeholder="https://loom.com/…"
+          />
+          {state.fieldErrors?.video_url && (
+            <p className="mt-1 text-xs text-clay-deep">
+              {state.fieldErrors.video_url}
+            </p>
+          )}
+        </Field>
+
+        <p className="rounded-lg bg-teal-50 px-3 py-2 text-xs text-teal-800">
+          Add a <strong>cover image</strong> or a <strong>live link</strong> (or
+          both) so people can actually see your project.
+        </p>
+      </FormSection>
+
+      <FormSection
+        step={3}
+        title="Tags & tools"
+        description="Help the right people find it — how it was built and what it's about."
+      >
+        <Field label="Tools used" hint="how it was built">
+          <ChipField
+            name="tools"
+            suggestions={KNOWN_TOOLS}
+            values={tools}
+            setValues={setTools}
+            activeClass="border-blue-mid bg-blue-tint text-blue-deep"
+            placeholder="Add another tool"
+          />
+        </Field>
+
+        <Field label="Tags" hint="what it's about">
+          <ChipField
+            name="tags"
+            suggestions={KNOWN_TAGS}
+            values={tags}
+            setValues={setTags}
+            activeClass="border-teal-400 bg-teal-50 text-teal-800"
+            placeholder="Add another tag"
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection
+        step={4}
+        title="Looking for…"
+        description="Optional — shows badges. Needs a public contact method on your profile."
+      >
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {(
             [
               ["for_sale", "A buyer (for sale)", project?.for_sale],
@@ -365,26 +385,32 @@ export function ProjectForm({
             </label>
           ))}
         </div>
-      </Field>
+      </FormSection>
 
-      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
-        <span>
-          <span className="block text-sm font-medium text-ink">
-            Post anonymously
+      <FormSection
+        step={5}
+        title="Visibility"
+        description="Choose whether your name shows on this project."
+      >
+        <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium text-ink">
+              Post anonymously
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Hide your name publicly — shown as &ldquo;Anonymous.&rdquo; Only you
+              and admins know it&apos;s yours.
+            </span>
           </span>
-          <span className="block text-xs text-muted-foreground">
-            Hide your name publicly — shown as &ldquo;Anonymous.&rdquo; Only you
-            and admins know it&apos;s yours.
-          </span>
-        </span>
-        <input
-          type="checkbox"
-          name="is_anonymous"
-          defaultChecked={project?.is_anonymous ?? false}
-          className="peer sr-only"
-        />
-        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
-      </label>
+          <input
+            type="checkbox"
+            name="is_anonymous"
+            defaultChecked={project?.is_anonymous ?? false}
+            className="peer sr-only"
+          />
+          <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+        </label>
+      </FormSection>
 
       <div className="flex items-center gap-3 pt-1">
         <CancelButton

@@ -33,7 +33,7 @@ export default async function EditProjectPage({
           Update your project details.
         </p>
       </div>
-      <div className="mt-9 rounded-3xl border border-border bg-surface p-6 shadow-[var(--shadow-sm)] md:p-8">
+      <div className="mt-9">
         <ProjectForm
           action={updateAction}
           project={project}
