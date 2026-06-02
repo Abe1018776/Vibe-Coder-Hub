@@ -34,7 +34,6 @@ export default async function GigsPage() {
       <PageHeader
         accent="gold"
         eyebrow="Work"
-        icon={<Briefcase size={22} />}
         title="Gigs"
         subtitle="Post a gig, get applicants, manage it all in one place."
         action={

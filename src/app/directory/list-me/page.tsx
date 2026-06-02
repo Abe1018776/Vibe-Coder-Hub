@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { Compass } from "lucide-react";
 import { Container } from "@/components/brand/layout";
 import { PageHeader } from "@/components/brand/page-header";
 import { getCurrentProfile } from "@/lib/current-user";
@@ -21,7 +20,6 @@ export default async function ListMePage() {
       <PageHeader
         accent="blue"
         eyebrow="Connect"
-        icon={<Compass size={22} />}
         title="Add me to the Directory"
         subtitle="We pulled in what we already know from your profile — just fill the gaps."
       />

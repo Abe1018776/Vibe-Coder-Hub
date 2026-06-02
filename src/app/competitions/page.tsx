@@ -37,7 +37,6 @@ export default async function CompetitionsPage() {
       <PageHeader
         accent="clay"
         eyebrow="Compete"
-        icon={<Trophy size={22} />}
         title="Competitions"
         subtitle="Post a bounty. Anyone submits. You pick the winner."
         action={

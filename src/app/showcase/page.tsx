@@ -62,7 +62,6 @@ export default async function ShowcasePage({
       <PageHeader
         accent="teal"
         eyebrow="Explore"
-        icon={<Rocket size={22} />}
         title="Showcase"
         subtitle="Discover what the community is building."
         action={

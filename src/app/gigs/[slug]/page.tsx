@@ -11,6 +11,7 @@ import {
 } from "@/lib/gigs";
 import { getCurrentProfile } from "@/lib/current-user";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
+import { SectionCrumb } from "@/components/brand/section-crumb";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { applyToGig, setGigStatus } from "@/lib/actions/gigs";
 import { displayName } from "@/lib/display";
@@ -53,6 +54,7 @@ export default async function GigDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
+      <SectionCrumb section="Gigs" href="/gigs" name={gig.title} accent="gold" />
       <div className="mt-5">
         <DetailHero
           accent="clay"

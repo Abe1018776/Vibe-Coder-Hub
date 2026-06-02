@@ -12,6 +12,7 @@ import { getAdminContext } from "@/lib/admin";
 import { pickWinner } from "@/lib/actions/competitions";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill } from "@/components/brand/pill";
+import { SectionCrumb } from "@/components/brand/section-crumb";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { SubmitEntryForm } from "@/components/competitions/submit-entry-form";
 import { displayName } from "@/lib/display";
@@ -51,6 +52,7 @@ export default async function CompetitionDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-6">
+      <SectionCrumb section="Competitions" href="/competitions" name={comp.title} accent="clay" />
       <div className="mt-5">
         <DetailHero
           accent="gold"

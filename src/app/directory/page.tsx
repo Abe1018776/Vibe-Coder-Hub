@@ -41,7 +41,6 @@ export default async function DirectoryPage({
       <PageHeader
         accent="blue"
         eyebrow="Connect"
-        icon={<Compass size={22} />}
         title="Directory"
         subtitle="A free listing of builders, makers, agencies and services in the community."
         action={

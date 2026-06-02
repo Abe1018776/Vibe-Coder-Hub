@@ -11,6 +11,7 @@ import {
 import { getCurrentProfile } from "@/lib/current-user";
 import { getAdminContext, isAdminUnlocked } from "@/lib/admin";
 import { Container } from "@/components/brand/layout";
+import { SectionCrumb } from "@/components/brand/section-crumb";
 import { Sparkle } from "@/components/brand/sparkle";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill } from "@/components/brand/pill";
@@ -118,6 +119,7 @@ export default async function ProjectDetailPage({
 
   return (
     <Container className="max-w-6xl py-8">
+      <SectionCrumb section="Showcase" href="/showcase" name={project.name} accent="teal" />
       {/* Full-width header — both columns start below this */}
       <header className="flex flex-wrap items-start gap-3.5 border-b border-border pb-5">
         <span

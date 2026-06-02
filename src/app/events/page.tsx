@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, CalendarDays } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { listAllEvents } from "@/lib/events";
 import { Container } from "@/components/brand/layout";
 import { PageHeader } from "@/components/brand/page-header";
@@ -19,7 +19,6 @@ export default async function EventsPage() {
       <PageHeader
         accent="sage"
         eyebrow="Gather"
-        icon={<Calendar size={22} />}
         title="Events"
         subtitle="Browse community workshops and meetups by date, place, or keyword."
       />
