@@ -153,7 +153,7 @@ export default async function DashboardAccount() {
           <p className="mt-0.5 text-sm font-semibold text-ink">{dmLabel}</p>
         </div>
         <Link
-          href="/settings/profile"
+          href="/dashboard/profile"
           className="shrink-0 text-sm font-semibold text-teal-800 hover:underline"
         >
           Change

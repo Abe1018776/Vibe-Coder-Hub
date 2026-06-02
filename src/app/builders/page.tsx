@@ -76,7 +76,7 @@ export default async function BuildersPage({
               ? "Try a broader search or clear your filters."
               : "Be the first to set up a builder profile and show what you build."
           }
-          actionHref={filtering ? "/builders" : "/settings/profile"}
+          actionHref={filtering ? "/builders" : "/dashboard/profile"}
           actionLabel={filtering ? "Clear filters" : "Create your profile"}
         />
       ) : (
