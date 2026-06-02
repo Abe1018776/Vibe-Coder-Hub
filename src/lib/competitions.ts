@@ -5,7 +5,10 @@ import type { Profile } from "@/lib/queries";
 export type Competition = Tables<"competitions">;
 export type Submission = Tables<"competition_submissions">;
 
-type MiniProfile = Pick<Profile, "handle" | "name" | "avatar_url">;
+type MiniProfile = Pick<
+  Profile,
+  "handle" | "name" | "avatar_url" | "show_real_name"
+>;
 export type CompetitionWithCreator = Competition & {
   creator: MiniProfile | null;
 };
@@ -17,7 +20,7 @@ export type SubmissionWithSubmitter = Submission & {
 };
 
 const COMP_WITH_CREATOR =
-  "*, creator:profiles!competitions_creator_id_fkey(handle,name,avatar_url)";
+  "*, creator:profiles!competitions_creator_id_fkey(handle,name,avatar_url,show_real_name)";
 
 export function deadlineLabel(deadline: string): {
   text: string;
@@ -87,7 +90,7 @@ export async function getSubmissions(
   const { data } = await supabase
     .from("competition_submissions")
     .select(
-      "*, submitter:profiles!competition_submissions_submitter_id_fkey(handle,name,avatar_url)",
+      "*, submitter:profiles!competition_submissions_submitter_id_fkey(handle,name,avatar_url,show_real_name)",
     )
     .eq("competition_id", competitionId)
     .order("created_at", { ascending: true });

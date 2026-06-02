@@ -241,6 +241,24 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-sage-mid after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
       </label>
 
+      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+        <span>
+          <span className="block text-sm font-medium text-ink">
+            Show my real name
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            Off = people only see your @handle
+          </span>
+        </span>
+        <input
+          type="checkbox"
+          name="show_real_name"
+          defaultChecked={profile.show_real_name}
+          className="peer sr-only"
+        />
+        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+      </label>
+
       <Field label="Private notes" hint="who can send you a private note">
         <select
           name="dm_privacy"

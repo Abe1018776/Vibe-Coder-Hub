@@ -14,6 +14,7 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Pill } from "@/components/brand/pill";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { SubmitEntryForm } from "@/components/competitions/submit-entry-form";
+import { displayName } from "@/lib/display";
 import { formatRelativeTime, cn } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -98,7 +99,7 @@ export default async function CompetitionDetailPage({
       {comp.creator && (
         <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
           <AvatarCircle
-            name={comp.creator.name}
+            name={displayName(comp.creator)}
             src={comp.creator.avatar_url}
             size={40}
             accent="clay"
@@ -111,7 +112,7 @@ export default async function CompetitionDetailPage({
               href={`/u/${comp.creator.handle}`}
               className="font-medium text-ink hover:underline"
             >
-              {comp.creator.name}
+              {displayName(comp.creator)}
             </Link>
           </div>
         </div>
@@ -168,7 +169,7 @@ export default async function CompetitionDetailPage({
                 >
                   <div className="flex items-center gap-2">
                     <AvatarCircle
-                      name={s.submitter?.name ?? "?"}
+                      name={s.submitter ? displayName(s.submitter) : "?"}
                       src={s.submitter?.avatar_url}
                       size={28}
                       accent="clay"
@@ -178,7 +179,7 @@ export default async function CompetitionDetailPage({
                         href={`/u/${s.submitter.handle}`}
                         className="text-sm font-medium text-ink hover:underline"
                       >
-                        {s.submitter.name}
+                        {displayName(s.submitter)}
                       </Link>
                     ) : (
                       <span className="text-sm font-medium text-ink">

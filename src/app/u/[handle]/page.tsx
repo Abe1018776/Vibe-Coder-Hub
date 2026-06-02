@@ -36,6 +36,7 @@ import { EmptyState } from "@/components/brand/empty-state";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { NoteButton } from "@/components/messaging/note-button";
 import { canMessage } from "@/lib/conversations";
+import { displayName } from "@/lib/display";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -46,9 +47,10 @@ export async function generateMetadata({
   const { handle } = await params;
   const profile = await getProfileByHandle(handle);
   if (!profile) return { title: "Builder not found" };
+  const name = displayName(profile);
   return {
-    title: profile.name,
-    description: profile.bio ?? `${profile.name} — builder on YidVibe`,
+    title: name,
+    description: profile.bio ?? `${name} — builder on YidVibe`,
   };
 }
 
@@ -115,11 +117,17 @@ export default async function ProfilePage({
     year: "numeric",
   });
 
+  // When the user hides their real name, surface only the @handle as their
+  // primary identity (and drop the now-redundant separate @handle line).
+  const headlineName = displayName(profile);
+  const hideRealName = profile.show_real_name === false;
+
   const owner = {
     handle: profile.handle,
     name: profile.name,
     avatar_url: profile.avatar_url,
     available_for_hire: profile.available_for_hire,
+    show_real_name: profile.show_real_name,
   };
   // Don't deanonymize: a visitor must not see projects this person posted anonymously.
   const visible = isOwner ? projects : projects.filter((p) => !p.is_anonymous);
@@ -157,7 +165,7 @@ export default async function ProfilePage({
           {/* Avatar overlaps the cover; actions sit top-right on wide screens. */}
           <div className="flex flex-wrap items-end gap-4 sm:flex-nowrap">
             <AvatarCircle
-              name={profile.name}
+              name={headlineName}
               src={profile.avatar_url}
               size={96}
               accent={accent}
@@ -166,7 +174,7 @@ export default async function ProfilePage({
             <div className="min-w-0 flex-1 pt-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                  {profile.name}
+                  {headlineName}
                 </h1>
                 {profile.is_verified && (
                   <span title="Verified">
@@ -175,7 +183,7 @@ export default async function ProfilePage({
                 )}
               </div>
               <p className="mt-1 inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                <span>@{profile.handle}</span>
+                {!hideRealName && <span>@{profile.handle}</span>}
                 {profile.location && (
                   <span className="inline-flex items-center gap-1">
                     <MapPin size={13} /> {profile.location}

@@ -6,7 +6,7 @@ export type Project = Tables<"projects">;
 
 export type ProjectOwner = Pick<
   Profile,
-  "handle" | "name" | "avatar_url" | "available_for_hire"
+  "handle" | "name" | "avatar_url" | "available_for_hire" | "show_real_name"
 >;
 export type ProjectWithOwner = Project & { owner: ProjectOwner | null };
 
@@ -15,7 +15,7 @@ export type BuilderListItem = Profile & {
 };
 
 const PROJECT_WITH_OWNER =
-  "*, owner:profiles!projects_owner_id_fkey(handle,name,avatar_url,available_for_hire)";
+  "*, owner:profiles!projects_owner_id_fkey(handle,name,avatar_url,available_for_hire,show_real_name)";
 
 /** PostgREST `.or()` uses commas/parens as syntax; strip them from user input. */
 function sanitize(term: string): string {
@@ -249,7 +249,10 @@ export async function getLandingStats(): Promise<{
   };
 }
 
-export type CommentAuthor = Pick<Profile, "handle" | "name" | "avatar_url">;
+export type CommentAuthor = Pick<
+  Profile,
+  "handle" | "name" | "avatar_url" | "show_real_name"
+>;
 export type CommentWithAuthor = Tables<"comments"> & {
   author: CommentAuthor | null;
 };
@@ -261,7 +264,7 @@ export async function getComments(
   const { data } = await supabase
     .from("comments")
     .select(
-      "*, author:profiles!comments_author_id_fkey(handle,name,avatar_url)",
+      "*, author:profiles!comments_author_id_fkey(handle,name,avatar_url,show_real_name)",
     )
     .eq("project_id", projectId)
     .eq("hidden", false)
