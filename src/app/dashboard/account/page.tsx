@@ -11,12 +11,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/current-user";
+import { getAdminContext } from "@/lib/admin";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
 import { Pill } from "@/components/brand/pill";
 import { Sparkle } from "@/components/brand/sparkle";
 import { Stat } from "@/components/brand/stat-grid";
-import { accentFor, ACCENT_HERO } from "@/lib/site";
+import { accentFor } from "@/lib/site";
 import { signOut } from "@/lib/actions/auth";
 
 export const metadata: Metadata = { title: "Account · Dashboard" };
@@ -72,6 +73,7 @@ export default async function DashboardAccount() {
   const profile = await getCurrentProfile();
   if (!profile) return null;
 
+  const admin = await getAdminContext();
   const accent = accentFor(profile.handle);
   const joined = new Date(profile.created_at).toLocaleDateString(undefined, {
     month: "long",
@@ -90,62 +92,54 @@ export default async function DashboardAccount() {
         </p>
       </div>
 
-      {/* Identity card — cover accent + avatar, matches the public profile. */}
-      <Panel className="overflow-hidden p-0 sm:p-0">
-        <div
-          className="h-20 w-full sm:h-24"
-          style={{ background: ACCENT_HERO[accent] }}
-          aria-hidden
-        />
-        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-          <div className="-mt-9 flex flex-wrap items-end gap-4 sm:-mt-11">
-            <AvatarCircle
-              name={profile.name}
-              src={profile.avatar_url}
-              size={84}
-              accent={accent}
-              className="ring-4 ring-surface"
-            />
-            <div className="min-w-0 flex-1 pb-0.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-display text-xl font-bold text-ink">
-                  {profile.name}
-                </h3>
-                {profile.is_verified ? (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-semibold text-gold-700"
-                    title="Verified"
-                  >
-                    <Sparkle size={13} color="var(--gold-500)" /> Verified
-                  </span>
-                ) : (
-                  <Pill accent="neutral">Member</Pill>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">@{profile.handle}</p>
+      {/* Identity — inline, no avatar/banner overlap. */}
+      <Panel>
+        <div className="flex flex-wrap items-center gap-4">
+          <AvatarCircle
+            name={profile.name}
+            src={profile.avatar_url}
+            size={64}
+            accent={accent}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-display text-xl font-bold text-ink">
+                {profile.name}
+              </h3>
+              {profile.is_verified ? (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-semibold text-gold-700"
+                  title="Verified"
+                >
+                  <Sparkle size={13} color="var(--gold-500)" /> Verified
+                </span>
+              ) : (
+                <Pill accent="neutral">Member</Pill>
+              )}
             </div>
-            <Link
-              href="/settings/profile"
-              className="btn btn-ghost btn-sm shrink-0"
-            >
-              <Pencil size={15} /> Edit profile
-            </Link>
+            <p className="text-sm text-muted-foreground">@{profile.handle}</p>
           </div>
+          <Link
+            href="/dashboard/profile"
+            className="btn btn-ghost btn-sm shrink-0"
+          >
+            <Pencil size={15} /> Edit profile
+          </Link>
+        </div>
 
-          {profile.bio && (
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              {profile.bio}
-            </p>
-          )}
+        {profile.bio && (
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            {profile.bio}
+          </p>
+        )}
 
-          <div className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-5">
-            <Stat value={profile.follower_count} label="Followers" />
-            <Stat value={joined} label="Joined" />
-            <Stat
-              value={profile.is_verified ? "Verified" : "Member"}
-              label="Status"
-            />
-          </div>
+        <div className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-5">
+          <Stat value={profile.follower_count} label="Followers" />
+          <Stat value={joined} label="Joined" />
+          <Stat
+            value={profile.is_verified ? "Verified" : "Member"}
+            label="Status"
+          />
         </div>
       </Panel>
 
@@ -171,7 +165,7 @@ export default async function DashboardAccount() {
         <PanelLabel className="px-3 pb-1 pt-2">Manage</PanelLabel>
         <div className="space-y-0.5">
           <ManageLink
-            href="/settings/profile"
+            href="/dashboard/profile"
             icon={Pencil}
             label="Profile & skills"
             description="Edit your bio, links, tools and skills"
@@ -197,6 +191,28 @@ export default async function DashboardAccount() {
           />
         </div>
       </Panel>
+
+      {/* Admin — owner only, kept down by Sign out. */}
+      {admin && (
+        <Link
+          href="/admin"
+          className="group flex items-center gap-3.5 rounded-card border border-gold-200 bg-gold-50/60 p-4 transition-colors hover:bg-gold-50"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-100 text-gold-700">
+            <ShieldCheck size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink">Admin tools</p>
+            <p className="text-xs text-muted-foreground">
+              Moderation queues — asks for your passcode.
+            </p>
+          </div>
+          <ChevronRight
+            size={16}
+            className="shrink-0 text-gold-700/70 transition-transform group-hover:translate-x-0.5"
+          />
+        </Link>
+      )}
 
       {/* Sign out */}
       <Panel className="flex flex-wrap items-center justify-between gap-3">
