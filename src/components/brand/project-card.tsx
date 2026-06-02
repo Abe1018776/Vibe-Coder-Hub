@@ -7,6 +7,7 @@ import { SaveButton } from "./save-button";
 import { Sparkle } from "./sparkle";
 import { PROJECT_COMMERCIAL, accentFor, type Accent } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { displayName } from "@/lib/display";
 import type { ProjectWithOwner } from "@/lib/queries";
 
 /** Soft branded cover tints, keyed to the project's stable accent. */
@@ -135,9 +136,13 @@ export function ProjectCard({
           ) : (
             owner && (
               <Link href={`/u/${owner.handle}`} className="pc-foot">
-                <AvatarCircle name={owner.name} src={owner.avatar_url} size={24} />
+                <AvatarCircle
+                  name={displayName(owner)}
+                  src={owner.avatar_url}
+                  size={24}
+                />
                 <span className="truncate">
-                  by <strong>{owner.name}</strong>
+                  by <strong>{displayName(owner)}</strong>
                 </span>
                 {owner.available_for_hire && (
                   <Pill accent="sage" className="ml-0.5">

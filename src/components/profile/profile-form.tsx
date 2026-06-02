@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Plus } from "lucide-react";
 import { updateProfile, type ProfileFormState } from "@/lib/actions/profile";
 import { CancelButton } from "@/components/brand/cancel-button";
+import { FormSection } from "@/components/brand/form-section";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ImageInput } from "@/components/brand/image-input";
 import { KNOWN_TOOLS } from "@/lib/site";
@@ -69,7 +70,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     <form
       action={action}
       onChange={() => setDirty(true)}
-      className="space-y-6"
+      className="space-y-5"
     >
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
@@ -77,202 +78,252 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         </div>
       )}
 
-      <Field label="Profile photo">
-        <ImageInput
-          name="avatar_url"
-          bucket="avatars"
-          shape="circle"
-          defaultValue={profile.avatar_url}
-          fallbackInitial={profile.name.slice(0, 1).toUpperCase()}
-        />
-      </Field>
-
-      <Field label="Cover image" hint="your profile banner — optional">
-        <ImageInput
-          name="cover_url"
-          bucket="avatars"
-          shape="rect"
-          defaultValue={profile.cover_url}
-        />
-      </Field>
-
-      <Field label="Display name" required error={state.fieldErrors?.name}>
-        <input
-          name="name"
-          defaultValue={profile.name}
-          maxLength={80}
-          className={inputClass}
-          placeholder="Your name"
-        />
-      </Field>
-
-      <Field
-        label="Handle"
-        hint="yidvibe.com/u/your-handle"
-        error={state.fieldErrors?.handle}
+      <FormSection
+        step={1}
+        title="Identity"
+        description="Your photo, name, and the handle people will find you by."
       >
-        <input
-          name="handle"
-          defaultValue={profile.handle}
-          className={cn(inputClass, "font-mono")}
-          placeholder="your-handle"
-        />
-      </Field>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Field label="Profile photo">
+            <ImageInput
+              name="avatar_url"
+              bucket="avatars"
+              shape="circle"
+              defaultValue={profile.avatar_url}
+              fallbackInitial={profile.name.slice(0, 1).toUpperCase()}
+            />
+          </Field>
 
-      <Field label="Bio">
-        <textarea
-          name="bio"
-          defaultValue={profile.bio ?? ""}
-          maxLength={600}
-          rows={4}
-          className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
-          placeholder="A short intro — what you build, your background, your passion…"
-        />
-      </Field>
+          <Field label="Cover image" hint="your profile banner — optional">
+            <ImageInput
+              name="cover_url"
+              bucket="avatars"
+              shape="rect"
+              defaultValue={profile.cover_url}
+            />
+          </Field>
+        </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Hourly rate ($)">
+        <Field label="Display name" required error={state.fieldErrors?.name}>
           <input
-            name="hourly_rate"
-            type="number"
-            min={0}
-            step={1}
-            defaultValue={profile.hourly_rate ?? ""}
-            className={inputClass}
-            placeholder="75"
-          />
-        </Field>
-        <Field label="Location">
-          <input
-            name="location"
-            defaultValue={profile.location ?? ""}
+            name="name"
+            defaultValue={profile.name}
             maxLength={80}
             className={inputClass}
-            placeholder="Brooklyn, NY"
+            placeholder="Your name"
           />
         </Field>
-      </div>
 
-      <Field label="Tools you use">
-        <div className="flex flex-wrap gap-2">
-          {chipTools.map((t) => {
-            const active = tools.includes(t);
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => toggleTool(t)}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-sm transition-colors",
-                  active
-                    ? "border-blue-mid bg-blue-tint text-blue-deep"
-                    : "border-border bg-surface text-muted-foreground hover:border-border-hover",
-                )}
-              >
-                {t}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={customTool}
-            onChange={(e) => setCustomTool(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustom();
-              }
-            }}
-            placeholder="Add another tool"
-            className={cn(inputClass, "h-9 max-w-xs")}
-          />
-          <button type="button" onClick={addCustom} className="btn btn-ghost btn-sm">
-            <Plus size={15} /> Add
-          </button>
-        </div>
-        {tools.map((t) => (
-          <input key={t} type="hidden" name="tools" value={t} />
-        ))}
-      </Field>
-
-      <Field label="Skills" hint="comma separated">
-        <input
-          name="skills"
-          defaultValue={(profile.skills ?? []).join(", ")}
-          className={inputClass}
-          placeholder="React, AI prompting, UI design, backend"
-        />
-      </Field>
-
-      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
-        <span>
-          <span className="block text-sm font-medium text-ink">
-            I&apos;m a builder / freelancer
-          </span>
-          <span className="block text-xs text-muted-foreground">
-            List me on the Builders page so people can find me.
-          </span>
-        </span>
-        <input
-          type="checkbox"
-          name="is_builder"
-          defaultChecked={profile.is_builder}
-          className="peer sr-only"
-        />
-        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
-      </label>
-
-      <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
-        <span>
-          <span className="block text-sm font-medium text-ink">
-            Available for hire
-          </span>
-          <span className="block text-xs text-muted-foreground">
-            Show a green &ldquo;Available&rdquo; badge on your profile
-          </span>
-        </span>
-        <input
-          type="checkbox"
-          name="available_for_hire"
-          defaultChecked={profile.available_for_hire}
-          className="peer sr-only"
-        />
-        <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-sage-mid after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
-      </label>
-
-      <Field label="Private notes" hint="who can send you a private note">
-        <select
-          name="dm_privacy"
-          defaultValue={profile.dm_privacy}
-          className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+        <Field
+          label="Handle"
+          hint="yidvibe.com/u/your-handle"
+          error={state.fieldErrors?.handle}
         >
-          <option value="everyone">Anyone can send me a note</option>
-          <option value="followers">Only people who follow me</option>
-          <option value="none">No one — turn private notes off</option>
-        </select>
-      </Field>
+          <input
+            name="handle"
+            defaultValue={profile.handle}
+            className={cn(inputClass, "font-mono")}
+            placeholder="your-handle"
+          />
+        </Field>
+      </FormSection>
 
-      <Field
-        label="Contact (public)"
-        hint="people use these to reach you — fill what you want shown"
+      <FormSection
+        step={2}
+        title="About you"
+        description="A short intro and where you're based — what people read first."
       >
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <input name="link_email" type="email" defaultValue={links.email ?? ""} className={inputClass} placeholder="Email" />
-          <input name="link_phone" defaultValue={links.phone ?? ""} className={inputClass} placeholder="Phone" />
-          <input name="link_whatsapp" defaultValue={links.whatsapp ?? ""} className={inputClass} placeholder="WhatsApp number" />
-          <input name="link_instagram" defaultValue={links.instagram ?? ""} className={inputClass} placeholder="Instagram @handle" />
-        </div>
-      </Field>
+        <Field label="Bio">
+          <textarea
+            name="bio"
+            defaultValue={profile.bio ?? ""}
+            maxLength={600}
+            rows={4}
+            className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+            placeholder="A short intro — what you build, your background, your passion…"
+          />
+        </Field>
 
-      <Field label="Links">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <input name="link_website" defaultValue={links.website ?? ""} className={inputClass} placeholder="Website" />
-          <input name="link_github" defaultValue={links.github ?? ""} className={inputClass} placeholder="GitHub" />
-          <input name="link_x" defaultValue={links.x ?? ""} className={inputClass} placeholder="X / Twitter" />
-          <input name="link_linkedin" defaultValue={links.linkedin ?? ""} className={inputClass} placeholder="LinkedIn" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Hourly rate ($)">
+            <input
+              name="hourly_rate"
+              type="number"
+              min={0}
+              step={1}
+              defaultValue={profile.hourly_rate ?? ""}
+              className={inputClass}
+              placeholder="75"
+            />
+          </Field>
+          <Field label="Location">
+            <input
+              name="location"
+              defaultValue={profile.location ?? ""}
+              maxLength={80}
+              className={inputClass}
+              placeholder="Brooklyn, NY"
+            />
+          </Field>
         </div>
-      </Field>
+      </FormSection>
+
+      <FormSection
+        step={3}
+        title="Tools & skills"
+        description="What you build with and what you're good at — shown on your profile."
+      >
+        <Field label="Tools you use">
+          <div className="flex flex-wrap gap-2">
+            {chipTools.map((t) => {
+              const active = tools.includes(t);
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => toggleTool(t)}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-sm transition-colors",
+                    active
+                      ? "border-blue-mid bg-blue-tint text-blue-deep"
+                      : "border-border bg-surface text-muted-foreground hover:border-border-hover",
+                  )}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2 flex gap-2">
+            <input
+              value={customTool}
+              onChange={(e) => setCustomTool(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCustom();
+                }
+              }}
+              placeholder="Add another tool"
+              className={cn(inputClass, "h-9 max-w-xs")}
+            />
+            <button type="button" onClick={addCustom} className="btn btn-ghost btn-sm">
+              <Plus size={15} /> Add
+            </button>
+          </div>
+          {tools.map((t) => (
+            <input key={t} type="hidden" name="tools" value={t} />
+          ))}
+        </Field>
+
+        <Field label="Skills" hint="comma separated">
+          <input
+            name="skills"
+            defaultValue={(profile.skills ?? []).join(", ")}
+            className={inputClass}
+            placeholder="React, AI prompting, UI design, backend"
+          />
+        </Field>
+      </FormSection>
+
+      <FormSection
+        step={4}
+        title="Availability & visibility"
+        description="Whether you're listed and discoverable, and who can reach you privately."
+      >
+        <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium text-ink">
+              I&apos;m a builder / freelancer
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              List me on the Builders page so people can find me.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            name="is_builder"
+            defaultChecked={profile.is_builder}
+            className="peer sr-only"
+          />
+          <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+        </label>
+
+        <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium text-ink">
+              Available for hire
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Show a green &ldquo;Available&rdquo; badge on your profile
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            name="available_for_hire"
+            defaultChecked={profile.available_for_hire}
+            className="peer sr-only"
+          />
+          <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-sage-mid after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+        </label>
+
+        <label className="flex cursor-pointer items-center justify-between rounded-card border border-border bg-secondary/40 px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium text-ink">
+              Show my real name
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Off = people only see your @handle — on posts, comments, everywhere
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            name="show_real_name"
+            defaultChecked={profile.show_real_name}
+            className="peer sr-only"
+          />
+          <span className="relative h-6 w-11 shrink-0 rounded-full bg-border transition-colors peer-checked:bg-teal-600 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-5" />
+        </label>
+
+        <Field label="Private notes" hint="who can send you a private note">
+          <select
+            name="dm_privacy"
+            defaultValue={profile.dm_privacy}
+            className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
+          >
+            <option value="everyone">Anyone can send me a note</option>
+            <option value="followers">Only people who follow me</option>
+            <option value="none">No one — turn private notes off</option>
+          </select>
+        </Field>
+      </FormSection>
+
+      <FormSection
+        step={5}
+        title="Contact & links"
+        description="Fill in whatever you want shown — people use these to reach you."
+      >
+        <Field
+          label="Contact (public)"
+          hint="direct ways to reach you"
+        >
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <input name="link_email" type="email" defaultValue={links.email ?? ""} className={inputClass} placeholder="Email" />
+            <input name="link_phone" defaultValue={links.phone ?? ""} className={inputClass} placeholder="Phone" />
+            <input name="link_whatsapp" defaultValue={links.whatsapp ?? ""} className={inputClass} placeholder="WhatsApp number" />
+            <input name="link_instagram" defaultValue={links.instagram ?? ""} className={inputClass} placeholder="Instagram @handle" />
+          </div>
+        </Field>
+
+        <Field label="Links">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <input name="link_website" defaultValue={links.website ?? ""} className={inputClass} placeholder="Website" />
+            <input name="link_github" defaultValue={links.github ?? ""} className={inputClass} placeholder="GitHub" />
+            <input name="link_x" defaultValue={links.x ?? ""} className={inputClass} placeholder="X / Twitter" />
+            <input name="link_linkedin" defaultValue={links.linkedin ?? ""} className={inputClass} placeholder="LinkedIn" />
+          </div>
+        </Field>
+      </FormSection>
 
       <div className="flex items-center gap-3 pt-1">
         <CancelButton dirty={dirty} fallbackHref={`/u/${profile.handle}`} />

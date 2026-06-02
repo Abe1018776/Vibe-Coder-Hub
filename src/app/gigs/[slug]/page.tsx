@@ -13,6 +13,7 @@ import { getCurrentProfile } from "@/lib/current-user";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { applyToGig, setGigStatus } from "@/lib/actions/gigs";
+import { displayName } from "@/lib/display";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -93,7 +94,7 @@ export default async function GigDetailPage({
       {gig.poster && (
         <div className="mt-6 flex items-center gap-3 rounded-card border border-border bg-surface p-4">
           <AvatarCircle
-            name={gig.poster.name}
+            name={displayName(gig.poster)}
             src={gig.poster.avatar_url}
             size={40}
             accent="orange"
@@ -106,7 +107,7 @@ export default async function GigDetailPage({
               href={`/u/${gig.poster.handle}`}
               className="font-medium text-ink hover:underline"
             >
-              {gig.poster.name}
+              {displayName(gig.poster)}
             </Link>
           </div>
         </div>

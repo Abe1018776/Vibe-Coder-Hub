@@ -5,6 +5,7 @@ import { getMyConversations } from "@/lib/conversations";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel } from "@/components/brand/panel";
 import { EmptyState } from "@/components/brand/empty-state";
+import { accentFor } from "@/lib/site";
 import { formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Inbox · Dashboard" };
@@ -14,15 +15,17 @@ export default async function DashboardInbox() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
-          Inbox
-        </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          {convos.length === 0
-            ? "Private notes with other builders."
-            : `${convos.length} conversation${convos.length === 1 ? "" : "s"}`}
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
+            Inbox
+          </h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {convos.length === 0
+              ? "Private notes with other builders."
+              : `${convos.length} conversation${convos.length === 1 ? "" : "s"}`}
+          </p>
+        </div>
       </div>
 
       {convos.length === 0 ? (
@@ -30,6 +33,8 @@ export default async function DashboardInbox() {
           icon={<MessageCircle size={22} />}
           title="No messages yet"
           description="When someone sends you a private note — or you send one from a builder's profile — the conversation appears here."
+          actionHref="/builders"
+          actionLabel="Find builders"
         />
       ) : (
         <Panel className="p-0 sm:p-0">
@@ -43,7 +48,8 @@ export default async function DashboardInbox() {
                   <AvatarCircle
                     name={c.other.name}
                     src={c.other.avatar_url}
-                    size={44}
+                    size={46}
+                    accent={accentFor(c.other.handle)}
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[15px] font-semibold text-ink">
@@ -53,7 +59,7 @@ export default async function DashboardInbox() {
                       @{c.other.handle}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="shrink-0 text-xs font-medium text-muted-foreground">
                     {formatRelativeTime(c.last_message_at)}
                   </span>
                   <ChevronRight

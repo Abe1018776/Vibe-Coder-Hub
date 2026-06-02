@@ -3,9 +3,11 @@ import { ArrowRight } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { ToolPill, Pill } from "./pill";
 import { builderProjectCount, type BuilderListItem } from "@/lib/queries";
+import { displayName } from "@/lib/display";
 
 export function BuilderCard({ builder }: { builder: BuilderListItem }) {
   const count = builderProjectCount(builder);
+  const name = displayName(builder);
 
   return (
     <Link
@@ -14,7 +16,7 @@ export function BuilderCard({ builder }: { builder: BuilderListItem }) {
     >
       <div className="flex items-center gap-3">
         <AvatarCircle
-          name={builder.name}
+          name={name}
           src={builder.avatar_url}
           size={48}
           accent="blue"
@@ -22,7 +24,7 @@ export function BuilderCard({ builder }: { builder: BuilderListItem }) {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="truncate font-display font-bold text-ink">
-              {builder.name}
+              {name}
             </p>
             {builder.available_for_hire && <Pill accent="sage">Available</Pill>}
           </div>

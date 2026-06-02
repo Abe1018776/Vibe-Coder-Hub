@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   CalendarDays,
   LayoutList,
-  Search,
   MapPin,
   X,
   CalendarClock,
@@ -12,6 +11,7 @@ import {
 import type { EventRow } from "@/lib/events";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/brand/empty-state";
+import { SearchField, Chip } from "@/components/filters/filter-shell";
 import { EventCalendar } from "./event-calendar";
 import { EventCard } from "./event-card";
 import {
@@ -88,24 +88,24 @@ export function EventsBoard({ events }: { events: EventRow[] }) {
     setLocation("");
   };
 
+  const total = events.length;
+  const shown = filtered.length;
+  const resultLabel =
+    shown === total
+      ? `${total} ${total === 1 ? "event" : "events"}`
+      : `${shown} of ${total} events`;
+
   return (
     <div className="mt-8">
-      {/* Controls: search + location + view toggle */}
+      {/* Controls: search + location + view toggle — same family as the
+          Gigs/Competitions FilterShell so all three boards read as one. */}
       <div className="flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            dir="auto"
-            placeholder="Search events"
-            aria-label="Search events"
-            className="h-11 w-full rounded-xl border border-transparent bg-canvas pl-10 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:bg-surface"
-          />
-        </div>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="Search events by title, place, keyword…"
+          ariaLabel="Search events"
+        />
 
         {locations.length > 0 && (
           <div className="relative sm:w-52">
@@ -117,7 +117,7 @@ export function EventsBoard({ events }: { events: EventRow[] }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               aria-label="Filter by location"
-              className="h-11 w-full appearance-none rounded-xl border border-border bg-canvas pl-10 pr-3 text-sm font-medium text-ink outline-none transition-colors hover:border-border-hover focus:border-teal-600 focus:bg-surface"
+              className="h-12 w-full appearance-none rounded-xl border border-border bg-canvas pl-10 pr-3 text-sm font-medium text-ink outline-none transition-colors hover:border-border-hover focus:border-teal-600 focus:bg-surface"
             >
               <option value="">All locations</option>
               {locations.map((loc) => (
@@ -129,7 +129,7 @@ export function EventsBoard({ events }: { events: EventRow[] }) {
           </div>
         )}
 
-        <div className="inline-flex rounded-xl border border-border bg-canvas p-1">
+        <div className="inline-flex h-12 shrink-0 items-center rounded-xl border border-border bg-canvas p-1">
           <ViewButton
             active={view === "calendar"}
             onClick={() => setView("calendar")}
@@ -145,17 +145,18 @@ export function EventsBoard({ events }: { events: EventRow[] }) {
         </div>
       </div>
 
-      {/* Active filter chips */}
-      {hasFilters && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          {query.trim() && (
-            <FilterChip onClear={() => setQuery("")}>
-              &ldquo;{query.trim()}&rdquo;
-            </FilterChip>
-          )}
-          {location && (
-            <FilterChip onClear={() => setLocation("")}>{location}</FilterChip>
-          )}
+      {/* Result count + active filter chips */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="mr-1 text-sm font-medium text-muted-foreground">
+          {resultLabel}
+        </span>
+        {query.trim() && (
+          <Chip onClear={() => setQuery("")}>
+            &ldquo;{query.trim()}&rdquo;
+          </Chip>
+        )}
+        {location && <Chip onClear={() => setLocation("")}>{location}</Chip>}
+        {hasFilters && (
           <button
             type="button"
             onClick={clearFilters}
@@ -163,8 +164,8 @@ export function EventsBoard({ events }: { events: EventRow[] }) {
           >
             Clear all
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Calendar view ─────────────────────────────────────────────── */}
       {view === "calendar" && (
@@ -331,27 +332,5 @@ function ViewButton({
       {icon}
       {label}
     </button>
-  );
-}
-
-function FilterChip({
-  children,
-  onClear,
-}: {
-  children: React.ReactNode;
-  onClear: () => void;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-3 py-1 text-sm text-teal-800">
-      {children}
-      <button
-        type="button"
-        onClick={onClear}
-        aria-label="Remove filter"
-        className="-mr-0.5 rounded-full text-teal-700 hover:text-teal-900"
-      >
-        <X size={13} />
-      </button>
-    </span>
   );
 }
