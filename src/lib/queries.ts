@@ -206,6 +206,22 @@ export async function listBuilders(
   return (data as BuilderListItem[] | null) ?? [];
 }
 
+/** Most-followed builders, for the landing-page "Top Creators" row. */
+export async function listTopBuilders(
+  limit = 5,
+): Promise<BuilderListItem[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*, project_count:projects!projects_owner_id_fkey(count)")
+    .eq("is_builder", true)
+    .eq("is_public", true)
+    .order("follower_count", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data as BuilderListItem[] | null) ?? [];
+}
+
 /** Total builders matching the given filters (for pagination). */
 export async function countBuilders(
   opts: { q?: string; tool?: string; skill?: string; availableOnly?: boolean } = {},

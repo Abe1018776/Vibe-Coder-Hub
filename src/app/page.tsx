@@ -5,33 +5,22 @@ import {
   Hammer,
   Coins,
   Compass,
-  LayoutGrid,
   Users,
-  Briefcase,
-  Trophy,
+  ChevronUp,
 } from "lucide-react";
 import { Container, Section, Eyebrow } from "@/components/brand/layout";
 import { Reveal } from "@/components/brand/reveal";
 import { Sparkle } from "@/components/brand/sparkle";
-import { ProjectCard } from "@/components/brand/project-card";
+import { BrowseBy } from "@/components/brand/browse-by";
+import { RotatingRow } from "@/components/brand/rotating-row";
+import { AvatarCircle } from "@/components/brand/avatar-circle";
 import {
   getLandingStats,
   listProjects,
-  getMyUpvotedProjectIds,
+  listTopBuilders,
+  getBrowseTags,
 } from "@/lib/queries";
 import { getAuthUser } from "@/lib/current-user";
-
-/** Tappable category chips → jump into a filtered Showcase. */
-const CATEGORIES = [
-  "Community",
-  "Productivity",
-  "Developer Tools",
-  "AI",
-  "Education",
-  "Finance",
-  "Automation",
-  "Design",
-];
 
 const AUDIENCES = [
   {
@@ -63,37 +52,6 @@ const AUDIENCES = [
   },
 ];
 
-const FEATURES = [
-  {
-    title: "Showcase",
-    body: "Show off what you built. Upvote the best.",
-    href: "/showcase",
-    tint: "tint-teal",
-    Icon: LayoutGrid,
-  },
-  {
-    title: "Builder Directory",
-    body: "Find builders by skill, tool, or vibe.",
-    href: "/directory",
-    tint: "tint-blue",
-    Icon: Users,
-  },
-  {
-    title: "Gig Board",
-    body: "Post a gig, get applicants, manage it in one place.",
-    href: "/gigs",
-    tint: "tint-orange",
-    Icon: Briefcase,
-  },
-  {
-    title: "Competitions",
-    body: "Post a bounty. Anyone submits. You pick the winner.",
-    href: "/competitions",
-    tint: "tint-gold",
-    Icon: Trophy,
-  },
-];
-
 function Stat({ value, label, gold }: { value: number; label: string; gold?: boolean }) {
   return (
     <div className="text-center">
@@ -110,10 +68,11 @@ function Stat({ value, label, gold }: { value: number; label: string; gold?: boo
 }
 
 export default async function Home() {
-  const [stats, topProjects, upvoted, user] = await Promise.all([
+  const [stats, topProjects, topBuilders, tags, user] = await Promise.all([
     getLandingStats(),
-    listProjects({ sort: "top", limit: 3 }),
-    getMyUpvotedProjectIds(),
+    listProjects({ sort: "top", limit: 5 }),
+    listTopBuilders(5),
+    getBrowseTags(),
     getAuthUser(),
   ]);
   const isAuthed = !!user;
@@ -201,20 +160,9 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* ───── Category chips ───── */}
+      {/* ───── Browse by (tag marquee) ───── */}
       <Container className="pt-10">
-        <Reveal className="flex flex-wrap items-center justify-center gap-2.5">
-          <span className="mr-1 text-sm text-muted-foreground">Browse by:</span>
-          {CATEGORIES.map((c) => (
-            <Link
-              key={c}
-              href={`/showcase?tag=${encodeURIComponent(c)}`}
-              className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm text-ink transition-colors hover:border-border-hover hover:bg-secondary"
-            >
-              {c}
-            </Link>
-          ))}
-        </Reveal>
+        <BrowseBy tags={tags} />
       </Container>
 
       {/* ───── There's a place for you here ───── */}
@@ -255,73 +203,69 @@ export default async function Home() {
         </Container>
       </Section>
 
-      {/* ───── Everything you need ───── */}
-      <Section>
-        <Container>
-          <Reveal>
-            <Eyebrow>Everything in one place</Eyebrow>
-            <h2 className="mt-3.5 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-bold tracking-tight text-ink">
-              Everything you need
-            </h2>
-            <p className="mt-3 max-w-[50ch] text-[17px] text-muted-foreground">
-              A simple home for showing your work, finding people, and doing
-              business — together.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f, i) => {
-              const Icon = f.Icon;
-              return (
-                <Reveal key={f.title} delay={i * 70}>
-                  <Link
-                    href={f.href}
-                    className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-6 transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-sm)]"
-                  >
-                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${f.tint}`}>
-                      <Icon size={20} />
-                    </span>
-                    <h3 className="mt-4 font-semibold text-ink">{f.title}</h3>
-                    <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
-                      {f.body}
-                    </p>
-                    <span className="link-arrow mt-4 text-sm">
-                      Explore <ArrowRight size={14} />
-                    </span>
-                  </Link>
-                </Reveal>
-              );
-            })}
-          </div>
-        </Container>
-      </Section>
-
-      {/* ───── Fresh from the Showcase ───── */}
+      {/* ───── Top Projects ───── */}
       <Section>
         <Container>
           <Reveal className="flex items-end justify-between gap-6">
             <div>
               <Eyebrow>Just shipped</Eyebrow>
               <h2 className="mt-3.5 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-bold tracking-tight text-ink">
-                Fresh from the Showcase
+                Top Projects
               </h2>
             </div>
             <Link href="/showcase" className="link-arrow shrink-0">
-              See all <ArrowRight size={16} />
+              Browse projects <ArrowRight size={16} />
             </Link>
           </Reveal>
 
           {topProjects.length > 0 ? (
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {topProjects.map((p, i) => (
-                <Reveal key={p.id} delay={i * 80}>
-                  <ProjectCard
-                    project={p}
-                    isAuthed={isAuthed}
-                    upvoted={upvoted.has(p.id)}
-                  />
-                </Reveal>
-              ))}
-            </div>
+            <Reveal className="mt-10">
+              <RotatingRow>
+                {topProjects.map((p) => {
+                  const external = !!p.url;
+                  const href = p.url || `/showcase/${p.id}`;
+                  return (
+                    <div
+                      key={p.id}
+                      className="h-full overflow-hidden rounded-2xl border border-border bg-surface"
+                    >
+                      {p.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="h-32 w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="flex h-32 w-full items-center justify-center font-display text-4xl font-bold text-teal-700"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, var(--teal-50), var(--gold-50))",
+                          }}
+                        >
+                          {p.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between gap-2 p-3">
+                        <Link
+                          href={href}
+                          target={external ? "_blank" : undefined}
+                          rel={external ? "noopener noreferrer" : undefined}
+                          className="truncate font-display font-bold text-ink hover:text-teal-700"
+                        >
+                          {p.name}
+                        </Link>
+                        <span className="inline-flex h-9 w-9 shrink-0 flex-col items-center justify-center rounded-[10px] border border-teal-100 bg-teal-50 text-xs font-bold leading-none text-teal-800">
+                          <ChevronUp size={12} />
+                          {p.upvote_count}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </RotatingRow>
+            </Reveal>
           ) : (
             <Reveal className="mt-10">
               <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-surface px-6 py-16 text-center">
@@ -341,6 +285,57 @@ export default async function Home() {
           )}
         </Container>
       </Section>
+
+      {/* ───── Top Creators ───── */}
+      {topBuilders.length > 0 && (
+        <Section>
+          <Container>
+            <Reveal className="flex items-end justify-between gap-6">
+              <div>
+                <Eyebrow>The people behind it</Eyebrow>
+                <h2 className="mt-3.5 font-display text-[clamp(1.9rem,4vw,2.75rem)] font-bold tracking-tight text-ink">
+                  Top Creators
+                </h2>
+              </div>
+              <Link href="/builders" className="link-arrow shrink-0">
+                Browse builders <ArrowRight size={16} />
+              </Link>
+            </Reveal>
+
+            <Reveal className="mt-10">
+              <RotatingRow>
+                {topBuilders.map((b, i) => (
+                  <Link
+                    key={b.id}
+                    href={`/u/${b.handle}`}
+                    className="group flex h-full flex-col items-center rounded-2xl border border-border bg-surface p-5 text-center transition-all hover:-translate-y-0.5 hover:border-border-hover hover:shadow-[var(--shadow-sm)]"
+                  >
+                    <span className="relative mx-auto w-fit">
+                      <AvatarCircle
+                        name={b.name}
+                        src={b.avatar_url}
+                        size={72}
+                        className={i === 0 ? "yv-ring-gold" : undefined}
+                      />
+                      {i < 3 && (
+                        <span className={`yv-medal yv-medal-${i + 1}`}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-3 font-bold text-ink group-hover:text-teal-700">
+                      {b.name}
+                    </span>
+                    <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Users size={12} /> {b.follower_count} followers
+                    </span>
+                  </Link>
+                ))}
+              </RotatingRow>
+            </Reveal>
+          </Container>
+        </Section>
+      )}
 
       {/* ───── Ready to vibe? ───── */}
       <Section className="pb-4">
