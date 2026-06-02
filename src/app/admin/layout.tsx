@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { ShieldCheck, Lock } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
-import { lockAdmin } from "@/lib/actions/admin";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 
 export const metadata = { title: "Admin", robots: { index: false, follow: false } };
 
@@ -14,24 +12,9 @@ export default async function AdminLayout({
   await requireAdmin();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:px-6">
-      <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-2 font-display text-lg text-ink"
-        >
-          <ShieldCheck size={18} className="text-teal-600" /> YidVibe Admin
-        </Link>
-        <form action={lockAdmin}>
-          <button
-            type="submit"
-            className="inline-flex h-8 items-center gap-1.5 rounded-[10px] border border-border bg-surface px-3 text-xs text-ink transition-colors hover:bg-secondary"
-          >
-            <Lock size={13} /> Lock
-          </button>
-        </form>
-      </div>
-      {children}
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <AdminSidebar />
+      <main className="max-w-5xl flex-1 px-4 py-8 md:px-8">{children}</main>
     </div>
   );
 }

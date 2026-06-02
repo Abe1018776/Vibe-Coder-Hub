@@ -1,18 +1,54 @@
 import Link from "next/link";
-import { Flag, Trophy, Calendar, Compass, MessageSquare, Tag } from "lucide-react";
+import {
+  Flag,
+  Trophy,
+  Calendar,
+  Compass,
+  MessageSquare,
+  Tag,
+  Users,
+  FolderKanban,
+  type LucideIcon,
+} from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
+
+function StatTile({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: LucideIcon;
+  value: number;
+  label: string;
+}) {
+  return (
+    <div className="rounded-card border border-border bg-surface p-4">
+      <Icon size={16} className="text-muted-foreground" />
+      <div className="mt-2 font-display text-2xl font-bold leading-none text-ink">
+        {value}
+      </div>
+      <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 export default async function AdminDashboard() {
   await requireAdminUnlocked();
   const supabase = await createClient();
   const [
+    { count: usersCount },
+    { count: projectsCount },
     { count },
     { count: pendingComps },
     { count: pendingEvents },
     { count: pendingListings },
     { count: openFeedback },
   ] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    supabase.from("projects").select("id", { count: "exact", head: true }),
     supabase
       .from("reports")
       .select("id", { count: "exact", head: true })
@@ -35,14 +71,31 @@ export default async function AdminDashboard() {
       .eq("status", "open"),
   ]);
 
+  const stats = [
+    { icon: Users, value: usersCount ?? 0, label: "Users" },
+    { icon: FolderKanban, value: projectsCount ?? 0, label: "Projects" },
+    { icon: Flag, value: count ?? 0, label: "Open reports" },
+    { icon: Trophy, value: pendingComps ?? 0, label: "Pending competitions" },
+    { icon: Calendar, value: pendingEvents ?? 0, label: "Pending events" },
+    { icon: Compass, value: pendingListings ?? 0, label: "Pending listings" },
+    { icon: MessageSquare, value: openFeedback ?? 0, label: "Open feedback" },
+  ];
+
   return (
     <div>
-      <h1 className="font-display text-2xl text-ink">Dashboard</h1>
+      <h1 className="font-display text-2xl text-ink">Overview</h1>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Moderation tools. (More admin capabilities coming in a later pass.)
+        Community at a glance, plus the moderation queues that need a look.
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {stats.map((s) => (
+          <StatTile key={s.label} icon={s.icon} value={s.value} label={s.label} />
+        ))}
+      </div>
+
+      <h2 className="mt-10 font-display text-lg text-ink">Moderation queues</h2>
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Link
           href="/admin/reports"
           className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
