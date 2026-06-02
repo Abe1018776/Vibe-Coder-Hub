@@ -3,6 +3,7 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { ReportMenu } from "@/components/brand/report-menu";
 import { AddCommentForm } from "./add-comment-form";
 import { deleteComment } from "@/lib/actions/comments";
+import { displayName } from "@/lib/display";
 import { formatRelativeTime } from "@/lib/utils";
 
 export type CommentRow = {
@@ -11,7 +12,12 @@ export type CommentRow = {
   is_anonymous: boolean;
   body: string;
   created_at: string;
-  author: { handle: string; name: string; avatar_url: string | null } | null;
+  author: {
+    handle: string;
+    name: string;
+    avatar_url: string | null;
+    show_real_name?: boolean | null;
+  } | null;
 };
 
 /**
@@ -49,7 +55,13 @@ export function CommentsCard({
             return (
               <li key={c.id} className="flex gap-3">
                 <AvatarCircle
-                  name={c.is_anonymous ? "?" : c.author?.name ?? "?"}
+                  name={
+                    c.is_anonymous
+                      ? "?"
+                      : c.author
+                        ? displayName(c.author)
+                        : "?"
+                  }
                   src={c.is_anonymous ? null : c.author?.avatar_url}
                   size={30}
                 />
@@ -64,7 +76,7 @@ export function CommentsCard({
                         href={`/u/${c.author.handle}`}
                         className="text-sm font-semibold text-ink hover:underline"
                       >
-                        {c.author.name}
+                        {displayName(c.author)}
                       </Link>
                     ) : (
                       <span className="text-sm font-semibold text-ink">Someone</span>

@@ -110,6 +110,7 @@ export async function updateProfile(
       cover_url: v.cover_url ? v.cover_url : null,
       available_for_hire: formData.get("available_for_hire") != null,
       is_builder: formData.get("is_builder") != null,
+      show_real_name: formData.get("show_real_name") != null,
       dm_privacy,
       tools,
       skills,

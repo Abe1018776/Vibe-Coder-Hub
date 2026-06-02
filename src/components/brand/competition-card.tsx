@@ -7,6 +7,7 @@ import {
   submissionCount,
   type CompetitionListItem,
 } from "@/lib/competitions";
+import { displayName } from "@/lib/display";
 
 export function CompetitionCard({
   competition,
@@ -43,12 +44,14 @@ export function CompetitionCard({
         {competition.creator && (
           <>
             <AvatarCircle
-              name={competition.creator.name}
+              name={displayName(competition.creator)}
               src={competition.creator.avatar_url}
               size={20}
               accent="clay"
             />
-            <span className="truncate">{competition.creator.name}</span>
+            <span className="truncate">
+              {displayName(competition.creator)}
+            </span>
           </>
         )}
         <span className="ml-auto shrink-0">

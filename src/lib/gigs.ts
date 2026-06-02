@@ -7,12 +7,16 @@ export type GigThread = Tables<"gig_threads">;
 export type Message = Tables<"messages">;
 
 type MiniProfile = Pick<Profile, "handle" | "name" | "avatar_url">;
-export type GigWithPoster = Gig & { poster: MiniProfile | null };
+type PosterProfile = Pick<
+  Profile,
+  "handle" | "name" | "avatar_url" | "show_real_name"
+>;
+export type GigWithPoster = Gig & { poster: PosterProfile | null };
 export type ThreadWithApplicant = GigThread & { applicant: MiniProfile | null };
 export type MessageWithSender = Message & { sender: MiniProfile | null };
 
 const GIG_WITH_POSTER =
-  "*, poster:profiles!gigs_poster_id_fkey(handle,name,avatar_url)";
+  "*, poster:profiles!gigs_poster_id_fkey(handle,name,avatar_url,show_real_name)";
 
 export const GIG_TYPE_LABEL: Record<Gig["type"], string> = {
   task: "Task",

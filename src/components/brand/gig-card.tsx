@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { AvatarCircle } from "./avatar-circle";
 import { Pill } from "./pill";
 import { GIG_TYPE_LABEL, gigBudgetLabel, type GigWithPoster } from "@/lib/gigs";
+import { displayName } from "@/lib/display";
 
 export function GigCard({ gig }: { gig: GigWithPoster }) {
   const budget = gigBudgetLabel(gig);
@@ -30,13 +31,13 @@ export function GigCard({ gig }: { gig: GigWithPoster }) {
         {gig.poster && (
           <>
             <AvatarCircle
-              name={gig.poster.name}
+              name={displayName(gig.poster)}
               src={gig.poster.avatar_url}
               size={24}
               accent="orange"
             />
             <span className="truncate text-sm text-muted-foreground">
-              {gig.poster.name}
+              {displayName(gig.poster)}
             </span>
           </>
         )}

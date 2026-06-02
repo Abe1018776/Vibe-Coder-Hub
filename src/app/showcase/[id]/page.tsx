@@ -28,6 +28,7 @@ import { NoteButton } from "@/components/messaging/note-button";
 import { PostedShareCard } from "@/components/brand/posted-share-card";
 import { FeatureToggle } from "@/components/admin/feature-toggle";
 import { deleteProject } from "@/lib/actions/projects";
+import { displayName } from "@/lib/display";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -145,7 +146,7 @@ export default async function ProjectDetailPage({
                   href={`/u/${owner.handle}`}
                   className="font-medium text-ink hover:underline"
                 >
-                  {owner.name}
+                  {displayName(owner)}
                 </Link>
               </>
             )}
@@ -302,14 +303,16 @@ export default async function ProjectDetailPage({
             ) : (
               <div className="mt-3 flex items-center gap-3">
                 <AvatarCircle
-                  name={owner.name}
+                  name={displayName(owner)}
                   src={owner.avatar_url}
                   size={40}
                   accent="blue"
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate font-semibold text-ink">{owner.name}</p>
+                    <p className="truncate font-semibold text-ink">
+                      {displayName(owner)}
+                    </p>
                     {owner.available_for_hire && <Pill accent="sage">Available</Pill>}
                   </div>
                   <p className="truncate text-sm text-muted-foreground">
