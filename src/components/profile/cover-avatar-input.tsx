@@ -51,12 +51,14 @@ export function CoverAvatarInput({
       <input type="hidden" name="cover_url" value={cover} />
       <input type="hidden" name="avatar_url" value={avatar} />
 
-      <div className="relative overflow-hidden rounded-2xl border border-border">
-        <div className="h-32 w-full bg-teal-50">
-          {cover && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={cover} alt="" className="h-full w-full object-cover" />
-          )}
+      <div className="relative pb-10">
+        <div className="overflow-hidden rounded-2xl border border-border">
+          <div className="h-32 w-full bg-teal-50">
+            {cover && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cover} alt="" className="h-full w-full object-cover" />
+            )}
+          </div>
         </div>
         <button
           type="button"
@@ -79,7 +81,7 @@ export function CoverAvatarInput({
         )}
         <input ref={coverFile} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e, "cover")} />
 
-        <div className="absolute -bottom-8 left-5">
+        <div className="absolute top-20 left-5">
           <div className="relative h-20 w-20 overflow-hidden rounded-full border-4 border-surface bg-teal-50 text-teal-700 shadow-[0_4px_16px_rgba(0,0,0,0.12)]">
             {avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -101,7 +103,7 @@ export function CoverAvatarInput({
         </div>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Cover image URL — optional</span>
           <input
