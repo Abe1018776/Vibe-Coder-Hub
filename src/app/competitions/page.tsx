@@ -1,30 +1,35 @@
 import Link from "next/link";
 import { Plus, Trophy } from "lucide-react";
-import { listCompetitions, countCompetitions } from "@/lib/competitions";
+import { listCompetitions } from "@/lib/competitions";
 import { Container, Eyebrow } from "@/components/brand/layout";
 import { CompetitionCard } from "@/components/brand/competition-card";
 import { EmptyState } from "@/components/brand/empty-state";
-import { Pagination } from "@/components/brand/pagination";
+import {
+  CompetitionsBoard,
+  type CompetitionFilterItem,
+} from "@/components/competitions/competitions-board";
 
 export const metadata = {
   title: "Competitions",
   description: "Post a bounty. Anyone submits. You pick the winner.",
 };
 
-const PER_PAGE = 24;
+export default async function CompetitionsPage() {
+  const competitions = await listCompetitions();
 
-export default async function CompetitionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const sp = await searchParams;
-  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const [competitions, total] = await Promise.all([
-    listCompetitions({ page, perPage: PER_PAGE }),
-    countCompetitions(),
-  ]);
-  const totalPages = Math.ceil(total / PER_PAGE);
+  // Filter on plain fields client-side; cards stay server-rendered.
+  const items: CompetitionFilterItem[] = competitions.map((c) => ({
+    id: c.id,
+    title: c.title,
+    description: c.description,
+    prize_amount: c.prize_amount,
+    deadline: c.deadline,
+    hasWinner: !!c.winner_submission_id,
+    tags: c.tags ?? [],
+  }));
+  const cards = Object.fromEntries(
+    competitions.map((c) => [c.id, <CompetitionCard key={c.id} competition={c} />]),
+  );
 
   return (
     <Container className="py-10 md:py-14">
@@ -53,19 +58,7 @@ export default async function CompetitionsPage({
           actionLabel="Post a competition"
         />
       ) : (
-        <>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {competitions.map((c) => (
-              <CompetitionCard key={c.id} competition={c} />
-            ))}
-          </div>
-          <Pagination
-            pathname="/competitions"
-            searchParams={sp}
-            page={page}
-            totalPages={totalPages}
-          />
-        </>
+        <CompetitionsBoard items={items} cards={cards} />
       )}
     </Container>
   );

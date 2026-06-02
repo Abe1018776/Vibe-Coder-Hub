@@ -9,7 +9,7 @@ import {
   getMySavedProjectIds,
 } from "@/lib/queries";
 import { getCurrentProfile } from "@/lib/current-user";
-import { getAdminContext } from "@/lib/admin";
+import { getAdminContext, isAdminUnlocked } from "@/lib/admin";
 import { Container } from "@/components/brand/layout";
 import { Sparkle } from "@/components/brand/sparkle";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
@@ -92,6 +92,7 @@ export default async function ProjectDetailPage({
   ]);
   const isAuthed = !!me;
   const isOwner = me?.id === project.owner_id;
+  const adminUnlocked = admin ? await isAdminUnlocked(admin.userId) : false;
   const owner = project.owner;
   const accent = accentFor(project.name);
   const deleteThis = deleteProject.bind(null, id);
@@ -227,16 +228,15 @@ export default async function ProjectDetailPage({
 
         {/* RIGHT rail */}
         <div className="space-y-4 lg:sticky lg:top-16">
-          <Panel className="space-y-3.5">
-            <div className="flex justify-center">
-              <UpvoteButton
-                projectId={project.id}
-                initialCount={project.upvote_count}
-                initialUpvoted={upvoted.has(project.id)}
-                isAuthed={isAuthed}
-                redirectTo={`/showcase/${id}`}
-              />
-            </div>
+          <Panel className="space-y-2">
+            <UpvoteButton
+              projectId={project.id}
+              initialCount={project.upvote_count}
+              initialUpvoted={upvoted.has(project.id)}
+              isAuthed={isAuthed}
+              redirectTo={`/showcase/${id}`}
+              className="upvote-wide"
+            />
             <div className="flex flex-col gap-2">
               {project.url && (
                 <a
@@ -275,7 +275,9 @@ export default async function ProjectDetailPage({
                   <DeleteProjectButton action={deleteThis} />
                 </>
               )}
-              {admin && <FeatureToggle projectId={id} featured={!!project.featured} />}
+              {adminUnlocked && (
+                <FeatureToggle projectId={id} featured={!!project.featured} />
+              )}
               {isAuthed && !isOwner && (
                 <div className="flex justify-center pt-0.5">
                   <ReportMenu targetType="project" targetId={id} />

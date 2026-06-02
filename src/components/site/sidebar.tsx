@@ -56,14 +56,7 @@ export function Sidebar({
         <Logo />
       </div>
 
-      <Link
-        href="/showcase/submit"
-        className="btn btn-primary btn-sm mt-5 w-full justify-center"
-      >
-        <Plus size={16} /> Submit a project
-      </Link>
-
-      <nav className="mt-5 flex flex-1 flex-col gap-0.5 overflow-y-auto">
+      <nav className="mt-6 flex flex-1 flex-col gap-0.5 overflow-y-auto">
         {NAV_LINKS.map((l) => {
           const Icon = ICONS[l.href] ?? Compass;
           const active = isActive(l.href);
@@ -85,7 +78,13 @@ export function Sidebar({
         })}
       </nav>
 
-      <div className="mt-3 border-t border-border pt-3">
+      <div className="mt-3 space-y-3 border-t border-border pt-3">
+        <Link
+          href="/showcase/submit"
+          className="btn btn-gold btn-sm w-full justify-center"
+        >
+          <Plus size={16} /> Submit a project
+        </Link>
         {profile ? (
           <div className="flex items-center gap-2">
             <UserMenu profile={profile} isAdmin={isAdmin} />
