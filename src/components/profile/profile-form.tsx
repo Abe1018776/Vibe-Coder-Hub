@@ -7,7 +7,7 @@ import { CancelButton } from "@/components/brand/cancel-button";
 import { FormSection } from "@/components/brand/form-section";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
-import { ImageInput } from "@/components/brand/image-input";
+import { CoverAvatarInput } from "@/components/profile/cover-avatar-input";
 import { KNOWN_TOOLS } from "@/lib/site";
 import type { Profile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -87,26 +87,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         title="Identity"
         description="Your photo, name, and the handle people will find you by."
       >
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field label="Profile photo">
-            <ImageInput
-              name="avatar_url"
-              bucket="avatars"
-              shape="circle"
-              defaultValue={profile.avatar_url}
-              fallbackInitial={profile.name.slice(0, 1).toUpperCase()}
-            />
-          </Field>
-
-          <Field label="Cover image" hint="your profile banner — optional">
-            <ImageInput
-              name="cover_url"
-              bucket="avatars"
-              shape="rect"
-              defaultValue={profile.cover_url}
-            />
-          </Field>
-        </div>
+        <CoverAvatarInput
+          defaultCover={profile.cover_url}
+          defaultAvatar={profile.avatar_url}
+          fallbackInitial={profile.name.slice(0, 1).toUpperCase()}
+        />
 
         <Field label="Display name" required error={state.fieldErrors?.name}>
           <input
