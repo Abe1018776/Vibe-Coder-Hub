@@ -15,8 +15,8 @@ import { getProjectsByOwner } from "@/lib/queries";
 import { getMyConversations, getUnreadReplyCount } from "@/lib/conversations";
 import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
-import { StatGrid } from "@/components/brand/stat-grid";
 import { ActionCard } from "@/components/brand/action-card";
+import { GlanceRow } from "@/components/dashboard/glance-row";
 import { getAdminContext } from "@/lib/admin";
 import { DashboardHub } from "@/components/dashboard/dashboard-hub";
 import { formatRelativeTime } from "@/lib/utils";
@@ -49,22 +49,22 @@ export default async function DashboardOverview() {
       />
 
       <div className="hidden space-y-8 lg:block">
-      {/* At-a-glance numbers */}
-      <Panel className="p-5 sm:p-6">
-        <PanelLabel className="mb-4">At a glance</PanelLabel>
-        <StatGrid
+      {/* At-a-glance — bold, clickable */}
+      <section>
+        <PanelLabel className="mb-3">At a glance</PanelLabel>
+        <GlanceRow
           stats={[
-            { value: stats.projects, label: "Projects" },
-            { value: stats.upvotes, label: "Upvotes" },
-            { value: stats.gigs, label: "Gigs" },
-            { value: stats.competitions, label: "Competitions" },
-            { value: stats.events, label: "Events" },
-            { value: stats.saved, label: "Saved" },
-            { value: profile.follower_count, label: "Followers" },
-            { value: unreadReplies, label: "Unread" },
+            { value: stats.upvotes, label: "Upvotes", href: "/dashboard/posts" },
+            { value: stats.projects, label: "Projects", href: "/dashboard/posts" },
+            { value: profile.follower_count, label: "Followers", href: `/u/${profile.handle}` },
+            { value: stats.gigs, label: "Gigs", href: "/gigs" },
+            { value: stats.competitions, label: "Comps", href: "/competitions" },
+            { value: stats.events, label: "Events", href: "/events" },
+            { value: stats.saved, label: "Saved", href: "/dashboard/saved" },
+            { value: unreadReplies, label: "Unread", href: "/dashboard/inbox" },
           ]}
         />
-      </Panel>
+      </section>
 
       {/* Primary actions */}
       <section>

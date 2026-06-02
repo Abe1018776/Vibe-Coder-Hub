@@ -395,6 +395,16 @@
   color: var(--color-amber-900);
 }
 
+.yv-glance-tile {
+  display: block; color: #fff;
+  background: linear-gradient(140deg, var(--teal-600), var(--teal-800));
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.yv-glance-tile:hover {
+  background: linear-gradient(140deg, var(--gold-300), var(--gold-500));
+  color: var(--gold-900);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .yv-blob-a, .yv-blob-b, .yv-blob-c, .yv-rise {
     animation: none;
