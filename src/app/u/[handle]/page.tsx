@@ -229,7 +229,7 @@ export default async function ProfilePage({
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 {isOwner ? (
                   <Link
-                    href="/settings/profile"
+                    href="/dashboard/profile"
                     className="btn btn-gold btn-sm flex-1"
                   >
                     <Pencil size={15} /> Edit profile

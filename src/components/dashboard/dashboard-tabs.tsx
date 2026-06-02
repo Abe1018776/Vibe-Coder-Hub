@@ -23,9 +23,9 @@ type Tab = {
 const TABS: Tab[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid, exact: true },
   { href: "/dashboard/posts", label: "My posts", icon: FolderOpen },
-  { href: "/saved", label: "Saved", icon: Bookmark },
+  { href: "/dashboard/saved", label: "Saved", icon: Bookmark },
   { href: "/dashboard/inbox", label: "Inbox", icon: Inbox },
-  { href: "/settings/profile", label: "Profile", icon: UserCog },
+  { href: "/dashboard/profile", label: "Profile", icon: UserCog },
   { href: "/dashboard/account", label: "Account", icon: Settings },
 ];
 
@@ -39,7 +39,7 @@ export function DashboardTabs({ unread = 0 }: { unread?: number }) {
   return (
     <nav
       aria-label="Dashboard sections"
-      className="-mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:px-0"
+      className="hidden -mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:px-0 lg:block"
     >
       <div className="flex min-w-max items-center gap-1.5 rounded-full border border-border bg-surface p-1.5 shadow-[var(--shadow-xs)]">
         {TABS.map((t) => {

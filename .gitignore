@@ -9,3 +9,6 @@ node_modules
 *.tsbuildinfo
 
 .vercel
+
+# Superpowers brainstorm visual-companion mockups (local only)
+.superpowers/

@@ -17,6 +17,8 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
 import { StatGrid } from "@/components/brand/stat-grid";
 import { ActionCard } from "@/components/brand/action-card";
+import { getAdminContext } from "@/lib/admin";
+import { DashboardHub } from "@/components/dashboard/dashboard-hub";
 import { formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -33,9 +35,20 @@ export default async function DashboardOverview() {
   ]);
   const recent = projects.slice(0, 5);
   const recentConvos = convos.slice(0, 4);
+  const admin = await getAdminContext();
 
   return (
-    <div className="space-y-8">
+    <>
+      {/* Mobile: Direction-C hub (drill-down). Desktop: full overview below. */}
+      <DashboardHub
+        posts={stats.projects}
+        upvotes={stats.upvotes}
+        followers={profile.follower_count}
+        unread={unreadReplies}
+        isAdmin={!!admin}
+      />
+
+      <div className="hidden space-y-8 lg:block">
       {/* At-a-glance numbers */}
       <Panel className="p-5 sm:p-6">
         <PanelLabel className="mb-4">At a glance</PanelLabel>
@@ -190,6 +203,7 @@ export default async function DashboardOverview() {
           )}
         </Panel>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

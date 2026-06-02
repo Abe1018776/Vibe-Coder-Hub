@@ -4,11 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Sensible section root for a path. For a detail/sub page we drop the last
- * segment ("/showcase/abc" -> "/showcase", "/dashboard/inbox/123" ->
- * "/dashboard/inbox"). Always returns at least "/".
- */
+/** Sensible section root for a path ("/showcase/abc" -> "/showcase"). */
 function sectionRoot(path: string): string {
   const parts = path.split("/").filter(Boolean);
   if (parts.length <= 1) return "/";
@@ -16,11 +12,9 @@ function sectionRoot(path: string): string {
   return "/" + parts.join("/");
 }
 
-/** True when there's in-app history we can safely return to (same-origin). */
+/** True when there's same-origin in-app history we can safely return to. */
 function hasSafeHistory(): boolean {
   if (typeof window === "undefined") return false;
-  // A direct visit / new tab has length 1; a same-origin referrer means we
-  // navigated here from within the app and router.back() is safe.
   if (window.history.length <= 1) return false;
   const ref = document.referrer;
   if (!ref) return false;
@@ -32,9 +26,9 @@ function hasSafeHistory(): boolean {
 }
 
 /**
- * Branded "← Back". Returns to the previous in-app page when we got here via an
- * in-app navigation; otherwise falls back to the section root (or an explicit
- * `fallbackHref`) so a deep-linked visitor always lands somewhere sensible.
+ * Branded "← Back". Prefers real in-app history; otherwise navigates to an
+ * explicit `fallbackHref` (or the section root). Visibility is decided by the
+ * caller (e.g. ContextBar), so this always renders its button when mounted.
  */
 export function BackLink({
   label = "Back",
@@ -49,11 +43,8 @@ export function BackLink({
   const pathname = usePathname();
 
   function onClick() {
-    if (hasSafeHistory()) {
-      router.back();
-    } else {
-      router.push(fallbackHref ?? sectionRoot(pathname));
-    }
+    if (hasSafeHistory()) router.back();
+    else router.push(fallbackHref ?? sectionRoot(pathname));
   }
 
   return (
