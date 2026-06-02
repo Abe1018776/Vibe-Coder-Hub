@@ -7,6 +7,7 @@ import {
   BookOpen,
   LogOut,
   ChevronRight,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { getCurrentProfile } from "@/lib/current-user";
@@ -14,19 +15,17 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
 import { Pill } from "@/components/brand/pill";
 import { Sparkle } from "@/components/brand/sparkle";
-import { accentFor } from "@/lib/site";
+import { Stat } from "@/components/brand/stat-grid";
+import { accentFor, ACCENT_HERO } from "@/lib/site";
 import { signOut } from "@/lib/actions/auth";
 
 export const metadata: Metadata = { title: "Account · Dashboard" };
 
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-3 text-sm">
-      <span className="font-medium text-muted-foreground">{k}</span>
-      <span className="text-right font-medium text-ink">{v}</span>
-    </div>
-  );
-}
+const DM_LABEL: Record<string, string> = {
+  everyone: "Anyone can message you",
+  followers: "Only people you follow",
+  none: "Messages are off",
+};
 
 function ManageLink({
   href,
@@ -44,10 +43,11 @@ function ManageLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-teal-50/60"
+      className="group flex items-center gap-3.5 rounded-xl px-3 py-3 transition-colors hover:bg-teal-50/60"
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
     >
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-teal-50 text-teal-700">
-        <Icon size={17} />
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700 transition-colors group-hover:bg-teal-100">
+        <Icon size={18} />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-ink">{label}</p>
@@ -75,49 +75,95 @@ export default async function DashboardAccount() {
   const accent = accentFor(profile.handle);
   const joined = new Date(profile.created_at).toLocaleDateString(undefined, {
     month: "long",
-    day: "numeric",
     year: "numeric",
   });
+  const dmLabel = DM_LABEL[profile.dm_privacy] ?? DM_LABEL.everyone;
 
   return (
-    <div className="space-y-6">
-      <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
-        Account
-      </h2>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
+          Account
+        </h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Your identity, settings, and how people reach you.
+        </p>
+      </div>
 
-      {/* Identity */}
-      <Panel className="p-5 sm:p-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <AvatarCircle
-            name={profile.name}
-            src={profile.avatar_url}
-            size={64}
-            accent={accent}
-          />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-display text-xl font-bold text-ink">
-                {profile.name}
-              </h3>
-              {profile.is_verified ? (
-                <span title="Verified">
-                  <Sparkle size={18} color="var(--gold-500)" />
-                </span>
-              ) : (
-                <Pill accent="neutral">Member</Pill>
-              )}
+      {/* Identity card — cover accent + avatar, matches the public profile. */}
+      <Panel className="overflow-hidden p-0 sm:p-0">
+        <div
+          className="h-20 w-full sm:h-24"
+          style={{ background: ACCENT_HERO[accent] }}
+          aria-hidden
+        />
+        <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+          <div className="-mt-9 flex flex-wrap items-end gap-4 sm:-mt-11">
+            <AvatarCircle
+              name={profile.name}
+              src={profile.avatar_url}
+              size={84}
+              accent={accent}
+              className="ring-4 ring-surface"
+            />
+            <div className="min-w-0 flex-1 pb-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-display text-xl font-bold text-ink">
+                  {profile.name}
+                </h3>
+                {profile.is_verified ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-gold-50 px-2 py-0.5 text-xs font-semibold text-gold-700"
+                    title="Verified"
+                  >
+                    <Sparkle size={13} color="var(--gold-500)" /> Verified
+                  </span>
+                ) : (
+                  <Pill accent="neutral">Member</Pill>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">@{profile.handle}</p>
             </div>
-            <p className="text-sm text-muted-foreground">@{profile.handle}</p>
+            <Link
+              href="/settings/profile"
+              className="btn btn-ghost btn-sm shrink-0"
+            >
+              <Pencil size={15} /> Edit profile
+            </Link>
           </div>
-          <Link href="/settings/profile" className="btn btn-ghost btn-sm">
-            <Pencil size={15} /> Edit
-          </Link>
-        </div>
 
-        <div className="mt-4 divide-y divide-border/70 border-t border-border pt-1">
-          <Row k="Joined" v={joined} />
-          <Row k="Status" v={profile.is_verified ? "Verified" : "Member"} />
+          {profile.bio && (
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              {profile.bio}
+            </p>
+          )}
+
+          <div className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-5">
+            <Stat value={profile.follower_count} label="Followers" />
+            <Stat value={joined} label="Joined" />
+            <Stat
+              value={profile.is_verified ? "Verified" : "Member"}
+              label="Status"
+            />
+          </div>
         </div>
+      </Panel>
+
+      {/* Privacy at-a-glance — links to where you change it. */}
+      <Panel className="flex items-center gap-3.5">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sage-tint text-sage-deep">
+          <ShieldCheck size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <PanelLabel>Who can message you</PanelLabel>
+          <p className="mt-0.5 text-sm font-semibold text-ink">{dmLabel}</p>
+        </div>
+        <Link
+          href="/settings/profile"
+          className="shrink-0 text-sm font-semibold text-teal-800 hover:underline"
+        >
+          Change
+        </Link>
       </Panel>
 
       {/* Manage */}
@@ -152,11 +198,23 @@ export default async function DashboardAccount() {
         </div>
       </Panel>
 
-      <form action={signOut}>
-        <button type="submit" className="btn btn-ghost btn-sm text-destructive">
-          <LogOut size={15} /> Sign out
-        </button>
-      </form>
+      {/* Sign out */}
+      <Panel className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-ink">Sign out</p>
+          <p className="text-xs text-muted-foreground">
+            End your session on this device.
+          </p>
+        </div>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="btn btn-ghost btn-sm text-destructive hover:border-destructive/40"
+          >
+            <LogOut size={15} /> Sign out
+          </button>
+        </form>
+      </Panel>
     </div>
   );
 }
