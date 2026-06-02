@@ -6,6 +6,7 @@ import { updateProfile, type ProfileFormState } from "@/lib/actions/profile";
 import { CancelButton } from "@/components/brand/cancel-button";
 import { FormSection } from "@/components/brand/form-section";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import { ImageInput } from "@/components/brand/image-input";
 import { KNOWN_TOOLS } from "@/lib/site";
 import type { Profile } from "@/lib/queries";
@@ -49,6 +50,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     updateProfile,
     {},
   );
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   const [dirty, setDirty] = useState(false);
   useUnsavedChanges(dirty);
@@ -68,8 +70,10 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
   return (
     <form
+      ref={formRef}
       action={action}
       onChange={() => setDirty(true)}
+      noValidate
       className="space-y-5"
     >
       {state.error && (

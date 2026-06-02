@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { requestEvent, type EventRequestState } from "@/lib/actions/event-requests";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15";
@@ -12,6 +13,7 @@ export function EventRequestForm() {
     requestEvent,
     {},
   );
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   if (state.ok) {
     return (
@@ -25,7 +27,7 @@ export function EventRequestForm() {
   }
 
   return (
-    <form action={action} className="space-y-4">
+    <form ref={formRef} action={action} noValidate className="space-y-4">
       {state.error && (
         <div className="rounded-lg bg-clay-tint px-3 py-2 text-sm text-clay-deep">
           {state.error}
@@ -36,6 +38,9 @@ export function EventRequestForm() {
           Event title
         </label>
         <input name="title" maxLength={200} dir="auto" className={inputClass} placeholder="e.g. Vibe-coding meetup" />
+        {state.fieldErrors?.title && (
+          <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.title}</p>
+        )}
       </div>
       <div>
         <label className="mb-1.5 block text-sm font-medium text-ink">
@@ -52,6 +57,9 @@ export function EventRequestForm() {
           className="w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
           placeholder="Tell us about your workshop or meetup…"
         />
+        {state.fieldErrors?.details && (
+          <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.details}</p>
+        )}
       </div>
       <div>
         <label className="mb-1.5 block text-sm font-medium text-ink">
@@ -61,6 +69,9 @@ export function EventRequestForm() {
           </span>
         </label>
         <input name="contact" maxLength={200} className={inputClass} placeholder="you@email.com" />
+        {state.fieldErrors?.contact && (
+          <p className="mt-1 text-xs text-clay-deep">{state.fieldErrors.contact}</p>
+        )}
       </div>
       <button
         type="submit"

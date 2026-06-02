@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { CancelButton } from "@/components/brand/cancel-button";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import {
   createCompetition,
   type CompetitionFormState,
@@ -46,14 +47,17 @@ export function CompetitionForm() {
     CompetitionFormState,
     FormData
   >(createCompetition, {});
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   const [dirty, setDirty] = useState(false);
   useUnsavedChanges(dirty);
 
   return (
     <form
+      ref={formRef}
       action={action}
       onChange={() => setDirty(true)}
+      noValidate
       className="space-y-6"
     >
       {state.error && (

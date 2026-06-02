@@ -29,7 +29,7 @@ export function SubmitEntryForm({
   }, [state]);
 
   return (
-    <form ref={ref} action={formAction} className="space-y-3">
+    <form ref={ref} action={formAction} noValidate className="space-y-3">
       <input
         name="submission_url"
         type="url"

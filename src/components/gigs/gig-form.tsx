@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { createGig, type GigFormState } from "@/lib/actions/gigs";
 import { CancelButton } from "@/components/brand/cancel-button";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useScrollToFirstError } from "@/hooks/use-scroll-to-error";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -50,6 +51,7 @@ export function GigForm() {
     createGig,
     {},
   );
+  const formRef = useScrollToFirstError(state.fieldErrors);
 
   const [dirty, setDirty] = useState(false);
   useUnsavedChanges(dirty);
@@ -57,8 +59,10 @@ export function GigForm() {
 
   return (
     <form
+      ref={formRef}
       action={action}
       onChange={() => setDirty(true)}
+      noValidate
       className="space-y-6"
     >
       {state.error && (

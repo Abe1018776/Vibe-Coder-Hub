@@ -5,7 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { DIRECTORY_CATEGORIES } from "@/lib/site";
 
-export type DirectoryListingState = { ok?: boolean; error?: string };
+export type DirectoryListingState = {
+  ok?: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+};
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /** Anyone (no signup needed) can apply to be listed in the Directory. */
 export async function createDirectoryListing(
@@ -25,14 +31,20 @@ export async function createDirectoryListing(
   const phone = String(formData.get("contact_phone") ?? "").trim();
   const website = String(formData.get("contact_website") ?? "").trim();
 
-  if (!name || !what || !category) {
-    return { error: "Please fill in your name, what you do, and a category." };
+  const fieldErrors: Record<string, string> = {};
+  if (!name) fieldErrors.name = "Your name or business is required.";
+  if (!what) fieldErrors.what_you_do = "Tell people what you do.";
+  if (!category) fieldErrors.category = "Pick a category.";
+  else if (!DIRECTORY_CATEGORIES.includes(category))
+    fieldErrors.category = "Pick a category from the list.";
+  if (email) {
+    if (!EMAIL_RE.test(email))
+      fieldErrors.contact_email = "Enter a valid email address.";
+  } else if (!phone && !website) {
+    fieldErrors.contact_email = "Add at least one way for people to reach you.";
   }
-  if (!DIRECTORY_CATEGORIES.includes(category)) {
-    return { error: "Please pick a category." };
-  }
-  if (!email && !phone && !website) {
-    return { error: "Add at least one way for people to reach you." };
+  if (Object.keys(fieldErrors).length > 0) {
+    return { error: "Please fix the highlighted fields below.", fieldErrors };
   }
 
   const contact: Record<string, string> = {};
