@@ -1,14 +1,21 @@
 -- Featured profiles
 alter table public.profiles add column if not exists is_featured boolean not null default false;
 
--- Admins can read + update ANY profile (OR's with existing public/own policies).
-drop policy if exists "profiles admin select" on public.profiles;
-create policy "profiles admin select" on public.profiles for select to authenticated
-  using ((select p.is_admin from public.profiles p where p.id = auth.uid()));
+-- Admins can update ANY profile (for user management). IMPORTANT: a policy ON public.profiles
+-- must NOT re-query public.profiles under RLS — that causes "infinite recursion detected in
+-- policy for relation profiles" and takes the whole app down. So the admin check goes through
+-- a SECURITY DEFINER helper (runs as owner, bypasses RLS). No admin SELECT policy is added —
+-- the admin_list_users() SECURITY DEFINER RPC already lists users for the admin panel.
+create or replace function public.is_admin() returns boolean
+language sql security definer stable set search_path = public as $$
+  select coalesce((select p.is_admin from public.profiles p where p.id = auth.uid()), false);
+$$;
+revoke all on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated;
+
 drop policy if exists "profiles admin update" on public.profiles;
 create policy "profiles admin update" on public.profiles for update to authenticated
-  using ((select p.is_admin from public.profiles p where p.id = auth.uid()))
-  with check ((select p.is_admin from public.profiles p where p.id = auth.uid()));
+  using (public.is_admin()) with check (public.is_admin());
 
 -- "Posted as official YidVibe" marker for admin-authored content.
 alter table public.gigs add column if not exists posted_as_official boolean not null default false;
