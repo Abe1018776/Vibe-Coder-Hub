@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { type Accent } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -62,43 +63,43 @@ export function MediaGallery({
   const current = all[Math.min(active, all.length - 1)];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-sm)]">
-      <div className="flex items-center gap-1.5 border-b border-border bg-secondary/60 px-3.5 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        {host && (
-          <span className="ml-2 truncate rounded-full border border-border bg-surface px-2.5 py-0.5 text-[11px] text-muted-foreground">
-            {host}
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-center bg-[#eef1f3] p-3 sm:p-4">
+    <div className="rounded-[20px] bg-[linear-gradient(150deg,var(--teal-600),var(--teal-800))] p-5 sm:p-6">
+      <div className="overflow-hidden rounded-xl shadow-[0_22px_50px_-16px_rgba(0,0,0,0.55)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={current}
           alt={name}
-          className="max-h-[460px] w-full rounded-lg object-contain"
+          className="max-h-[460px] w-full bg-white object-contain"
         />
       </div>
 
+      {host && (
+        <a
+          href={liveUrl ?? undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 text-xs font-bold text-teal-800 shadow-[0_4px_14px_rgba(0,0,0,0.2)] backdrop-blur transition-colors hover:bg-white"
+        >
+          {host} <ExternalLink size={13} />
+        </a>
+      )}
+
       {all.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto p-3">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
           {all.map((src, i) => (
             <button
               key={src}
               type="button"
               onClick={() => setActive(i)}
               className={cn(
-                "h-14 w-20 shrink-0 overflow-hidden rounded-lg border transition-colors",
+                "h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors",
                 i === active
-                  ? "border-teal-600 ring-2 ring-teal-600/40"
-                  : "border-border hover:border-border-hover",
+                  ? "border-white"
+                  : "border-white/30 hover:border-white/60",
               )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="h-full w-full object-cover" />
+              <img src={src} alt="" className="h-full w-full bg-white object-cover" />
             </button>
           ))}
         </div>
