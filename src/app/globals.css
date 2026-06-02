@@ -321,6 +321,10 @@
 .autofill-sparkles { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .autofill-spark { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 999px; background: var(--gold-500); opacity: 0; animation: yv-spark 0.6s ease-out both; }
 
+@keyframes yv-share-shrink { from { width: 100%; } to { width: 0%; } }
+.yv-share-progress { width: 100%; animation: yv-share-shrink 20s linear forwards; }
+@media (prefers-reduced-motion: reduce) { .yv-share-progress { display: none; } }
+
 @media (max-width: 860px) {
   :root { --space-section: 72px; }
 }

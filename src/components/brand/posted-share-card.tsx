@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Sparkle } from "@/components/brand/sparkle";
 import { ShareButton } from "@/components/brand/share-button";
 
-/** Celebratory "you just posted — share it" banner shown on a fresh post. */
+/** Celebratory "you just posted — share it" banner. Auto-dismisses after 20s. */
 export function PostedShareCard({
   path,
   title,
@@ -16,10 +16,16 @@ export function PostedShareCard({
   caption: string;
 }) {
   const [open, setOpen] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setOpen(false), 20000);
+    return () => clearTimeout(t);
+  }, []);
+
   if (!open) return null;
 
   return (
-    <div className="relative mb-5 flex flex-col gap-3 rounded-2xl border border-sage-mid/40 bg-sage-tint/60 p-4 pr-10 sm:flex-row sm:items-center sm:justify-between">
+    <div className="relative mb-5 flex flex-col gap-3 overflow-hidden rounded-2xl border border-sage-mid/40 bg-sage-tint/60 p-4 pr-10 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/70">
           <Sparkle size={20} color="var(--sage-deep)" />
@@ -46,6 +52,10 @@ export function PostedShareCard({
       >
         <X size={16} />
       </button>
+      <span
+        aria-hidden
+        className="yv-share-progress absolute bottom-0 left-0 h-0.5 bg-sage-mid/70"
+      />
     </div>
   );
 }
