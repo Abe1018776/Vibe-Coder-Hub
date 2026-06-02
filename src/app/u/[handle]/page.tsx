@@ -37,6 +37,7 @@ import { ReportMenu } from "@/components/brand/report-menu";
 import { NoteButton } from "@/components/messaging/note-button";
 import { canMessage } from "@/lib/conversations";
 import { cn } from "@/lib/utils";
+import { displayName } from "@/lib/display";
 
 export async function generateMetadata({
   params,
@@ -46,9 +47,10 @@ export async function generateMetadata({
   const { handle } = await params;
   const profile = await getProfileByHandle(handle);
   if (!profile) return { title: "Builder not found" };
+  const shown = displayName(profile);
   return {
-    title: profile.name,
-    description: profile.bio ?? `${profile.name} — builder on YidVibe`,
+    title: shown,
+    description: profile.bio ?? `${shown} — builder on YidVibe`,
   };
 }
 
@@ -134,6 +136,7 @@ export default async function ProfilePage({
     name: profile.name,
     avatar_url: profile.avatar_url,
     available_for_hire: profile.available_for_hire,
+    show_real_name: profile.show_real_name,
   };
   // Don't deanonymize: a visitor must not see projects this person posted anonymously.
   const visible = isOwner ? projects : projects.filter((p) => !p.is_anonymous);
@@ -171,7 +174,7 @@ export default async function ProfilePage({
             <div className="px-5 pb-5">
               <div className="flex items-end justify-between">
                 <AvatarCircle
-                  name={profile.name}
+                  name={displayName(profile)}
                   src={profile.avatar_url}
                   size={88}
                   accent={accent}
@@ -186,7 +189,7 @@ export default async function ProfilePage({
               <div className="mt-3">
                 <div className="flex items-center gap-2">
                   <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-ink">
-                    {profile.name}
+                    {displayName(profile)}
                   </h1>
                   {profile.is_verified && (
                     <span title="Verified">
@@ -195,7 +198,7 @@ export default async function ProfilePage({
                   )}
                 </div>
                 <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                  <span>@{profile.handle}</span>
+                  {profile.show_real_name !== false && <span>@{profile.handle}</span>}
                   {profile.location && (
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={13} /> {profile.location}
