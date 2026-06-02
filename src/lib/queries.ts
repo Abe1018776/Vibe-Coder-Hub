@@ -371,6 +371,36 @@ export async function getBuilderFacets(): Promise<{
   };
 }
 
+export function normalizeTag(label: string): string {
+  return label.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+/** All visible browse-by tags (labels) for the marquee. */
+export async function getBrowseTags(): Promise<string[]> {
+  // `tags` isn't in the generated Supabase types yet (migration not applied),
+  // so cast the client to `any` for this one query only.
+  const supabase = (await createClient()) as unknown as {
+    from: (t: string) => {
+      select: (c: string) => {
+        eq: (
+          col: string,
+          val: boolean,
+        ) => {
+          order: (
+            col: string,
+          ) => Promise<{ data: { label: string }[] | null }>;
+        };
+      };
+    };
+  };
+  const { data } = await supabase
+    .from("tags")
+    .select("label")
+    .eq("is_hidden", false)
+    .order("label");
+  return (data ?? []).map((t) => t.label as string);
+}
+
 /** The current user's own directory listing, if any. */
 export async function getMyDirectoryListing() {
   const supabase = await createClient();

@@ -425,3 +425,12 @@
 .yv-medal { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; border: 2px solid #fff; color: #fff; font-size: 11px; font-weight: 800; line-height: 1; }
 .yv-medal-1 { background: var(--gold-500); } .yv-medal-2 { background: #9aa3ab; } .yv-medal-3 { background: #c08457; }
 .yv-medal-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--gold-500); color: #fff; font-size: 10.5px; font-weight: 800; padding: 4px 9px; border-radius: 999px; }
+
+/* ── Browse-by marquee — one slow auto-scrolling row of tag chips ── */
+.yv-marquee { position: relative; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.yv-marquee-track { display: flex; gap: 9px; width: max-content; animation: yv-marquee-scroll 80s linear infinite; }
+.yv-marquee:hover .yv-marquee-track { animation-play-state: paused; }
+@keyframes yv-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.yv-tag { white-space: nowrap; border: 1px solid var(--border); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; transition: border-color .15s, background .15s, color .15s; }
+.yv-tag:hover { border-color: var(--accent); background: var(--teal-50); color: var(--teal-800); }
+@media (prefers-reduced-motion: reduce) { .yv-marquee-track { animation: none; flex-wrap: wrap; } }

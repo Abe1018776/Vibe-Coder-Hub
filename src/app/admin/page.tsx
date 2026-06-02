@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flag, Trophy, Calendar, Compass, MessageSquare } from "lucide-react";
+import { Flag, Trophy, Calendar, Compass, MessageSquare, Tag } from "lucide-react";
 import { requireAdminUnlocked } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -108,6 +108,19 @@ export default async function AdminDashboard() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {openFeedback ?? 0} open {openFeedback === 1 ? "note" : "notes"}.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/tags"
+          className="rounded-card border border-border bg-surface p-5 transition-colors hover:border-border-hover"
+        >
+          <div className="flex items-center gap-2 text-ink">
+            <Tag size={18} className="text-teal-600" />
+            <span className="font-medium">Browse-by tags</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage the tags shown in the landing-page browse marquee.
           </p>
         </Link>
       </div>

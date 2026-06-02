@@ -68,6 +68,46 @@ export async function setCompetitionReviewStatus(
   revalidatePath("/competitions");
 }
 
+/** Admin-only: add (or unhide) a browse-by tag. `tags` isn't in the generated
+ *  Supabase types yet (migration not applied), so cast the client to `any`. */
+export async function addTag(formData: FormData) {
+  await requireAdminUnlocked();
+  const label = String(formData.get("label") ?? "").trim();
+  if (!label) return;
+  const supabase = (await createClient()) as unknown as {
+    from: (t: string) => {
+      upsert: (
+        row: Record<string, unknown>,
+        opts: { onConflict: string },
+      ) => Promise<unknown>;
+    };
+  };
+  await supabase.from("tags").upsert(
+    {
+      label,
+      slug: label.toLowerCase().replace(/\s+/g, " "),
+      source: "admin",
+      is_hidden: false,
+    },
+    { onConflict: "slug" },
+  );
+  revalidatePath("/admin/tags");
+  revalidatePath("/");
+}
+
+/** Admin-only: remove a browse-by tag. */
+export async function removeTag(id: string) {
+  await requireAdminUnlocked();
+  const supabase = (await createClient()) as unknown as {
+    from: (t: string) => {
+      delete: () => { eq: (col: string, val: string) => Promise<unknown> };
+    };
+  };
+  await supabase.from("tags").delete().eq("id", id);
+  revalidatePath("/admin/tags");
+  revalidatePath("/");
+}
+
 export type ReportAction = "hide" | "delete" | "dismiss";
 
 /** Act on a report. Admin RLS policies let these writes bypass owner-only checks. */

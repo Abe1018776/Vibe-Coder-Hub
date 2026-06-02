@@ -6,8 +6,34 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasAnyContact } from "@/lib/site";
 import { goPublic } from "@/lib/visibility";
+import { normalizeTag } from "@/lib/queries";
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
+
+/** Feed each project tag into the admin-managed `tags` table. Best-effort:
+ *  never let a tag-upsert failure break the project save. `tags` isn't in the
+ *  generated Supabase types yet (migration not applied), so cast to `any`. */
+async function feedBrowseTags(
+  supabase: SupabaseServer,
+  tags: string[],
+): Promise<void> {
+  const client = supabase as unknown as {
+    from: (t: string) => {
+      upsert: (
+        row: Record<string, unknown>,
+        opts: { onConflict: string; ignoreDuplicates: boolean },
+      ) => Promise<unknown>;
+    };
+  };
+  await Promise.all(
+    tags.map((t) =>
+      client.from("tags").upsert(
+        { label: t.trim(), slug: normalizeTag(t), source: "auto" },
+        { onConflict: "slug", ignoreDuplicates: true },
+      ),
+    ),
+  ).catch(() => {});
+}
 
 /** Commercial flags from the form — forced off when posting anonymously. */
 function commercialFrom(formData: FormData, anon: boolean) {
@@ -107,6 +133,7 @@ export async function createProject(
   );
   if (contactError) return { error: contactError };
 
+  const tags = multi(formData, "tags");
   const { data, error } = await supabase
     .from("projects")
     .insert({
@@ -118,7 +145,7 @@ export async function createProject(
       video_url: v.video_url || null,
       images: multi(formData, "images").slice(0, 5),
       tools: multi(formData, "tools"),
-      tags: multi(formData, "tags"),
+      tags,
       is_anonymous: anon,
       ...commercial,
     })
@@ -128,6 +155,8 @@ export async function createProject(
   if (error || !data) {
     return { error: "Couldn't submit your project. Please try again." };
   }
+
+  await feedBrowseTags(supabase, tags);
 
   // Posting under your name makes your profile public (anonymous posts don't).
   if (!anon) await goPublic(supabase, user.id);
@@ -163,6 +192,7 @@ export async function updateProject(
   );
   if (contactError) return { error: contactError };
 
+  const tags = multi(formData, "tags");
   const { error } = await supabase
     .from("projects")
     .update({
@@ -173,7 +203,7 @@ export async function updateProject(
       video_url: v.video_url || null,
       images: multi(formData, "images").slice(0, 5),
       tools: multi(formData, "tools"),
-      tags: multi(formData, "tags"),
+      tags,
       is_anonymous: anon,
       ...commercial,
     })
@@ -181,6 +211,8 @@ export async function updateProject(
     .eq("owner_id", user.id);
 
   if (error) return { error: "Couldn't save your changes. Please try again." };
+
+  await feedBrowseTags(supabase, tags);
 
   if (!anon) await goPublic(supabase, user.id);
 
