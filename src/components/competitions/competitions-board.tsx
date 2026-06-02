@@ -180,16 +180,25 @@ export function CompetitionsBoard({
     </>
   );
 
+  const total = items.length;
+  const shown = filtered.length;
+  const resultLabel =
+    shown === total
+      ? `${total} ${total === 1 ? "competition" : "competitions"}`
+      : `${shown} of ${total} competitions`;
+
   return (
     <>
       <FilterShell
         searchValue={q}
         onSearchChange={setQ}
         placeholder="Search competitions by title, description, tag…"
+        searchAriaLabel="Search competitions"
         controls={controls}
         activeCount={activeCount}
         chips={chips}
         onClearAll={clearAll}
+        resultLabel={resultLabel}
       />
 
       {filtered.length === 0 ? (

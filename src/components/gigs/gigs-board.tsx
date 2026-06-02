@@ -175,16 +175,25 @@ export function GigsBoard({
     </>
   );
 
+  const total = items.length;
+  const shown = filtered.length;
+  const resultLabel =
+    shown === total
+      ? `${total} ${total === 1 ? "gig" : "gigs"}`
+      : `${shown} of ${total} gigs`;
+
   return (
     <>
       <FilterShell
         searchValue={q}
         onSearchChange={setQ}
         placeholder="Search gigs by title, description, tag…"
+        searchAriaLabel="Search gigs"
         controls={controls}
         activeCount={activeCount}
         chips={chips}
         onClearAll={clearAll}
+        resultLabel={resultLabel}
       />
 
       {filtered.length === 0 ? (
