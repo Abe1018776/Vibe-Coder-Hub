@@ -1,6 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Rocket, Briefcase, Trophy, Calendar } from "lucide-react";
+import {
+  Rocket,
+  Briefcase,
+  Trophy,
+  Calendar,
+  ArrowUpRight,
+  FolderOpen,
+  Inbox as InboxIcon,
+} from "lucide-react";
 import { getCurrentProfile } from "@/lib/current-user";
 import { getDashboardStats } from "@/lib/dashboard";
 import { getProjectsByOwner } from "@/lib/queries";
@@ -9,6 +17,7 @@ import { AvatarCircle } from "@/components/brand/avatar-circle";
 import { Panel, PanelLabel } from "@/components/brand/panel";
 import { StatGrid } from "@/components/brand/stat-grid";
 import { ActionCard } from "@/components/brand/action-card";
+import { formatRelativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -27,14 +36,9 @@ export default async function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
-          Welcome back, {profile.name}
-        </h1>
-        <p className="text-sm text-muted-foreground">@{profile.handle}</p>
-      </div>
-
-      <Panel>
+      {/* At-a-glance numbers */}
+      <Panel className="p-5 sm:p-6">
+        <PanelLabel className="mb-4">At a glance</PanelLabel>
         <StatGrid
           stats={[
             { value: stats.projects, label: "Projects" },
@@ -49,8 +53,14 @@ export default async function DashboardOverview() {
         />
       </Panel>
 
-      <div>
-        <PanelLabel className="mb-3">Post something</PanelLabel>
+      {/* Primary actions */}
+      <section>
+        <div className="mb-3 flex items-baseline justify-between">
+          <PanelLabel>Post something</PanelLabel>
+          <span className="text-xs text-muted-foreground">
+            Share it with the community
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ActionCard
             href="/showcase/submit"
@@ -81,60 +91,97 @@ export default async function DashboardOverview() {
             description="Gather the community"
           />
         </div>
-      </div>
+      </section>
 
+      {/* Recent activity */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Panel>
-          <PanelLabel>Your recent projects</PanelLabel>
-          <ul className="mt-3 space-y-1">
-            {recent.length === 0 ? (
-              <li className="text-sm text-muted-foreground">
-                Nothing yet — post your first project.
-              </li>
-            ) : (
-              recent.map((p) => (
+        <Panel className="flex flex-col">
+          <div className="flex items-center justify-between">
+            <PanelLabel>Recent projects</PanelLabel>
+            {recent.length > 0 && (
+              <Link
+                href="/dashboard/posts"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 hover:underline"
+              >
+                View all <ArrowUpRight size={13} />
+              </Link>
+            )}
+          </div>
+          {recent.length === 0 ? (
+            <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-canvas/50 px-4 py-8 text-center">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
+                <FolderOpen size={18} />
+              </span>
+              <p className="mt-3 text-sm font-medium text-ink">No projects yet</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Your projects will show up here.
+              </p>
+              <Link
+                href="/showcase/submit"
+                className="btn btn-primary btn-sm mt-4"
+              >
+                Post your first project
+              </Link>
+            </div>
+          ) : (
+            <ul className="mt-3 -mx-1 space-y-0.5">
+              {recent.map((p) => (
                 <li key={p.id}>
                   <Link
                     href={`/showcase/${p.id}`}
-                    className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-secondary"
+                    className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-teal-50/60"
                   >
-                    <span className="truncate text-ink">{p.name}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="truncate text-sm font-medium text-ink">
+                      {p.name}
+                    </span>
+                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">
                       {p.upvote_count} upvotes
                     </span>
                   </Link>
                 </li>
-              ))
-            )}
-          </ul>
+              ))}
+            </ul>
+          )}
         </Panel>
 
-        <Panel>
+        <Panel className="flex flex-col">
           <div className="flex items-center justify-between">
-            <PanelLabel>Private replies</PanelLabel>
-            <Link href="/dashboard/inbox" className="text-xs font-semibold text-teal-800 hover:underline">
-              Inbox
+            <PanelLabel>Messages</PanelLabel>
+            <Link
+              href="/dashboard/inbox"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-teal-800 hover:underline"
+            >
+              Open inbox <ArrowUpRight size={13} />
             </Link>
           </div>
           {recentConvos.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              No notes yet — private notes from other builders land here.
-            </p>
+            <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-canvas/50 px-4 py-8 text-center">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-teal-50 text-teal-700">
+                <InboxIcon size={18} />
+              </span>
+              <p className="mt-3 text-sm font-medium text-ink">No messages yet</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Private notes from other builders land here.
+              </p>
+            </div>
           ) : (
-            <ul className="mt-3 space-y-1">
+            <ul className="mt-3 -mx-1 space-y-0.5">
               {recentConvos.map((c) => (
                 <li key={c.id}>
                   <Link
                     href={`/dashboard/inbox/${c.id}`}
-                    className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary"
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-teal-50/60"
                   >
                     <AvatarCircle
                       name={c.other.name}
                       src={c.other.avatar_url}
-                      size={28}
+                      size={36}
                     />
-                    <span className="truncate text-sm text-ink">
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
                       {c.other.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatRelativeTime(c.last_message_at)}
                     </span>
                   </Link>
                 </li>
