@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { Send } from "lucide-react";
 import { sendMessage, type MessageState } from "@/lib/actions/conversations";
 
-/** Composer for a private-reply thread — sticky-feeling, auto-growing input. */
+/** Composer for a private-reply thread — refined, auto-growing input. */
 export function NoteComposer({ conversationId }: { conversationId: string }) {
   const action = sendMessage.bind(null, conversationId);
   const [state, formAction, pending] = useActionState<MessageState, FormData>(
@@ -17,7 +17,10 @@ export function NoteComposer({ conversationId }: { conversationId: string }) {
   useEffect(() => {
     if (!pending && !state.error) {
       formRef.current?.reset();
-      if (taRef.current) taRef.current.style.height = "auto";
+      if (taRef.current) {
+        taRef.current.style.height = "auto";
+        taRef.current.focus();
+      }
     }
   }, [pending, state]);
 
@@ -37,7 +40,7 @@ export function NoteComposer({ conversationId }: { conversationId: string }) {
 
   return (
     <form ref={formRef} action={formAction} className="space-y-1.5">
-      <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface p-1.5 pl-3 transition-colors focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-600/15">
+      <div className="flex items-end gap-2 rounded-2xl border border-border bg-canvas/60 p-1.5 pl-3.5 transition-colors focus-within:border-teal-600 focus-within:bg-surface focus-within:ring-2 focus-within:ring-teal-600/15">
         <textarea
           ref={taRef}
           name="body"
@@ -56,11 +59,17 @@ export function NoteComposer({ conversationId }: { conversationId: string }) {
           aria-label="Send message"
         >
           <Send size={16} />
-          <span className="hidden sm:inline">Send</span>
+          <span className="hidden sm:inline">{pending ? "Sending…" : "Send"}</span>
         </button>
       </div>
-      {state.error && (
+      {state.error ? (
         <p className="px-1 text-xs text-destructive">{state.error}</p>
+      ) : (
+        <p className="px-1 text-[11px] text-muted-foreground">
+          <kbd className="font-sans font-semibold">Enter</kbd> to send ·{" "}
+          <kbd className="font-sans font-semibold">Shift + Enter</kbd> for a new
+          line
+        </p>
       )}
     </form>
   );

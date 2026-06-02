@@ -16,18 +16,24 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-[70vh] bg-canvas">
-      <Container className="max-w-5xl py-7 md:py-9">
-        <div className="mb-5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-teal-700">
-            Your dashboard
-          </p>
-          <h1 className="mt-1 font-display text-[26px] font-bold tracking-tight text-ink sm:text-3xl">
-            Hi, {profile.name.split(" ")[0]}
-          </h1>
-        </div>
-        <DashboardTabs unread={unread} />
-        <div className="mt-7">{children}</div>
-      </Container>
+      {/* Sticky chrome: greeting + tab rail stay pinned while content scrolls under. */}
+      <div className="sticky top-0 z-30 border-b border-border/70 bg-canvas/85 backdrop-blur supports-[backdrop-filter]:bg-canvas/70">
+        <Container className="max-w-5xl">
+          <div className="flex flex-col gap-4 pb-3 pt-5 md:pb-4 md:pt-7">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-teal-700">
+                Your dashboard
+              </p>
+              <h1 className="mt-1 font-display text-[22px] font-bold tracking-tight text-ink sm:text-[26px]">
+                Hi, {profile.name.split(" ")[0]}
+              </h1>
+            </div>
+            <DashboardTabs unread={unread} />
+          </div>
+        </Container>
+      </div>
+
+      <Container className="max-w-5xl pb-12 pt-7 md:pt-8">{children}</Container>
     </div>
   );
 }
