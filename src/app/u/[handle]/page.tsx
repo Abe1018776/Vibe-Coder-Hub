@@ -126,8 +126,21 @@ export default async function ProfilePage({
   const isAuthed = !!me;
   const myListing = isOwner ? await getMyDirectoryListing() : null;
   const noteCheck = !isOwner && isAuthed ? await canMessage(profile) : null;
-  // Private accounts have no public profile page until they go public.
-  if (!profile.is_public && !isOwner) notFound();
+  if (!profile.is_public && !isOwner) {
+    return (
+      <Container className="max-w-5xl py-8 md:py-10">
+        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
+          <h1 className="font-display text-2xl font-bold text-ink">Profile not public yet</h1>
+          <p className="mt-3 text-[15px] text-muted-foreground">
+            This builder hasn&apos;t made their profile public yet.
+          </p>
+          <Link href="/builders" className="btn btn-ghost mt-6">
+            Browse builders
+          </Link>
+        </div>
+      </Container>
+    );
+  }
   const links = (profile.links ?? {}) as Record<string, string | undefined>;
   const accent = accentFor(profile.handle);
   const joined = new Date(profile.created_at).toLocaleDateString(undefined, {

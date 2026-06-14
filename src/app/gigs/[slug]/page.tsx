@@ -15,6 +15,7 @@ import { OfficialAuthor } from "@/components/brand/official-author";
 import { SectionCrumb } from "@/components/brand/section-crumb";
 import { DetailHero } from "@/components/brand/detail-hero";
 import { applyToGig, setGigStatus } from "@/lib/actions/gigs";
+import { ApplyButton } from "@/components/gigs/apply-button";
 import { displayName } from "@/lib/display";
 import { cn } from "@/lib/utils";
 
@@ -198,9 +199,7 @@ export default async function GigDetailPage({
         ) : gig.status === "open" ? (
           me ? (
             <form action={apply}>
-              <button type="submit" className="btn btn-orange">
-                Apply to this gig
-              </button>
+              <ApplyButton />
             </form>
           ) : (
             <Link href={`/login?next=/gigs/${slug}`} className="btn btn-orange">

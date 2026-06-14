@@ -328,6 +328,9 @@
 @media (max-width: 860px) {
   :root { --space-section: 72px; }
 }
+@media (max-width: 640px) {
+  :root { --space-section: 48px; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .yv-reveal { opacity: 1; }
