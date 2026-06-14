@@ -48,19 +48,24 @@ export default function RootLayout({
       className={`${nunito.variable} ${comfortaa.variable} ${jetbrains.variable}`}
     >
       <body className="flex min-h-dvh flex-col overflow-x-clip bg-canvas pb-16 text-ink lg:pb-0 lg:pl-64">
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-P4NLFG6W"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         <SiteNav />
         <ContextBar />
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <Toaster richColors position="top-center" />
         <FeedbackWidget />
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-CQZZR3R1TQ"
-          strategy="afterInteractive"
-        />
-        <Script id="ga-config" strategy="afterInteractive">
-          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CQZZR3R1TQ');`}
+        {/* Google Tag Manager */}
+        <Script id="gtm" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P4NLFG6W');`}
         </Script>
       </body>
     </html>
