@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Comfortaa, Nunito_Sans, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import { SiteNav } from "@/components/site/site-nav";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -53,6 +54,14 @@ export default function RootLayout({
         <SiteFooter />
         <Toaster richColors position="top-center" />
         <FeedbackWidget />
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-CQZZR3R1TQ"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-config" strategy="afterInteractive">
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CQZZR3R1TQ');`}
+        </Script>
       </body>
     </html>
   );
